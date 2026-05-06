@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* ─── SCINODE Design System — Figma-aligned ─────────────── */
+
+    /* Primary */
+    --color-primary: #1F6F54;
+    --color-primary-bg: #DFF3EE;
+
+    /* Role colors */
+    --color-cro: #2F66D0;
+    --color-cro-bg: #EAF1FF;
+    --color-manufacturing: #F2552C;
+    --color-manufacturing-bg: #FFF1EC;
+    --color-scientist: #5B3BA8;
+    --color-scientist-bg: #F1EDFF;
+
+    /* Accent */
+    --color-accent-green: #B7D77A;
+    --color-accent-green-bg: #EDF4E1;
+    --color-accent-teal: #1ABC9C;
+    --color-accent-teal-bg: #DCF0EC;
+    --color-accent-pink: #D95C7A;
+    --color-accent-pink-bg: #F3E6EA;
+
+    /* Neutrals */
+    --color-bg-page: #F9FAFB;
+    --color-bg-card: #FFFFFF;
+    --color-bg-subtle: #E2E5E3;
+    --color-stroke-1: #E2E5E3;
+    --color-stroke-2: #D2D2D5;
+
+    /* Text */
+    --color-text-primary: #171717;
+    --color-text-paragraph: #5C5E5C;
+    --color-text-body: #4B5563;
+    --color-text-muted: #68747A;
+    --color-text-subtle: #99A8AF;
+    --color-text-disabled: #CFD8DC;
+
+    /* Border */
+    --color-border: #E2E5E3;
+    --color-nav: #171717;
+
+    /* Status */
+    --color-status-complete-bg: #B2F3B7;
+    --color-status-complete-text: #0F7614;
+    --color-status-pending-bg: #FBF0C5;
+    --color-status-pending-text: #9C5022;
+    --color-status-notstarted-bg: #B3B7BD;
+    --color-status-notstarted-text: #4B5563;
+    --color-status-error-bg: #FFEFEF;
+    --color-status-error-text: #C30E1A;
+
+    /* Brand gradient */
+    --gradient-brand: linear-gradient(
+      101deg,
+      #2DD17C 0%,
+      #1FB39D 31.25%,
+      #0F90C6 68.75%,
+      #0172E7 100%
+    );
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg-page text-text-primary font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  /* ── Input base ── */
+  .input-base {
+    @apply w-full border border-stroke-1 rounded-lg px-3 py-2 text-sm text-text-primary bg-white
+           transition-colors duration-150
+           focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
+           placeholder:text-text-subtle;
+  }
+  .input-error {
+    @apply border-status-error-text focus:border-status-error-text focus:ring-status-error-text/20;
+  }
+
+  /* ── Button variants ── */
+  .btn-primary {
+    @apply bg-primary text-white font-medium rounded-lg px-4 py-2 text-sm
+           transition-colors duration-150 hover:bg-[#185C45] active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply border-2 border-primary text-primary bg-transparent font-medium rounded-lg px-4 py-2 text-sm
+           transition-colors duration-150 hover:bg-primary/5;
+  }
+  .btn-ghost {
+    @apply border border-stroke-1 text-text-body bg-transparent font-medium rounded-lg px-4 py-2 text-sm
+           transition-colors duration-150 hover:bg-bg-subtle;
+  }
+  .btn-danger {
+    @apply bg-status-error-bg text-status-error-text font-medium rounded-lg px-4 py-2 text-sm
+           transition-colors duration-150 hover:bg-[#FFDFDF];
+  }
+
+  /* ── Card variants ── */
+  .card-standard {
+    @apply bg-white border border-stroke-1 rounded-xl p-4;
+  }
+  .card-metric {
+    @apply bg-bg-subtle rounded-xl p-4;
+  }
+  .card-highlight {
+    @apply bg-primary-bg border border-primary/30 rounded-xl p-4;
+  }
+  .card-exclusive {
+    @apply bg-scientist-bg border border-scientist/30 rounded-xl p-4;
+  }
+  .card-alert {
+    @apply bg-manufacturing-bg border border-manufacturing/30 rounded-xl p-4;
+  }
+
+  /* ── Status badges ── */
+  .badge {
+    @apply rounded-full px-3 py-1 text-xs font-medium inline-flex items-center gap-1;
+  }
+  .badge-accepted   { @apply bg-status-complete-bg text-status-complete-text; }
+  .badge-declined   { @apply bg-status-error-bg text-status-error-text; }
+  .badge-review     { @apply bg-status-pending-bg text-status-pending-text; }
+  .badge-submitted  { @apply bg-nav text-primary-bg; }
+  .badge-exclusive  { @apply bg-scientist-bg text-scientist; }
+  .badge-po-raised  { @apply bg-cro-bg text-cro; }
+  .badge-urgent     { @apply bg-manufacturing-bg text-manufacturing; }
+  .badge-draft      { @apply bg-bg-subtle text-text-body; }
+
+  /* ── Project type pills ── */
+  .pill-rfq    { @apply bg-cro-bg text-cro rounded px-2 py-0.5 text-xs font-medium; }
+  .pill-cdmo   { @apply bg-scientist-bg text-scientist rounded px-2 py-0.5 text-xs font-medium; }
+  .pill-cmo    { @apply bg-status-complete-bg text-status-complete-text rounded px-2 py-0.5 text-xs font-medium; }
+  .pill-rnd    { @apply bg-status-pending-bg text-status-pending-text rounded px-2 py-0.5 text-xs font-medium; }
+  .pill-custom { @apply bg-accent-pink-bg text-accent-pink rounded px-2 py-0.5 text-xs font-medium; }
+
+  /* ── Table styles ── */
+  .table-header { @apply bg-bg-page text-xs font-medium text-text-muted uppercase tracking-wide py-3 px-4; }
+  .table-row    { @apply border-b border-bg-subtle hover:bg-bg-page text-sm text-text-primary py-3 px-4 transition-colors; }
+
+  /* ── Nav item ── */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-white/45 transition-colors duration-150 hover:text-white hover:bg-white/5;
+  }
+  .nav-item-active {
+    @apply text-primary bg-primary/10;
+  }
+
+  /* ── Section heading ── */
+  .section-heading { @apply text-lg font-medium text-text-primary; }
+  .page-heading    { @apply text-2xl font-medium text-text-primary; }
+  .card-title      { @apply text-base font-medium text-text-primary; }
+  .body-text       { @apply text-sm font-normal text-text-body; }
+  .label-text      { @apply text-xs font-normal text-text-muted; }
+}
+
+/* ── Horizontal scroll strip ── */
+.h-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.h-scroll::-webkit-scrollbar { display: none; }
+
+/* ── Hide scrollbar (keep scroll functional) ── */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Phone shell for mobile preview ── */
+.phone-shell {
+  width: 390px;
+  height: 844px;
+  border-radius: 44px;
+  border: 8px solid #1a1a1a;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 1px #333, inset 0 0 0 1px #333;
+}
+.phone-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #1a1a1a;
+  border-radius: 0 0 20px 20px;
+  z-index: 10;
+}
