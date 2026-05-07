@@ -10,19 +10,15 @@
  *   Day1CRODashboard
  */
 
-// ─── Re-use Day 0 sections (identical content in Day 1) ───────────────────────
+// ─── Re-use Day 0 sections (Open Projects, Testimonials, Talk to Expert) ──────
 import {
-  ActivationBanner  as ResearcherActivationBanner,
   OpenProjects      as ResearcherOpenProjects,
-  QuickWins         as ResearcherQuickWins,
   Testimonials      as ResearcherTestimonials,
   TalkToExpert      as ResearcherTalkToExpert,
 } from "@/modules/dashboard/ResearcherDashboard";
 
 import {
-  ActivationBanner  as CROActivationBanner,
   OpenProjects      as CROOpenProjects,
-  QuickWins         as CROQuickWins,
   Testimonials      as CROTestimonials,
   TalkToExpert      as CROTalkToExpert,
 } from "@/modules/dashboard/CRODashboard";
@@ -34,7 +30,7 @@ import {
   ArrowRight, Check, X,
   FileText, Award, ShieldCheck, Wrench,
   Building2, Package, Microscope, Shield, Zap,
-  Filter, TrendingUp,
+  TrendingUp, BookOpen, Plus, Target,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -249,30 +245,74 @@ const DAY1_MILESTONES = [
 // ─── Live industry intelligence data ──────────────────────────────────────────
 
 interface IndustryDatum {
-  name:        string;
-  total:       number;
-  newThisWeek: number;
-  growth:      number;          // % vs last week
-  demand:      "High" | "Rising" | "Steady";
-  insight:     string;
-  sparkline:   number[];        // 7 normalised points 0–1 (upward trend)
+  name:            string;
+  total:           number;
+  newThisWeek:     number;
+  growth:          number;          // % vs last week
+  demand:          "High" | "Rising" | "Steady";
+  scientistInsight: string;
+  croInsight:      string;
+  sparkline:       number[];        // 7 normalised points 0–1 (upward trend)
 }
 
 const INDUSTRIES: IndustryDatum[] = [
-  { name: "Pharmaceutical",        total: 230, newThisWeek: 5, growth: 12, demand: "High",   insight: "Demand rising for process optimisation and formulation collaborations",    sparkline: [0.40,0.50,0.48,0.55,0.62,0.70,0.78] },
-  { name: "Agrochemicals",         total: 185, newThisWeek: 8, growth:  9, demand: "High",   insight: "Crop protection and biostimulant R&D opportunities trending upward",       sparkline: [0.45,0.52,0.60,0.58,0.65,0.75,0.85] },
-  { name: "Industrial Chemicals",  total: 142, newThisWeek: 6, growth:  7, demand: "High",   insight: "Scale-up and green chemistry projects actively seeking partners",           sparkline: [0.50,0.55,0.58,0.62,0.65,0.70,0.76] },
-  { name: "Food & Nutrition",      total: 121, newThisWeek: 4, growth:  6, demand: "Rising", insight: "Clean label formulation and functional ingredients in high demand",         sparkline: [0.48,0.52,0.55,0.58,0.62,0.67,0.72] },
-  { name: "Flavors & Fragrances",  total:  94, newThisWeek: 4, growth:  5, demand: "Rising", insight: "Natural extraction and encapsulation expertise sought globally",            sparkline: [0.40,0.45,0.48,0.52,0.55,0.60,0.65] },
-  { name: "Beauty & Personal Care",total:  76, newThisWeek: 3, growth:  4, demand: "Rising", insight: "Sustainable formulation and green chemistry projects growing fast",         sparkline: [0.42,0.46,0.50,0.52,0.55,0.60,0.64] },
-  { name: "Dyes & Pigments",       total:  67, newThisWeek: 2, growth:  3, demand: "Steady", insight: "Specialty colorant and textile dye R&D collaborations active",             sparkline: [0.38,0.42,0.45,0.48,0.52,0.55,0.58] },
-  { name: "Oleochemicals",         total:  53, newThisWeek: 2, growth:  4, demand: "Steady", insight: "Bio-based feedstock processing and fatty acid R&D trending",               sparkline: [0.35,0.40,0.42,0.45,0.48,0.52,0.55] },
-  { name: "Flame Retardants",      total:  41, newThisWeek: 1, growth:  2, demand: "Steady", insight: "Halogen-free formulation development gaining industry traction",            sparkline: [0.30,0.35,0.38,0.40,0.42,0.44,0.46] },
-  { name: "Metallurgy Chemicals",  total:  38, newThisWeek: 2, growth:  2, demand: "Steady", insight: "Surface treatment and corrosion-resistant coating projects listed",         sparkline: [0.32,0.36,0.38,0.40,0.42,0.45,0.46] },
-  { name: "Elemental Derivatives", total:  29, newThisWeek: 1, growth:  1, demand: "Steady", insight: "High-purity synthesis and rare earth derivative projects emerging",         sparkline: [0.28,0.32,0.34,0.36,0.38,0.40,0.42] },
+  {
+    name: "Pharmaceuticals", total: 248, newThisWeek: 12, growth: 14, demand: "High",
+    scientistInsight: "Open projects have been added across API synthesis, formulation, and process optimisation requirements.",
+    croInsight:       "Increasing buyer interest in pharma intermediates, KSMs, and custom development partnerships.",
+    sparkline: [0.42,0.50,0.55,0.58,0.66,0.74,0.82],
+  },
+  {
+    name: "Agrochemicals", total: 192, newThisWeek: 9, growth: 10, demand: "High",
+    scientistInsight: "Crop protection and green biostimulant R&D generating high collaboration demand across regions.",
+    croInsight:       "Agrochemical manufacturers seeking CROs for formulation development and regulatory testing support.",
+    sparkline: [0.45,0.52,0.60,0.58,0.65,0.75,0.85],
+  },
+  {
+    name: "Specialty Chemicals", total: 164, newThisWeek: 7, growth: 9, demand: "High",
+    scientistInsight: "Custom synthesis and specialty reagent R&D opportunities rising sharply across global markets.",
+    croInsight:       "Specialty chemical buyers actively sourcing contract labs for pilot-scale synthesis and characterisation.",
+    sparkline: [0.48,0.54,0.57,0.62,0.66,0.71,0.78],
+  },
+  {
+    name: "Material Science", total: 138, newThisWeek: 6, growth: 9, demand: "Rising",
+    scientistInsight: "Advanced materials characterisation and nano-composite research projects in active demand.",
+    croInsight:       "Industrial buyers seeking materials testing, characterisation, and prototype development capabilities.",
+    sparkline: [0.40,0.46,0.50,0.54,0.60,0.66,0.72],
+  },
+  {
+    name: "Food & Nutrition", total: 118, newThisWeek: 5, growth: 7, demand: "Rising",
+    scientistInsight: "Clean-label formulation and functional ingredient research attracting strong global R&D interest.",
+    croInsight:       "Food companies seeking CROs for ingredient validation, shelf-life studies, and regulatory compliance.",
+    sparkline: [0.48,0.52,0.55,0.58,0.62,0.67,0.72],
+  },
+  {
+    name: "Cosmetic Science", total: 89, newThisWeek: 4, growth: 6, demand: "Rising",
+    scientistInsight: "Sustainable and bioactive cosmetic formulation research growing rapidly across consumer markets.",
+    croInsight:       "Beauty brands seeking contract labs for efficacy testing, stability studies, and green formulations.",
+    sparkline: [0.38,0.43,0.47,0.52,0.56,0.61,0.66],
+  },
+  {
+    name: "Polymer & Coatings", total: 74, newThisWeek: 3, growth: 5, demand: "Rising",
+    scientistInsight: "Biodegradable polymer and high-performance coating R&D projects opening across industrial sectors.",
+    croInsight:       "Industrial buyers looking for polymer synthesis, coating performance testing, and scale-up support.",
+    sparkline: [0.36,0.40,0.44,0.48,0.52,0.56,0.60],
+  },
+  {
+    name: "Battery & Energy Materials", total: 63, newThisWeek: 5, growth: 13, demand: "High",
+    scientistInsight: "Next-generation electrolyte and cathode material research is at peak global demand this quarter.",
+    croInsight:       "Energy sector clients seeking battery material testing, cell assembly, and electrochemical analysis.",
+    sparkline: [0.32,0.38,0.44,0.52,0.60,0.70,0.80],
+  },
+  {
+    name: "Biotech & Life Sciences", total: 54, newThisWeek: 4, growth: 8, demand: "Rising",
+    scientistInsight: "Biocatalysis, enzyme engineering, and biosynthesis platform projects actively seeking research partners.",
+    croInsight:       "Biotech companies seeking CROs for fermentation services, assay development, and bio-analytical support.",
+    sparkline: [0.30,0.36,0.40,0.46,0.52,0.58,0.65],
+  },
 ];
 
-const IND_MAX = 230;
+const IND_MAX = 248;
 
 const DEMAND_CFG: Record<"High"|"Rising"|"Steady", { bg: string; color: string; border: string; dot: string }> = {
   High:   { bg: "#dcfce7", color: "#15803d", border: "#86efac", dot: "#22c55e" },
@@ -851,11 +891,14 @@ function HeroLeftPanel({ profileType }: { profileType: ProfileType }) {
   const [tipVisible, setTipVisible] = useState(false);
 
   const isResearcher  = profileType === "researcher";
-  const primaryCTA    = isResearcher ? "Complete Your Research Profile"  : "Complete Your Technical Profile";
-  const secondaryCTA  = isResearcher ? "Explore Opportunities"           : "View Matched Projects";
+  const heroHeading   = isResearcher
+    ? "Your Next Scientific Breakthrough Starts Here"
+    : "Turn Your Scientific Expertise Into New Industrial Opportunities";
+  const primaryCTA    = isResearcher ? "Build Your Scientific Profile"    : "Set Up Capability Profile";
+  const secondaryCTA  = isResearcher ? "View Opportunities"               : "Explore Opportunities";
   const heroSubtext   = isResearcher
-    ? "You\u2019re a few steps away from shaping global innovation and driving your next breakthrough."
-    : "You\u2019re a few steps away from tapping into global demand and securing high-impact collaborations.";
+    ? "Connect with global R&D opportunities, showcase your expertise, and collaborate through a secure research ecosystem."
+    : "Access global R&D demand, manage collaboration workflows, and connect with companies seeking specialized capabilities.";
 
   return (
     <section
@@ -918,9 +961,7 @@ function HeroLeftPanel({ profileType }: { profileType: ProfileType }) {
           className="text-[22px] sm:text-[27px] md:text-[31px] font-bold text-white leading-[1.2] tracking-[-0.02em]"
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
-          Unlock Global R&amp;D Opportunities and
-          <br className="hidden md:block" />
-          {" "}Fuel Your Next Innovation
+          {heroHeading}
         </h1>
 
         {/* ── Subtext ── */}
@@ -980,11 +1021,13 @@ function Sparkline({ data, idx }: { data: number[]; idx: number }) {
 
 // ─── Live industry data section ────────────────────────────────────────────────
 
-function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
+function LiveIndustryDataSection({ status, profileType }: { status: ProfileStatus; profileType: ProfileType }) {
   const [selected, setSelected] = useState(0);
   const [hovered,  setHovered]  = useState<number | null>(null);
   const [loaded,   setLoaded]   = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const isResearcher = profileType === "researcher";
 
   // Trigger bar entry animation on scroll into view
   useEffect(() => {
@@ -1003,20 +1046,59 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
   const dcfg      = DEMAND_CFG[active.demand];
   const confidence = DEMAND_CONFIDENCE[active.demand];
 
-  // Dynamic copy based on status
-  const subtext =
-    status === "verified"
-      ? "Your profile is active. Explore and apply to opportunities aligned with your expertise."
-      : status === "submitted"
-      ? "Real-time project demand is rising across high-value R&D sectors. Explore active opportunities while verification is in progress."
-      : "Complete your profile to activate access to high-value opportunities across active R&D sectors.";
+  // Persona + status conditional copy
+  const topLabel = isResearcher ? "LIVE INDUSTRY SIGNALS" : "LIVE MARKET DEMAND";
 
-  const ctaLabel =
-    status === "verified"  ? "Explore projects"
-    : status === "submitted" ? "Awaiting verification"
-    : "Complete your profile";
+  const sectionHeading = isResearcher
+    ? "🔥 Trending Research Opportunities You Might Be Missing"
+    : "🔥 High-Value R&D Opportunities Matching Your Capabilities";
+
+  const subtext = isResearcher
+    ? "Complete your scientific profile to unlock collaboration opportunities across active R&D domains."
+    : "Showcase your technical capabilities and let Scinode bring relevant opportunities to you.";
+
+  const ctaLabel = isResearcher
+    ? status === "submitted" ? "Awaiting Verification"
+      : "Complete Scientific Profile"
+    : status === "submitted" ? "Awaiting Verification"
+      : "Activate Capability Profile";
 
   const ctaDisabled = status === "submitted";
+
+  const rightPanelLabel = isResearcher ? "Active Demand" : "High Demand Sector";
+
+  const demandBadgeLabel = isResearcher
+    ? `🔥 ${active.demand} Demand`
+    : `📈 ${active.demand === "High" ? "Fast Growing Demand" : active.demand + " Demand"}`;
+
+  const activeInsight = isResearcher ? active.scientistInsight : active.croInsight;
+
+  const graphTitle   = isResearcher ? "Opportunities by Industry" : "Demand by Industry";
+  const graphSubtext = isResearcher
+    ? "Track where research demand is accelerating across scientific domains."
+    : "Track sectors with increasing demand.";
+
+  // Banner card 1
+  const bannerLeftTitle = isResearcher ? "Active Research Opportunities" : "Active Project Demand";
+  const bannerLeftCount = "46+";
+  const bannerLeftLabel = isResearcher ? "Open Scientific Projects"      : "Open Projects";
+  const bannerLeftSub   = isResearcher
+    ? "Across pharma, specialty chemicals, biotech, and materials science"
+    : "Across high-growth scientific industries";
+
+  // Banner card 2
+  const bannerCenterLabel = isResearcher ? "New Collaboration Opportunities" : "New Buyer Requirements";
+  const bannerCenterSub   = isResearcher
+    ? "Recently added opportunities across emerging research domains."
+    : "New R&D and scale-up requests added";
+
+  // Banner card 3 helper text
+  const bannerHelperText = isResearcher
+    ? "Verification required to apply for projects and research collaborations"
+    : "Verification required to receive qualified buyer enquiries";
+
+  // Right panel metric labels
+  const metricTotalLabel = isResearcher ? "Active Opportunities" : "Active Requests";
 
   return (
     <section
@@ -1037,7 +1119,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#22c55e]" />
           </span>
-          <span className="text-[11px] font-bold tracking-[0.12em] text-[#1f6f54] uppercase">Live Industry Data</span>
+          <span className="text-[11px] font-bold tracking-[0.12em] text-[#1f6f54] uppercase">{topLabel}</span>
           <div className="flex items-center gap-[3px] ml-0.5">
             {[0,1,2].map(i => (
               <span key={i} className="w-1 h-1 rounded-full bg-[#1f6f54]/35"
@@ -1050,7 +1132,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
         <div className="flex flex-col gap-1">
           <h2 className="text-lg sm:text-xl font-bold text-[#171717] leading-snug"
             style={{ fontFamily: "Poppins, sans-serif" }}>
-            🔥 Trending open opportunities you might be missing
+            {sectionHeading}
           </h2>
           <p className="text-[12.5px] text-[#68747a] leading-relaxed max-w-[680px]">{subtext}</p>
         </div>
@@ -1061,12 +1143,12 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
 
           {/* Left: market signals */}
           <div className="flex-1 px-4 py-3 flex flex-col gap-0 border-b sm:border-b-0 sm:border-r border-[#e2e8f0]">
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-[#94a3b8] mb-1">Active Market Signals</p>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-[#94a3b8] mb-1">{bannerLeftTitle}</p>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-black text-[#171717] leading-none">46+</span>
-              <span className="text-[12px] font-bold text-[#1f6f54]">Active R&amp;D Opportunities</span>
+              <span className="text-[22px] font-black text-[#171717] leading-none">{bannerLeftCount}</span>
+              <span className="text-[12px] font-bold text-[#1f6f54]">{bannerLeftLabel}</span>
             </div>
-            <p className="text-[11px] text-[#68747a] mt-0.5">Across 11 high-demand industries</p>
+            <p className="text-[11px] text-[#68747a] mt-0.5">{bannerLeftSub}</p>
           </div>
 
           {/* Center: weekly pulse */}
@@ -1074,13 +1156,13 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
             <p className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-[#94a3b8] mb-1">This Week</p>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[22px] font-black text-[#171717] leading-none">10</span>
-              <span className="text-[12px] font-bold text-[#1f6f54]">New Projects Added</span>
+              <span className="text-[12px] font-bold text-[#1f6f54]">{bannerCenterLabel}</span>
               <span className="relative flex h-1.5 w-1.5 shrink-0 mb-0.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
               </span>
             </div>
-            <p className="text-[11px] text-[#68747a] mt-0.5">Updated in real-time</p>
+            <p className="text-[11px] text-[#68747a] mt-0.5">{bannerCenterSub}</p>
           </div>
 
           {/* Right: CTA */}
@@ -1096,7 +1178,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
               {ctaLabel} {!ctaDisabled && <ArrowRight size={11} />}
             </button>
             <p className="text-[10.5px] text-[#94a3b8] leading-snug">
-              Verification required to apply for projects
+              {bannerHelperText}
             </p>
           </div>
         </div>
@@ -1108,10 +1190,10 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
           <div className="flex items-start px-4 py-3 border-b border-[#f1f5f9]">
             <div>
               <h3 className="text-[14px] font-bold text-[#171717]" style={{ fontFamily: "Poppins, sans-serif" }}>
-                Opportunities by industry
+                {graphTitle}
               </h3>
               <p className="text-[11px] text-[#94a3b8] mt-0.5">
-                Hover any bar to see weekly growth and unlock insights →
+                {graphSubtext}
               </p>
             </div>
           </div>
@@ -1219,7 +1301,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#22c55e]">
-                  Active Selection
+                  {rightPanelLabel}
                 </span>
               </div>
 
@@ -1244,7 +1326,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
                       {active.total}
                     </p>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-[#94a3b8] mt-1">
-                      Total Projects
+                      {metricTotalLabel}
                     </p>
                   </div>
                   <div>
@@ -1267,7 +1349,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
                     style={{ background: dcfg.bg, color: dcfg.color, borderColor: dcfg.border }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: dcfg.dot }} />
-                    {active.demand} Demand
+                    {demandBadgeLabel}
                   </span>
                 </div>
 
@@ -1288,7 +1370,7 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
                     </span>
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#22c55e]">Live Signal</span>
                   </div>
-                  <p className="text-[11.5px] text-[#374151] leading-snug">{active.insight}</p>
+                  <p className="text-[11.5px] text-[#374151] leading-snug">{activeInsight}</p>
                 </div>
 
                 {/* Demand confidence bar */}
@@ -1330,6 +1412,241 @@ function LiveIndustryDataSection({ status }: { status: ProfileStatus }) {
           </div>{/* /70-30 split */}
         </div>{/* /visualization card */}
       </div>{/* /content */}
+    </section>
+  );
+}
+
+// ─── Day 1 Activation Banner ──────────────────────────────────────────────────
+// New Day1-specific banner — keeps Day 0 files untouched.
+
+function Day1ActivationBanner({ profileType }: { profileType: ProfileType }) {
+  const isResearcher = profileType === "researcher";
+
+  const tag = isResearcher
+    ? "🎯 RESEARCH MATCH FOUND"
+    : "🎯 MATCHED OPPORTUNITY";
+
+  const heading = isResearcher
+    ? "You’re 2 Steps Away from Unlocking a High-Fit Research Opportunity"
+    : "Companies Are Actively Looking for Capabilities Like Yours";
+
+  const subtext = isResearcher
+    ? "We’ve identified potential collaborations aligned with your expertise. Complete your profile to access project details and collaborate securely."
+    : "Complete your profile to start receiving matched project demand, unlock high-value collaboration opportunities, and collaborate securely.";
+
+  const cta = isResearcher ? "Complete Scientific Profile" : "Showcase Capabilities";
+
+  return (
+    <section
+      className="relative overflow-hidden rounded-2xl border border-[#0e6f5c]/30"
+      style={{ background: "linear-gradient(135deg,#002d16 0%,#001a0a 55%,#091a2a 100%)" }}
+    >
+      {/* Blobs */}
+      <div className="pointer-events-none absolute -bottom-8 -left-10 w-[240px] h-[240px] opacity-[0.18]"
+        style={{ background: "radial-gradient(ellipse,#2DD17C 0%,#0F90C6 60%,transparent 100%)", filter: "blur(40px)", borderRadius: "50%" }} />
+      <div className="pointer-events-none absolute -top-8 -right-8 w-[220px] h-[220px] opacity-[0.12]"
+        style={{ background: "linear-gradient(180deg,#0E6F5C 0%,#1ABC9C 100%)", filter: "blur(44px)", borderRadius: "50%" }} />
+
+      <div className="relative z-10 px-5 py-5 sm:px-7 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+        {/* Left: text */}
+        <div className="flex-1 flex flex-col gap-2.5">
+          {/* Tag */}
+          <div className="inline-flex items-center gap-2 self-start">
+            <span
+              className="px-3 py-1 rounded-full text-[10.5px] font-bold tracking-[0.14em] border border-[#4ade80]/30 text-[#4ade80]"
+              style={{ background: "rgba(74,222,128,0.12)" }}
+            >
+              {tag}
+            </span>
+          </div>
+          {/* Heading */}
+          <h2
+            className="text-[18px] sm:text-[21px] font-bold text-white leading-snug tracking-[-0.01em]"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            {heading}
+          </h2>
+          {/* Subtext */}
+          <p className="text-[12.5px] text-[#8faabb] leading-relaxed max-w-[560px]">
+            {subtext}
+          </p>
+        </div>
+
+        {/* Right: CTA */}
+        <div className="shrink-0">
+          <button className="flex items-center gap-2 px-5 py-3 bg-[#1f6f54] hover:bg-[#185c45] active:bg-[#144d3a] text-white text-[13px] font-bold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap">
+            {cta} <ArrowRight size={14} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Day 1 Quick Wins ─────────────────────────────────────────────────────────
+// New Day1-specific "Improve Your Match Quality" section.
+
+interface QWCard {
+  action:   string;
+  benefit:  string;
+  Icon:     LucideIcon;
+  iconBg:   string;
+  iconColor: string;
+}
+
+const RESEARCHER_QW: QWCard[] = [
+  {
+    action:    "Add Publications",
+    benefit:   "Showcase your published research to improve visibility across relevant scientific collaborations.",
+    Icon:      BookOpen,
+    iconBg:    "#eff6ff",
+    iconColor: "#2563eb",
+  },
+  {
+    action:    "Add Patents",
+    benefit:   "Highlight patented work and innovation contributions to strengthen your research profile.",
+    Icon:      Award,
+    iconBg:    "#fffbeb",
+    iconColor: "#d97706",
+  },
+  {
+    action:    "Add Unique Expertise",
+    benefit:   "Help us match your technical strengths with specialized R&D matched projects.",
+    Icon:      Wrench,
+    iconBg:    "#f3f0ff",
+    iconColor: "#7c3aed",
+  },
+  {
+    action:    "Add Research Interests",
+    benefit:   "Define your focus areas to receive more relevant scientific opportunities.",
+    Icon:      Microscope,
+    iconBg:    "#f0fdf4",
+    iconColor: "#16a34a",
+  },
+  {
+    action:    "Add Certifications",
+    benefit:   "Verified expertise improves eligibility for advanced research collaborations.",
+    Icon:      ShieldCheck,
+    iconBg:    "#dff3ee",
+    iconColor: "#1f6f54",
+  },
+];
+
+const CRO_QW: QWCard[] = [
+  {
+    action:    "Add Services",
+    benefit:   "Helps us align you with relevant projects",
+    Icon:      Wrench,
+    iconBg:    "#f0faf5",
+    iconColor: "#1f6f54",
+  },
+  {
+    action:    "Add Products",
+    benefit:   "CROs who list products are more likely to receive their first project within 5 days",
+    Icon:      Package,
+    iconBg:    "#eff6ff",
+    iconColor: "#2563eb",
+  },
+  {
+    action:    "Add Key Expertise",
+    benefit:   "Improves matching accuracy with buyer requirements",
+    Icon:      Target,
+    iconBg:    "#f3f0ff",
+    iconColor: "#7c3aed",
+  },
+  {
+    action:    "Add Certifications",
+    benefit:   "Verified expertise improves selection for regulated buyer requirements",
+    Icon:      Award,
+    iconBg:    "#fffbeb",
+    iconColor: "#d97706",
+  },
+  {
+    action:    "Complete Company Profile",
+    benefit:   "Add company details, scale, and presence to stand out",
+    Icon:      Building2,
+    iconBg:    "#f0faf5",
+    iconColor: "#1f6f54",
+  },
+];
+
+function Day1QuickWins({ profileType }: { profileType: ProfileType }) {
+  const isResearcher = profileType === "researcher";
+  const cards = isResearcher ? RESEARCHER_QW : CRO_QW;
+
+  return (
+    <section className="flex flex-col gap-3.5">
+      {/* Section header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-[16px] font-bold text-[#171717]" style={{ fontFamily: "Poppins, sans-serif" }}>
+            {isResearcher ? "Strengthen Your Research Profile" : "Improve Your Match Quality"}
+          </h2>
+          <p className="text-[12px] text-[#68747a]">
+            {isResearcher
+              ? "Add the right signals to increase your match score and attract high-fit opportunities."
+              : "Complete these actions to improve how accurately we match you with the right industrial buyers."}
+          </p>
+        </div>
+      </div>
+
+      {/* Cards strip — horizontal scroll on small screens, grid on large */}
+      <div className="overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-3 lg:grid lg:grid-cols-5 min-w-max lg:min-w-0">
+          {cards.map((c) => {
+            const Icon = c.Icon;
+            return (
+              <div
+                key={c.action}
+                className="bg-white rounded-xl border border-[#e8edf2] shadow-sm hover:shadow-md hover:border-[#1f6f54]/30 transition-all duration-200 flex flex-col gap-2.5 p-4 w-[210px] lg:w-auto"
+              >
+                {/* Icon */}
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: c.iconBg }}
+                >
+                  <Icon className="w-4.5 h-4.5" style={{ color: c.iconColor, width: 18, height: 18 }} />
+                </div>
+                {/* Text */}
+                <div className="flex flex-col gap-1 flex-1">
+                  <p className="text-[13px] font-bold text-[#171717] leading-snug">{c.action}</p>
+                  <p className="text-[11px] text-[#68747a] leading-relaxed">{c.benefit}</p>
+                </div>
+                {/* CTA */}
+                <button
+                  className="mt-auto flex items-center gap-1 text-[11.5px] font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors w-fit"
+                >
+                  <Plus size={12} strokeWidth={2.5} />
+                  {c.action}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Researcher-only: bottom summary card */}
+      {isResearcher && (
+        <div
+          className="rounded-xl border border-[#1f6f54]/20 px-4 py-3.5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6"
+          style={{ background: "linear-gradient(135deg,#f0fdf8 0%,#f8fafc 100%)" }}
+        >
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-[#dff3ee] flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 text-[#1f6f54]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[12.5px] font-bold text-[#171717]">Complete Scientific Profile</p>
+              <p className="text-[11px] text-[#68747a] mt-0.5">
+                Strengthen your visibility across global R&amp;D collaborations and industry-backed programs.
+              </p>
+            </div>
+          </div>
+          <button className="flex items-center gap-1.5 px-4 py-2 bg-[#1f6f54] hover:bg-[#185c45] text-white text-[12px] font-bold rounded-lg transition-colors shrink-0">
+            Add <ArrowRight size={12} />
+          </button>
+        </div>
+      )}
     </section>
   );
 }
@@ -1417,13 +1734,10 @@ function Day1DashboardInner({ profileType }: { profileType: ProfileType }) {
       </div>
 
       {/* ── Live industry intelligence ── */}
-      <LiveIndustryDataSection status={status} />
+      <LiveIndustryDataSection status={status} profileType={profileType} />
 
-      {/* ── Activation banner (Day 0 section, identical in Day 1) ── */}
-      {profileType === "researcher"
-        ? <ResearcherActivationBanner />
-        : <CROActivationBanner />
-      }
+      {/* ── Activation banner (Day 1 persona-specific) ── */}
+      <Day1ActivationBanner profileType={profileType} />
 
       {/* ── Open opportunities carousel (Day 0 section) ── */}
       {profileType === "researcher"
@@ -1431,11 +1745,8 @@ function Day1DashboardInner({ profileType }: { profileType: ProfileType }) {
         : <CROOpenProjects />
       }
 
-      {/* ── Quick Wins auto-scroll (Day 0 section) ── */}
-      {profileType === "researcher"
-        ? <ResearcherQuickWins />
-        : <CROQuickWins />
-      }
+      {/* ── Quick Wins (Day 1 persona-specific) ── */}
+      <Day1QuickWins profileType={profileType} />
 
       {/* ── Testimonials (Day 0 section) ── */}
       {profileType === "researcher"
