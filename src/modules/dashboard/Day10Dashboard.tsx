@@ -503,19 +503,20 @@ const RESEARCHER_STAGES: PipelineStage[] = [
   { label: "Collaboration Initiated",  shortLabel: "Collab.",     monthCount: 5,   weekCount: 1,  color: "#15803d" },
 ];
 
-// Gradient slices from the brand system: #2DD17C → #1FB39D → #0F90C6 → #0172E7
+// CRO brand palette: accent-green #B7D77A → accent-teal #1ABC9C → CRO-blue #2F66D0
 const CRO_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Capability Completeness",     value: 94, color: "linear-gradient(90deg,#2DD17C,#1FB39D)" },
-  { label: "Manufacturing & Scale Ready", value: 88, color: "linear-gradient(90deg,#1FB39D,#0F90C6)" },
-  { label: "Technical Documentation",     value: 82, color: "linear-gradient(90deg,#0F90C6,#0172E7)" },
-  { label: "Commercial Preparedness",     value: 79, color: "linear-gradient(90deg,#0172E7,#2F66D0)" },
+  { label: "Capability Completeness",     value: 94, color: "linear-gradient(90deg,#B7D77A,#1ABC9C)" },
+  { label: "Manufacturing & Scale Ready", value: 88, color: "linear-gradient(90deg,#1ABC9C,#2F66D0)" },
+  { label: "Technical Documentation",     value: 82, color: "linear-gradient(90deg,#2F66D0,#4880e0)" },
+  { label: "Commercial Preparedness",     value: 79, color: "#2F66D0" },
 ];
 
+// Researcher brand palette: accent-green #B7D77A → accent-teal #1ABC9C → scientist-purple #5B3BA8
 const RESEARCHER_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Profile Credibility",       value: 90, color: "linear-gradient(90deg,#2DD17C,#1FB39D)" },
-  { label: "Scientific Relevance",      value: 85, color: "linear-gradient(90deg,#1FB39D,#0F90C6)" },
-  { label: "Collaboration Readiness",   value: 78, color: "linear-gradient(90deg,#0F90C6,#0172E7)" },
-  { label: "Proposal Preparedness",     value: 72, color: "linear-gradient(90deg,#0172E7,#2F66D0)" },
+  { label: "Profile Credibility",       value: 90, color: "linear-gradient(90deg,#B7D77A,#1ABC9C)" },
+  { label: "Scientific Relevance",      value: 85, color: "linear-gradient(90deg,#1ABC9C,#5B3BA8)" },
+  { label: "Collaboration Readiness",   value: 78, color: "linear-gradient(90deg,#5B3BA8,#7c5cc4)" },
+  { label: "Proposal Preparedness",     value: 72, color: "#5B3BA8" },
 ];
 
 // ─── Profile Gauge (SVG semicircle) ──────────────────────────────────────────
@@ -525,7 +526,7 @@ const GAUGE_CX  = 100;
 const GAUGE_CY  = 92;
 const GAUGE_LEN = Math.PI * GAUGE_R; // ≈ 238.8
 
-function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel: string }) {
+function ProfileGauge({ value, readinessLabel, profileType }: { value: number; readinessLabel: string; profileType: ProfileType }) {
   const [animated, setAnimated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -540,6 +541,12 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
     return () => obs.disconnect();
   }, []);
 
+  const isCRO      = profileType === "cro";
+  // CRO:        accent-green → accent-teal → CRO-blue
+  // Researcher: accent-green → accent-teal → scientist-purple
+  const arcEnd     = isCRO ? "#2F66D0" : "#5B3BA8";
+  const tipColor   = arcEnd;
+
   const dashoffset = GAUGE_LEN * (1 - (animated ? value / 100 : 0));
   const arcPath    = `M ${GAUGE_CX - GAUGE_R},${GAUGE_CY} A ${GAUGE_R},${GAUGE_R} 0 0,1 ${GAUGE_CX + GAUGE_R},${GAUGE_CY}`;
 
@@ -547,17 +554,16 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
     <div ref={ref} className="flex flex-col items-center">
       <svg viewBox="0 0 200 108" className="w-full max-w-[200px]">
         <defs>
-          {/* Brand gradient: #2DD17C → #1FB39D → #0F90C6 → #0172E7 */}
+          {/* Brand arc gradient: accent-green → teal → persona primary */}
           <linearGradient id="pg-arc-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"      stopColor="#2DD17C" />
-            <stop offset="31.25%" stopColor="#1FB39D" />
-            <stop offset="68.75%" stopColor="#0F90C6" />
-            <stop offset="100%"   stopColor="#0172E7" />
+            <stop offset="0%"   stopColor="#B7D77A" />
+            <stop offset="45%"  stopColor="#1ABC9C" />
+            <stop offset="100%" stopColor={arcEnd}  />
           </linearGradient>
-          {/* Same gradient for percentage text */}
+          {/* Text gradient: teal → persona primary */}
           <linearGradient id="pg-text-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#2DD17C" />
-            <stop offset="100%" stopColor="#0172E7" />
+            <stop offset="0%"   stopColor="#1ABC9C" />
+            <stop offset="100%" stopColor={arcEnd}  />
           </linearGradient>
           {/* Soft glow filter */}
           <filter id="pg-glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -634,7 +640,7 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
           const tipX   = GAUGE_CX + GAUGE_R * Math.cos(Math.PI - angle);
           const tipY   = GAUGE_CY - GAUGE_R * Math.sin(Math.PI - angle);
           return (
-            <circle cx={tipX} cy={tipY} r="5.5" fill="#0172E7" opacity="0.85" />
+            <circle cx={tipX} cy={tipY} r="5.5" fill={tipColor} opacity="0.85" />
           );
         })()}
       </svg>
@@ -942,7 +948,7 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
         <div className="px-5 sm:px-6 py-5 flex flex-col gap-4">
 
           {/* Gauge */}
-          <ProfileGauge value={gaugeValue} readinessLabel="Overall Readiness" />
+          <ProfileGauge value={gaugeValue} readinessLabel="Overall Readiness" profileType={profileType} />
 
           {/* Progress bars */}
           <div className="flex flex-col gap-3">
