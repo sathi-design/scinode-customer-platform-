@@ -15,8 +15,8 @@ import { IndependentCRODashboard } from "@/modules/dashboard/IndependentCRODashb
 // Day 1 dashboards
 import { Day1ResearcherDashboard, Day1CRODashboard } from "@/modules/dashboard/Day1Dashboard";
 
-// TEMPORARY — dev/staging: remove when Day 10 dashboard is built
-import { DashboardDay10Placeholder } from "@/modules/dashboard/DashboardDayPlaceholders";
+// Day 10 dashboards
+import { Day10ResearcherDashboard, Day10CRODashboard } from "@/modules/dashboard/Day10Dashboard";
 
 import { useDashboardDayStore } from "@/store/useDashboardDayStore";
 import { useRouter } from "next/navigation";
@@ -76,11 +76,22 @@ export default function DashboardPage() {
     );
   }
 
-  // TEMPORARY — day10 placeholder
+  // ── Resolve which Day 10 dashboard to render ─────────────────────────────────
+  const Day10Dashboard = (() => {
+    if (subtype === "pi")         return <Day10CRODashboard />;
+    if (subtype === "researcher") return <Day10ResearcherDashboard />;
+    if (subtype === "others")     return <Day10ResearcherDashboard />;
+    switch (user.role) {
+      case "pi":
+      case "cro":  return <Day10CRODashboard />;
+      default:     return <Day10ResearcherDashboard />;
+    }
+  })();
+
   if (dashboardDay === "day10") {
     return (
       <div key="day10" className="animate-in fade-in duration-200">
-        <DashboardDay10Placeholder />
+        {Day10Dashboard}
       </div>
     );
   }
