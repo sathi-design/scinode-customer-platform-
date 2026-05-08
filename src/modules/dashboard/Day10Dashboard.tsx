@@ -503,19 +503,19 @@ const RESEARCHER_STAGES: PipelineStage[] = [
   { label: "Collaboration Initiated",  shortLabel: "Collab.",     monthCount: 5,   weekCount: 1,  color: "#15803d" },
 ];
 
-// color = CSS background value (gradient string or solid)
+// Gradient slices from the brand system: #2DD17C → #1FB39D → #0F90C6 → #0172E7
 const CRO_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Capability Completeness",     value: 94, color: "linear-gradient(90deg,#4ade80,#86efac)" },
-  { label: "Manufacturing & Scale Ready", value: 88, color: "linear-gradient(90deg,#2dd4bf,#34d399)" },
-  { label: "Technical Documentation",     value: 82, color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
-  { label: "Commercial Preparedness",     value: 79, color: "linear-gradient(90deg,#818cf8,#60a5fa)" },
+  { label: "Capability Completeness",     value: 94, color: "linear-gradient(90deg,#2DD17C,#1FB39D)" },
+  { label: "Manufacturing & Scale Ready", value: 88, color: "linear-gradient(90deg,#1FB39D,#0F90C6)" },
+  { label: "Technical Documentation",     value: 82, color: "linear-gradient(90deg,#0F90C6,#0172E7)" },
+  { label: "Commercial Preparedness",     value: 79, color: "linear-gradient(90deg,#0172E7,#2F66D0)" },
 ];
 
 const RESEARCHER_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Profile Credibility",       value: 90, color: "linear-gradient(90deg,#4ade80,#86efac)" },
-  { label: "Scientific Relevance",      value: 85, color: "linear-gradient(90deg,#2dd4bf,#34d399)" },
-  { label: "Collaboration Readiness",   value: 78, color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
-  { label: "Proposal Preparedness",     value: 72, color: "linear-gradient(90deg,#818cf8,#60a5fa)" },
+  { label: "Profile Credibility",       value: 90, color: "linear-gradient(90deg,#2DD17C,#1FB39D)" },
+  { label: "Scientific Relevance",      value: 85, color: "linear-gradient(90deg,#1FB39D,#0F90C6)" },
+  { label: "Collaboration Readiness",   value: 78, color: "linear-gradient(90deg,#0F90C6,#0172E7)" },
+  { label: "Proposal Preparedness",     value: 72, color: "linear-gradient(90deg,#0172E7,#2F66D0)" },
 ];
 
 // ─── Profile Gauge (SVG semicircle) ──────────────────────────────────────────
@@ -547,16 +547,17 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
     <div ref={ref} className="flex flex-col items-center">
       <svg viewBox="0 0 200 108" className="w-full max-w-[200px]">
         <defs>
-          {/* Hero-matching 3-stop gradient: green → teal → blue */}
+          {/* Brand gradient: #2DD17C → #1FB39D → #0F90C6 → #0172E7 */}
           <linearGradient id="pg-arc-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#4ade80" />
-            <stop offset="52%"  stopColor="#22d3ee" />
-            <stop offset="100%" stopColor="#818cf8" />
+            <stop offset="0%"      stopColor="#2DD17C" />
+            <stop offset="31.25%" stopColor="#1FB39D" />
+            <stop offset="68.75%" stopColor="#0F90C6" />
+            <stop offset="100%"   stopColor="#0172E7" />
           </linearGradient>
-          {/* Gradient for the percentage text */}
+          {/* Same gradient for percentage text */}
           <linearGradient id="pg-text-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#4ade80" />
-            <stop offset="100%" stopColor="#60a5fa" />
+            <stop offset="0%"   stopColor="#2DD17C" />
+            <stop offset="100%" stopColor="#0172E7" />
           </linearGradient>
           {/* Soft glow filter */}
           <filter id="pg-glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -633,7 +634,7 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
           const tipX   = GAUGE_CX + GAUGE_R * Math.cos(Math.PI - angle);
           const tipY   = GAUGE_CY - GAUGE_R * Math.sin(Math.PI - angle);
           return (
-            <circle cx={tipX} cy={tipY} r="5.5" fill="#818cf8" opacity="0.85" />
+            <circle cx={tipX} cy={tipY} r="5.5" fill="#0172E7" opacity="0.85" />
           );
         })()}
       </svg>
@@ -676,7 +677,7 @@ function AnimatedProgressBar({ metric, delay }: { metric: ProfileMetric; delay: 
             width:      `${width}%`,
             background: metric.color,          // supports linear-gradient strings
             transition: `width 900ms cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
-            boxShadow:  width > 0 ? "0 1px 6px rgba(74,222,128,0.30)" : "none",
+            boxShadow:  width > 0 ? "0 1px 6px rgba(45,209,124,0.28)" : "none",
           }}
         />
       </div>
