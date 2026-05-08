@@ -503,18 +503,19 @@ const RESEARCHER_STAGES: PipelineStage[] = [
   { label: "Collaboration Initiated",  shortLabel: "Collab.",     monthCount: 5,   weekCount: 1,  color: "#15803d" },
 ];
 
+// color = CSS background value (gradient string or solid)
 const CRO_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Capability Completeness",       value: 94, color: "#4ade80" },
-  { label: "Manufacturing & Scale Ready",   value: 88, color: "#34d399" },
-  { label: "Technical Documentation",       value: 82, color: "#22c55e" },
-  { label: "Commercial Preparedness",       value: 79, color: "#86efac" },
+  { label: "Capability Completeness",     value: 94, color: "linear-gradient(90deg,#4ade80,#86efac)" },
+  { label: "Manufacturing & Scale Ready", value: 88, color: "linear-gradient(90deg,#2dd4bf,#34d399)" },
+  { label: "Technical Documentation",     value: 82, color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
+  { label: "Commercial Preparedness",     value: 79, color: "linear-gradient(90deg,#818cf8,#60a5fa)" },
 ];
 
 const RESEARCHER_PROFILE_METRICS: ProfileMetric[] = [
-  { label: "Profile Credibility",       value: 90, color: "#4ade80" },
-  { label: "Scientific Relevance",      value: 85, color: "#34d399" },
-  { label: "Collaboration Readiness",   value: 78, color: "#22c55e" },
-  { label: "Proposal Preparedness",     value: 72, color: "#86efac" },
+  { label: "Profile Credibility",       value: 90, color: "linear-gradient(90deg,#4ade80,#86efac)" },
+  { label: "Scientific Relevance",      value: 85, color: "linear-gradient(90deg,#2dd4bf,#34d399)" },
+  { label: "Collaboration Readiness",   value: 78, color: "linear-gradient(90deg,#38bdf8,#22d3ee)" },
+  { label: "Proposal Preparedness",     value: 72, color: "linear-gradient(90deg,#818cf8,#60a5fa)" },
 ];
 
 // ─── Profile Gauge (SVG semicircle) ──────────────────────────────────────────
@@ -540,61 +541,101 @@ function ProfileGauge({ value, readinessLabel }: { value: number; readinessLabel
   }, []);
 
   const dashoffset = GAUGE_LEN * (1 - (animated ? value / 100 : 0));
-  const gaugeColor = value >= 85 ? "#4ade80" : value >= 75 ? "#86efac" : "#fbbf24";
-
-  // Semicircle: from (CX-R, CY) counterclockwise to (CX+R, CY) = arcs over the top
-  const arcPath = `M ${GAUGE_CX - GAUGE_R},${GAUGE_CY} A ${GAUGE_R},${GAUGE_R} 0 0,1 ${GAUGE_CX + GAUGE_R},${GAUGE_CY}`;
+  const arcPath    = `M ${GAUGE_CX - GAUGE_R},${GAUGE_CY} A ${GAUGE_R},${GAUGE_R} 0 0,1 ${GAUGE_CX + GAUGE_R},${GAUGE_CY}`;
 
   return (
     <div ref={ref} className="flex flex-col items-center">
-      <svg viewBox="0 0 200 100" className="w-full max-w-[180px]">
+      <svg viewBox="0 0 200 108" className="w-full max-w-[200px]">
         <defs>
-          <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
+          {/* Hero-matching 3-stop gradient: green → teal → blue */}
+          <linearGradient id="pg-arc-grad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="#4ade80" />
-            <stop offset="100%" stopColor="#86efac" />
+            <stop offset="52%"  stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="#818cf8" />
           </linearGradient>
+          {/* Gradient for the percentage text */}
+          <linearGradient id="pg-text-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#4ade80" />
+            <stop offset="100%" stopColor="#60a5fa" />
+          </linearGradient>
+          {/* Soft glow filter */}
+          <filter id="pg-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
+
         {/* Track */}
         <path
           d={arcPath}
           fill="none"
           stroke="#e2e8f0"
-          strokeWidth="11"
+          strokeWidth="12"
           strokeLinecap="round"
         />
-        {/* Fill */}
+
+        {/* Glow layer (slightly thicker, blurred) */}
         <path
           d={arcPath}
           fill="none"
-          stroke="url(#gauge-grad)"
-          strokeWidth="11"
+          stroke="url(#pg-arc-grad)"
+          strokeWidth="14"
+          strokeLinecap="round"
+          strokeDasharray={GAUGE_LEN}
+          strokeDashoffset={dashoffset}
+          filter="url(#pg-glow)"
+          style={{
+            opacity:    animated ? 0.45 : 0,
+            transition: "stroke-dashoffset 1100ms cubic-bezier(0.4,0,0.2,1), opacity 600ms ease",
+          }}
+        />
+
+        {/* Main arc fill */}
+        <path
+          d={arcPath}
+          fill="none"
+          stroke="url(#pg-arc-grad)"
+          strokeWidth="12"
           strokeLinecap="round"
           strokeDasharray={GAUGE_LEN}
           strokeDashoffset={dashoffset}
           style={{ transition: "stroke-dashoffset 1100ms cubic-bezier(0.4,0,0.2,1)" }}
         />
-        {/* Percentage */}
+
+        {/* Percentage — gradient fill via linearGradient */}
         <text
-          x={GAUGE_CX} y={GAUGE_CY - 14}
+          x={GAUGE_CX} y={GAUGE_CY - 12}
           textAnchor="middle"
-          fontSize="26" fontWeight="800"
-          fill="#1e293b"
+          fontSize="28" fontWeight="800"
+          fill="url(#pg-text-grad)"
           fontFamily="Poppins,sans-serif"
         >
           {value}%
         </text>
+
         {/* Sub label */}
         <text
-          x={GAUGE_CX} y={GAUGE_CY + 4}
+          x={GAUGE_CX} y={GAUGE_CY + 6}
           textAnchor="middle"
           fontSize="9" fontWeight="600"
           fill="#94a3b8"
         >
           {readinessLabel}
         </text>
-        {/* Left / Right ticks */}
-        <text x={GAUGE_CX - GAUGE_R - 2} y={GAUGE_CY + 14} textAnchor="middle" fontSize="7.5" fill="#cbd5e1">0</text>
-        <text x={GAUGE_CX + GAUGE_R + 2} y={GAUGE_CY + 14} textAnchor="middle" fontSize="7.5" fill="#cbd5e1">100</text>
+
+        {/* End-cap dot at arc tip (when animated) */}
+        {animated && (() => {
+          // Compute tip position along arc at current percentage
+          const angle  = Math.PI * (1 - value / 100);           // 0→π right-to-left
+          const tipX   = GAUGE_CX + GAUGE_R * Math.cos(Math.PI - angle);
+          const tipY   = GAUGE_CY - GAUGE_R * Math.sin(Math.PI - angle);
+          return (
+            <circle cx={tipX} cy={tipY} r="5.5" fill="#818cf8" opacity="0.85" />
+          );
+        })()}
       </svg>
     </div>
   );
@@ -623,18 +664,19 @@ function AnimatedProgressBar({ metric, delay }: { metric: ProfileMetric; delay: 
   }, [metric.value, delay]);
 
   return (
-    <div ref={ref} className="flex flex-col gap-1">
+    <div ref={ref} className="flex flex-col gap-1.5">
       <div className="flex justify-between items-center gap-2">
         <span className="text-[10.5px] font-medium text-slate-500 leading-snug">{metric.label}</span>
         <span className="text-[11px] font-bold text-[#1e293b] tabular-nums shrink-0">{metric.value}%</span>
       </div>
-      <div className="h-[7px] bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-[8px] bg-slate-100 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full"
           style={{
-            width:           `${width}%`,
-            backgroundColor: metric.color,
-            transition:      `width 900ms cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
+            width:      `${width}%`,
+            background: metric.color,          // supports linear-gradient strings
+            transition: `width 900ms cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
+            boxShadow:  width > 0 ? "0 1px 6px rgba(74,222,128,0.30)" : "none",
           }}
         />
       </div>
