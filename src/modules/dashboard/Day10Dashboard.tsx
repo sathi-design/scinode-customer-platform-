@@ -910,19 +910,30 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
               setHoverIdx={setHoverIdx}
             />
 
-            {/* Legend */}
-            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm" style={{ background: "linear-gradient(90deg,#1a6b4f,#29a06a)" }} />
-                <span className="text-[10px] text-[#68747a] font-medium">Total pipeline</span>
+            {/* Legend + CTA row */}
+            <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm" style={{ background: "linear-gradient(90deg,#1a6b4f,#29a06a)" }} />
+                  <span className="text-[10px] text-[#68747a] font-medium">Total pipeline</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }}
+                  />
+                  <span className="text-[10px] text-[#68747a] font-medium">Hover to explore</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }}
-                />
-                <span className="text-[10px] text-[#68747a] font-medium">Hover to highlight</span>
-              </div>
+
+              {/* Pipeline CTA */}
+              <button
+                className="flex items-center gap-1 text-[11px] font-semibold transition-colors duration-200 hover:opacity-75"
+                style={{ color: isResearcher ? "#5B3BA8" : "#2F66D0" }}
+              >
+                {isResearcher ? "View proposals" : "Track proposals"}
+                <ArrowRight size={11} strokeWidth={2.5} />
+              </button>
             </div>
           </div>
         </div>
@@ -957,10 +968,44 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
             ))}
           </div>
 
-          {/* Footer */}
-          <p className="text-[9px] text-slate-400 leading-relaxed pt-1 border-t border-slate-100">
-            Scores are updated based on profile completeness, activity history, and verified data.
-          </p>
+          {/* Contextual insight chip */}
+          {(() => {
+            const weak = metrics.filter(m => m.value < 85);
+            const primaryColor = isResearcher ? "#5B3BA8" : "#2F66D0";
+            const primaryBg    = isResearcher ? "#F1EDFF" : "#EAF1FF";
+            const primaryBorder = isResearcher ? "rgba(91,59,168,0.20)" : "rgba(47,102,208,0.20)";
+            return (
+              <>
+                {/* Insight */}
+                <div
+                  className="flex items-start gap-2 p-3 rounded-xl text-[10.5px] leading-relaxed border"
+                  style={{ background: primaryBg, borderColor: primaryBorder, color: primaryColor }}
+                >
+                  <span className="shrink-0 mt-0.5">
+                    {weak.length > 0 ? "⚡" : "✅"}
+                  </span>
+                  <span>
+                    {weak.length > 0
+                      ? `${weak.length} area${weak.length > 1 ? "s" : ""} below 85% — strengthening ${weak.length > 1 ? "them" : "it"} will improve your match ranking and visibility to ${isResearcher ? "industry partners" : "qualified buyers"}.`
+                      : "Your profile is highly complete. You're in a strong position for top-tier matches."}
+                  </span>
+                </div>
+
+                {/* CTA button */}
+                <button
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold border transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                  style={{
+                    color:       primaryColor,
+                    borderColor: primaryBorder,
+                    background:  primaryBg,
+                  }}
+                >
+                  {isResearcher ? "Strengthen researcher profile" : "Complete capability profile"}
+                  <ArrowRight size={12} strokeWidth={2.5} />
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
