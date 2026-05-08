@@ -1131,6 +1131,419 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
   );
 }
 
+// ─── Trending Opportunities — data ───────────────────────────────────────────
+
+interface OpportunityCard {
+  type:       "open" | "exclusive";
+  matchPct:   number;
+  matchLabel: "HIGH MATCH" | "STRONG FIT" | "EMERGING";
+  industry:   string;
+  funder:     string;
+  title:      string;
+  description:string;
+  budget:     string;
+  daysLeft:   number;
+  hoursLeft:  number;
+  imgSeed:    string;
+}
+
+const CRO_OPPORTUNITIES: OpportunityCard[] = [
+  { type:"exclusive", matchPct:94, matchLabel:"HIGH MATCH",   industry:"Pharmaceuticals",      funder:"Horizon Europe",   title:"Pharmaceutical API manufacturing for novel oncology compound",   description:"cGMP partner needed for Phase II API scale-up from 50g to 5kg batch size.",      budget:"€2.4M", daysLeft:12, hoursLeft:6,  imgSeed:"pharma1"   },
+  { type:"open",      matchPct:87, matchLabel:"STRONG FIT",   industry:"Battery & Energy",     funder:"DOE · ARPA-E",     title:"Specialty chemical scale-up for battery electrolyte production", description:"Electrolyte additive at pilot scale; strict purity and handling requirements.", budget:"$680K", daysLeft:21, hoursLeft:14, imgSeed:"battery2"  },
+  { type:"open",      matchPct:72, matchLabel:"EMERGING",     industry:"Agrochemicals",        funder:"Bill & Melinda Gates",title:"Green chemistry process for agricultural actives",               description:"Novel green synthesis routes for next-gen pesticide intermediates.",          budget:"$1.1M", daysLeft:34, hoursLeft:9,  imgSeed:"agrochem3" },
+  { type:"exclusive", matchPct:91, matchLabel:"HIGH MATCH",   industry:"Biotech & Life Sci.",  funder:"NIH",              title:"cGMP manufacturing of biologic drug substance",                  description:"Biologics manufacturing partner for Phase I clinical supply.",                 budget:"$3.2M", daysLeft:8,  hoursLeft:11, imgSeed:"biotech4"  },
+  { type:"open",      matchPct:83, matchLabel:"STRONG FIT",   industry:"Material Science",     funder:"DARPA",            title:"Custom synthesis of advanced materials for semiconductors",       description:"High-purity specialty materials for next-gen chip manufacturing programs.",    budget:"$890K", daysLeft:15, hoursLeft:3,  imgSeed:"materials5"},
+];
+
+const RESEARCHER_OPPORTUNITIES: OpportunityCard[] = [
+  { type:"exclusive", matchPct:94, matchLabel:"HIGH MATCH",   industry:"Green Chemistry",      funder:"Horizon Europe",   title:"Sustainable catalysts for green hydrogen production",             description:"Novel heterogeneous catalysts for water splitting under mild conditions.",      budget:"€2.4M", daysLeft:12, hoursLeft:6,  imgSeed:"hydrogen1" },
+  { type:"open",      matchPct:87, matchLabel:"STRONG FIT",   industry:"Chemical Engineering", funder:"NSF · CHE",        title:"Selective C–H activation in flow chemistry systems",              description:"Microreactor-based continuous flow process for C–H functionalisation.",        budget:"$680K", daysLeft:21, hoursLeft:14, imgSeed:"flowchem2" },
+  { type:"open",      matchPct:72, matchLabel:"EMERGING",     industry:"Materials Science",    funder:"Wellcome Leap",    title:"Bio-inspired materials for next-gen energy storage",              description:"Biopolymer-derived electrode materials for solid-state batteries.",            budget:"$1.1M", daysLeft:34, hoursLeft:9,  imgSeed:"biomats3"  },
+  { type:"exclusive", matchPct:91, matchLabel:"HIGH MATCH",   industry:"Pharmaceuticals",      funder:"NIH",              title:"Synthesis of peptide-based cancer therapeutics",                 description:"Novel peptide conjugates targeting HER2-positive breast cancer cells.",        budget:"$2.1M", daysLeft:9,  hoursLeft:5,  imgSeed:"peptide4"  },
+  { type:"open",      matchPct:88, matchLabel:"STRONG FIT",   industry:"Comp. Chemistry",      funder:"DARPA",            title:"Machine learning–guided retrosynthesis optimisation",             description:"AI-driven synthetic route planning for complex natural products.",             budget:"$750K", daysLeft:18, hoursLeft:2,  imgSeed:"mlchem5"   },
+];
+
+// ─── Opportunity project card ─────────────────────────────────────────────────
+
+const MATCH_COLORS: Record<OpportunityCard["matchLabel"], { bg: string; text: string }> = {
+  "HIGH MATCH": { bg: "#1a6b4f", text: "#B2F3B7" },
+  "STRONG FIT": { bg: "#2F66D0", text: "white"   },
+  "EMERGING":   { bg: "#5B3BA8", text: "white"   },
+};
+
+function OpportunityProjectCard({
+  card,
+  primaryColor,
+}: {
+  card:         OpportunityCard;
+  primaryColor: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const mc = MATCH_COLORS[card.matchLabel];
+  const showTimer = card.daysLeft <= 21;
+
+  return (
+    <div
+      className="relative rounded-2xl overflow-hidden cursor-pointer flex-1 min-w-0 select-none"
+      style={{
+        height:              240,
+        backgroundImage:     `url(https://picsum.photos/seed/${card.imgSeed}/400/240)`,
+        backgroundSize:      "cover",
+        backgroundPosition:  "center",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Dark gradient overlay — stronger at bottom */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to bottom, rgba(0,18,10,0.52) 0%, rgba(0,18,10,0.92) 100%)" }}
+      />
+
+      {/* ── Top row: type badge + Match Relevance ── */}
+      <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+        <span
+          className="text-[8px] font-bold uppercase px-2 py-1 rounded-full leading-none border backdrop-blur-sm"
+          style={card.type === "exclusive"
+            ? { background: "rgba(245,158,11,0.22)", borderColor: "rgba(245,158,11,0.55)", color: "#fbbf24" }
+            : { background: "rgba(255,255,255,0.14)", borderColor: "rgba(255,255,255,0.30)", color: "rgba(255,255,255,0.85)" }
+          }
+        >
+          {card.type === "exclusive" ? "★ Exclusive" : "Open"}
+        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-[8px] text-white/55 font-medium leading-none mb-0.5">Match Relevance</span>
+          <span className="text-[22px] font-black text-white leading-none tabular-nums" style={{ fontFamily: "Poppins,sans-serif" }}>
+            {card.matchPct}%
+          </span>
+        </div>
+      </div>
+
+      {/* ── Status badge ── */}
+      <div className="absolute top-12 left-3">
+        <span
+          className="text-[8px] font-bold uppercase px-2 py-1 rounded-full leading-none"
+          style={{ background: mc.bg, color: mc.text }}
+        >
+          {card.matchLabel}
+        </span>
+      </div>
+
+      {/* ── Urgency timer pill ── */}
+      {showTimer && (
+        <div className="absolute left-3" style={{ bottom: 100 }}>
+          <span
+            className="text-[8px] font-bold px-2 py-1 rounded-full leading-none flex items-center gap-1"
+            style={{ background: "rgba(239,68,68,0.22)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.35)" }}
+          >
+            ⏱ {card.daysLeft}d {card.hoursLeft}h left
+          </span>
+        </div>
+      )}
+
+      {/* ── Bottom content overlay ── */}
+      <div className="absolute bottom-0 left-0 right-0 p-3 flex flex-col gap-1">
+        {/* Funder · industry */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[8.5px] text-white/50 font-medium leading-none">{card.funder}</span>
+          <span className="text-white/25 text-[8px]">·</span>
+          <span
+            className="text-[8px] px-1.5 py-0.5 rounded-full font-medium leading-none"
+            style={{ background: "rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.65)" }}
+          >
+            {card.industry}
+          </span>
+        </div>
+
+        {/* Title */}
+        <p className="text-[11px] font-bold text-white leading-snug line-clamp-2">{card.title}</p>
+
+        {/* Description */}
+        <p className="text-[9px] text-white/50 leading-snug line-clamp-1">{card.description}</p>
+
+        {/* Budget + hover arrow */}
+        <div className="flex items-center justify-between mt-0.5">
+          <span className="text-[8.5px] text-white/45 font-medium">📋 {card.budget}</span>
+          <button
+            className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 shrink-0"
+            style={{
+              background: hovered ? primaryColor : "rgba(255,255,255,0.18)",
+              transform:  hovered ? "scale(1.15)"  : "scale(1)",
+              boxShadow:  hovered ? `0 0 12px ${primaryColor}66` : "none",
+            }}
+          >
+            <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Urgency countdown card (right panel) ────────────────────────────────────
+
+function UrgencyCountdownCard({ profileType }: { profileType: ProfileType }) {
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isResearcher  = profileType === "researcher";
+  const BASE          = 2 * 86400 + 11 * 3600 + 48 * 60;
+  const rem           = Math.max(BASE - tick, 0);
+  const days          = Math.floor(rem / 86400);
+  const hours         = Math.floor((rem % 86400) / 3600);
+  const minutes       = Math.floor((rem % 3600) / 60);
+  const seconds       = rem % 60;
+
+  const urgencyLabel  = isResearcher ? "🔥 PROJECT NEEDING QUICK REVIEW" : "⏳ FAST-TRACK OPPORTUNITY";
+  const projectTitle  = isResearcher
+    ? "Advanced electrolyte additives for solid-state batteries"
+    : "Pilot-scale peptide manufacturing support";
+  const subtitle      = isResearcher
+    ? "Proposal response due in 2 days · Priority industry requirement"
+    : "Customer awaiting technical response · Commercial review in progress";
+  const ctaLabel      = isResearcher ? "Review opportunity" : "Send proposal";
+
+  return (
+    <div
+      className="h-full rounded-2xl p-5 flex flex-col gap-3.5 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg,#00200f 0%,#001a0a 52%,#071422 100%)", minHeight: 380 }}
+    >
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20"
+        style={{ background: "radial-gradient(circle,#4ade80 0%,transparent 70%)", filter: "blur(40px)" }} />
+      <div className="pointer-events-none absolute bottom-0 left-0 w-40 h-40 rounded-full opacity-10"
+        style={{ background: "radial-gradient(circle,#818cf8 0%,transparent 70%)", filter: "blur(36px)" }} />
+
+      {/* Label */}
+      <p className="text-[8.5px] font-black uppercase tracking-[0.18em] text-emerald-300/75 leading-snug">
+        {urgencyLabel}
+      </p>
+
+      {/* Project title + subtitle */}
+      <div>
+        <h3 className="text-[15px] font-bold text-white leading-snug" style={{ fontFamily: "Poppins,sans-serif" }}>
+          {projectTitle}
+        </h3>
+        <p className="text-[9.5px] text-white/45 mt-1.5 leading-relaxed">{subtitle}</p>
+      </div>
+
+      {/* Countdown grid */}
+      <div className="grid grid-cols-4 gap-1.5">
+        {[
+          { val: days,    lbl: "DAYS"  },
+          { val: hours,   lbl: "HRS"   },
+          { val: minutes, lbl: "MINS"  },
+        ].map(({ val, lbl }) => (
+          <div
+            key={lbl}
+            className="flex flex-col items-center gap-1 py-2.5 rounded-xl col-span-1"
+            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.09)" }}
+          >
+            <span
+              className="text-[24px] font-black text-white leading-none tabular-nums"
+              style={{ fontFamily: "Poppins,sans-serif" }}
+            >
+              {String(val).padStart(2, "0")}
+            </span>
+            <span className="text-[7px] font-bold text-white/30 tracking-widest">{lbl}</span>
+          </div>
+        ))}
+        {/* Seconds — ticking, red-tinted */}
+        <div
+          className="flex flex-col items-center gap-1 py-2.5 rounded-xl col-span-1"
+          style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.22)" }}
+        >
+          <span
+            className="text-[24px] font-black text-red-400 leading-none tabular-nums"
+            style={{ fontFamily: "Poppins,sans-serif" }}
+          >
+            {String(seconds).padStart(2, "0")}
+          </span>
+          <span className="text-[7px] font-bold text-red-400/50 tracking-widest">SEC</span>
+        </div>
+      </div>
+
+      {/* Animated character */}
+      <div className="flex-1 flex items-end justify-center pb-1 relative">
+        {/* Glow ring under character */}
+        <div
+          className="absolute bottom-4 w-20 h-4 rounded-full opacity-30"
+          style={{ background: "radial-gradient(ellipse,#4ade80 0%,transparent 70%)", filter: "blur(6px)" }}
+        />
+        {/* Character SVG — floating */}
+        <svg
+          width="80" height="90"
+          viewBox="0 0 80 90"
+          className="relative z-10"
+          style={{ animation: "d10-float 2.8s ease-in-out infinite" }}
+        >
+          {/* Lab coat body */}
+          <rect x="18" y="50" width="44" height="36" rx="10" fill="white" opacity="0.92"/>
+          {/* Coat lapels */}
+          <path d="M 30 50 L 22 82 L 40 66 L 58 82 L 50 50" fill="#dff3ee" opacity="0.95"/>
+          {/* Green collar line */}
+          <rect x="36" y="48" width="8" height="6" rx="2" fill="#1a6b4f" opacity="0.8"/>
+          {/* Head */}
+          <circle cx="40" cy="34" r="22" fill="#fde8d0"/>
+          {/* Hair */}
+          <path d="M 19 28 Q 21 12 40 11 Q 59 12 61 28 Q 56 18 40 18 Q 24 18 19 28Z" fill="#5c3317"/>
+          {/* Eyes */}
+          <circle cx="32" cy="32" r="4" fill="white"/>
+          <circle cx="48" cy="32" r="4" fill="white"/>
+          <circle cx="33" cy="33" r="2.2" fill="#1e293b"/>
+          <circle cx="49" cy="33" r="2.2" fill="#1e293b"/>
+          {/* Eye shine */}
+          <circle cx="34" cy="32" r="0.8" fill="white"/>
+          <circle cx="50" cy="32" r="0.8" fill="white"/>
+          {/* Smile */}
+          <path d="M 33 42 Q 40 49 47 42" fill="none" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round"/>
+          {/* Flask in hand */}
+          <rect x="56" y="62" width="12" height="18" rx="4" fill="#4ade80" opacity="0.85"/>
+          <rect x="59" y="56" width="6" height="8" rx="2" fill="#94a3b8"/>
+          {/* Flask bubbles */}
+          <circle cx="61" cy="67" r="1.5" fill="white" opacity="0.6"/>
+          <circle cx="64" cy="72" r="1" fill="white" opacity="0.5"/>
+        </svg>
+      </div>
+
+      {/* CTA */}
+      <button className="w-full py-2.5 bg-white text-[#002d16] text-[12.5px] font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#f0fdf4] active:scale-[0.98] transition-all duration-200 shadow-sm">
+        {ctaLabel}
+        <ArrowRight size={13} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Trending Opportunities Section ───────────────────────────────────────────
+
+function TrendingOpportunitiesSection({ profileType }: { profileType: ProfileType }) {
+  const [carouselStart, setCarouselStart] = useState(0);
+  const isResearcher   = profileType === "researcher";
+  const opportunities  = isResearcher ? RESEARCHER_OPPORTUNITIES : CRO_OPPORTUNITIES;
+  const primaryColor   = isResearcher ? "#5B3BA8" : "#2F66D0";
+  const VISIBLE        = 3;
+  const canPrev        = carouselStart > 0;
+  const canNext        = carouselStart + VISIBLE < opportunities.length;
+  const visible        = opportunities.slice(carouselStart, carouselStart + VISIBLE);
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-4">
+
+      {/* ── LEFT 70% — project cards ── */}
+      <div className="flex-[7] min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+        {/* Card header */}
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              TRENDING OPPORTUNITIES
+            </p>
+            <h2
+              className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]"
+              style={{ fontFamily: "Poppins,sans-serif" }}
+            >
+              High-demand projects requiring attention
+            </h2>
+          </div>
+          <button
+            className="flex items-center gap-1 text-[11px] font-semibold hover:opacity-75 transition-opacity shrink-0"
+            style={{ color: primaryColor }}
+          >
+            See all <ArrowRight size={11} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Exclusive banner — thin strip */}
+        <div
+          className="mx-5 sm:mx-6 mt-4 px-4 py-2 rounded-xl flex items-center justify-between gap-3"
+          style={{
+            background: "linear-gradient(90deg,rgba(26,107,79,0.07) 0%,rgba(47,102,208,0.05) 100%)",
+            border:     "1px solid rgba(26,107,79,0.13)",
+          }}
+        >
+          <p className="text-[10px] text-[#1a6b4f] font-medium leading-snug">
+            ⚡ <span className="font-semibold">Exclusive</span> — Industry opportunities matched to your expertise and shared for priority review.
+          </p>
+          <button className="shrink-0 flex items-center gap-1 text-[9.5px] font-semibold text-[#1a6b4f] hover:opacity-75 whitespace-nowrap transition-opacity">
+            View projects <ArrowRight size={9} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Cards carousel */}
+        <div className="px-5 sm:px-6 pt-4 pb-5 relative">
+          {/* Cards row */}
+          <div className="flex gap-3">
+            {visible.map((card, i) => (
+              <OpportunityProjectCard
+                key={carouselStart + i}
+                card={card}
+                primaryColor={primaryColor}
+              />
+            ))}
+          </div>
+
+          {/* Chevron — prev */}
+          {canPrev && (
+            <button
+              onClick={() => setCarouselStart(s => Math.max(s - 1, 0))}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path d="M8 2L3 6.5L8 11" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </button>
+          )}
+          {/* Chevron — next */}
+          {canNext && (
+            <button
+              onClick={() => setCarouselStart(s => Math.min(s + 1, opportunities.length - VISIBLE))}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path d="M5 2L10 6.5L5 11" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Dot indicators */}
+          <div className="flex items-center justify-center gap-1.5 mt-4">
+            {Array.from({ length: opportunities.length - VISIBLE + 1 }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCarouselStart(i)}
+                className="rounded-full transition-all duration-250"
+                style={{
+                  width:      carouselStart === i ? 18 : 6,
+                  height:     6,
+                  background: carouselStart === i ? primaryColor : "#cbd5e1",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT 30% — urgency card ── */}
+      <div className="flex-[3] lg:min-w-[240px] lg:max-w-[300px]">
+        <UrgencyCountdownCard profileType={profileType} />
+      </div>
+
+      {/* Float keyframe (scoped here) */}
+      <style>{`
+        @keyframes d10-float {
+          0%, 100% { transform: translateY(0px);  }
+          50%       { transform: translateY(-9px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ─── Public exports ────────────────────────────────────────────────────────────
 
 export function Day10ResearcherDashboard() {
@@ -1138,6 +1551,7 @@ export function Day10ResearcherDashboard() {
     <div className="space-y-5 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
       <Day10HeroSection profileType="researcher" />
       <OpportunityPipelineSection profileType="researcher" />
+      <TrendingOpportunitiesSection profileType="researcher" />
     </div>
   );
 }
