@@ -287,36 +287,13 @@ function Day10HeroSection({ profileType }: { profileType: ProfileType }) {
       <div className="pointer-events-none absolute top-0 right-0 w-72 h-72 rounded-full opacity-[0.10]"
         style={{ background: "radial-gradient(circle,#4ade80 0%,transparent 70%)", filter: "blur(64px)" }} />
 
-      <div className="relative z-10 px-5 sm:px-7 pt-5">
+      <div className="relative z-10 px-5 sm:px-7 pt-4">
 
-        {/* ── Top badges row ── */}
-        <div className="flex flex-wrap items-center gap-2.5 mb-5">
-          {/* DAY 10 pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-400/20"
-            style={{ background: "rgba(20,55,30,0.65)" }}>
-            <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            <span className="text-[10.5px] font-bold tracking-[0.14em] text-emerald-300 uppercase">
-              ⚡ Day 10 · Weekly Snapshot
-            </span>
-          </div>
-          {/* Week indicator */}
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium text-white/40 border border-white/[0.09]"
-            style={{ background: "rgba(255,255,255,0.04)" }}
-          >
-            <span className="w-1 h-1 rounded-full bg-white/25 shrink-0" />
-            Week 2 · Data refreshes weekly
-          </span>
-        </div>
-
-        {/* ── Main 70 / 30 split ── */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 pb-5">
+        {/* ── Main 70 / 30 split (with vertical separator) ── */}
+        <div className="flex flex-col lg:flex-row lg:items-stretch gap-0 pb-4">
 
           {/* ── LEFT 70% ── */}
-          <div className="flex-[7] min-w-0 flex flex-col gap-4">
+          <div className="flex-[7] min-w-0 flex flex-col gap-3 lg:pr-7">
 
             {/* SCINODE Secure pill */}
             <div className="relative inline-block self-start">
@@ -355,21 +332,21 @@ function Day10HeroSection({ profileType }: { profileType: ProfileType }) {
 
             {/* H1 */}
             <h1
-              className="text-[24px] sm:text-[30px] md:text-[34px] font-bold text-white leading-[1.18] tracking-[-0.02em]"
+              className="text-[21px] sm:text-[26px] md:text-[30px] font-bold text-white leading-[1.2] tracking-[-0.02em]"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               {heroHeading}
             </h1>
 
             {/* Supporting text */}
-            <p className="text-[#8faabb] text-[13px] sm:text-sm leading-relaxed max-w-[520px]">
+            <p className="text-[#8faabb] text-[12.5px] sm:text-[13px] leading-relaxed max-w-[500px]">
               {heroSubtext}
             </p>
 
             {/* Big metric */}
             <div className="flex items-end gap-3 flex-wrap">
               <span
-                className="text-[52px] sm:text-[60px] font-black leading-none tracking-tight"
+                className="text-[42px] sm:text-[50px] font-black leading-none tracking-tight"
                 style={{
                   background: "linear-gradient(140deg,#4ade80 0%,#86efac 45%,#e0f2fe 100%)",
                   WebkitBackgroundClip: "text",
@@ -379,71 +356,64 @@ function Day10HeroSection({ profileType }: { profileType: ProfileType }) {
               >
                 {bigMetric}
               </span>
-              <div className="pb-2 flex flex-col gap-0.5">
-                <span className="text-[11px] font-bold text-emerald-300/80 uppercase tracking-[0.12em] leading-snug">
+              <div className="pb-1.5 flex flex-col gap-0.5">
+                <span className="text-[10.5px] font-bold text-emerald-300/80 uppercase tracking-[0.12em] leading-snug">
                   {bigMetricLabel}
                 </span>
-                <span className="text-[10px] text-white/30">vs. profile activation baseline</span>
+                <span className="text-[9.5px] text-white/30">vs. profile activation baseline</span>
               </div>
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#002d16] text-sm font-bold rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg hover:bg-[#f0fdf4] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
-                {primaryCTA} <ArrowRight size={14} strokeWidth={2.5} />
+            <div className="flex flex-wrap gap-2.5">
+              <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#002d16] text-[13px] font-bold rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg hover:bg-[#f0fdf4] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40">
+                {primaryCTA} <ArrowRight size={13} strokeWidth={2.5} />
               </button>
-              <button className="flex items-center gap-2 px-5 py-2.5 border border-white/25 text-white/90 text-sm font-semibold rounded-lg hover:bg-white/10 hover:border-white/40 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
-                {secondaryCTA} <ArrowRight size={14} strokeWidth={2} />
+              <button className="flex items-center gap-2 px-4 py-2 border border-white/25 text-white/90 text-[13px] font-semibold rounded-lg hover:bg-white/10 hover:border-white/40 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
+                {secondaryCTA} <ArrowRight size={13} strokeWidth={2} />
               </button>
             </div>
           </div>
 
-          {/* ── RIGHT 30% — Momentum curve card ── */}
-          <div className="flex-[3] lg:min-w-[260px] lg:max-w-[320px]">
-            <div
-              className="rounded-xl border border-white/[0.09] flex flex-col overflow-hidden h-full"
-              style={{ background: "rgba(255,255,255,0.045)", backdropFilter: "blur(12px)" }}
-            >
-              {/* Card header */}
-              <div className="px-4 pt-4 pb-3 border-b border-white/[0.08]">
-                <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/35 mb-0.5">
-                      Momentum Curve
-                    </p>
-                    <p className="text-[13.5px] font-bold text-white leading-snug">
-                      {curveTitle}
-                    </p>
-                    <p className="text-[10px] text-white/35 mt-0.5 leading-snug">
-                      10-day industry engagement trajectory
-                    </p>
-                  </div>
-                  <span
-                    className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap"
-                    style={{
-                      background: "rgba(74,222,128,0.13)",
-                      border: "1px solid rgba(74,222,128,0.25)",
-                      color: "#86efac",
-                    }}
-                  >
-                    <TrendingUp size={9} strokeWidth={2.5} />
-                    {curveBadge}
-                  </span>
-                </div>
-              </div>
+          {/* ── Vertical separator ── */}
+          <div className="hidden lg:block w-px bg-white/[0.08] shrink-0 self-stretch" />
 
-              {/* Chart area */}
-              <div className="flex-1 px-3 pt-2 pb-1 min-h-[140px]">
-                <MomentumCurve data={curveData} />
-              </div>
+          {/* ── RIGHT 30% — integrated panel (no floating card) ── */}
+          <div className="flex-[3] lg:min-w-[240px] lg:max-w-[300px] lg:pl-7 pt-4 lg:pt-0 flex flex-col justify-center gap-3">
 
-              {/* Chart footer — hover hint */}
-              <div className="px-4 pb-3 pt-1">
-                <p className="text-[9.5px] text-white/25 text-center">
-                  Hover to inspect daily engagement →
+            {/* Label + badge */}
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/35 mb-0.5">
+                  Momentum Curve
+                </p>
+                <p className="text-[13.5px] font-bold text-white leading-snug">
+                  {curveTitle}
+                </p>
+                <p className="text-[10px] text-white/35 mt-0.5">
+                  10-day industry engagement trajectory
                 </p>
               </div>
+              <span
+                className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap"
+                style={{
+                  background: "rgba(74,222,128,0.13)",
+                  border: "1px solid rgba(74,222,128,0.25)",
+                  color: "#86efac",
+                }}
+              >
+                <TrendingUp size={9} strokeWidth={2.5} />
+                {curveBadge}
+              </span>
             </div>
+
+            {/* Chart */}
+            <MomentumCurve data={curveData} />
+
+            {/* Hover hint */}
+            <p className="text-[9px] text-white/25 text-center -mt-1">
+              Hover to inspect daily engagement →
+            </p>
           </div>
         </div>
 
@@ -456,7 +426,7 @@ function Day10HeroSection({ profileType }: { profileType: ProfileType }) {
             <div
               key={i}
               className={cn(
-                "px-5 sm:px-6 py-4 flex flex-col gap-1 group hover:bg-white/[0.03] transition-colors duration-200",
+                "px-5 sm:px-6 py-3 flex flex-col gap-0.5 hover:bg-white/[0.03] transition-colors duration-200",
                 i < kpis.length - 1 && "border-r border-white/[0.07]",
                 i >= 2 && "border-t border-white/[0.07] sm:border-t-0",
               )}
@@ -466,7 +436,7 @@ function Day10HeroSection({ profileType }: { profileType: ProfileType }) {
               </p>
               <div className="flex items-end gap-2 flex-wrap">
                 <span
-                  className="text-[26px] font-black text-white leading-none tabular-nums"
+                  className="text-[24px] font-black text-white leading-none tabular-nums"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   {k.value}
