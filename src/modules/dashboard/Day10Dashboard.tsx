@@ -1561,6 +1561,7 @@ export function Day10CRODashboard() {
     <div className="space-y-5 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
       <Day10HeroSection profileType="cro" />
       <OpportunityPipelineSection profileType="cro" />
+      <TrendingOpportunitiesSection profileType="cro" />
     </div>
   );
 }
