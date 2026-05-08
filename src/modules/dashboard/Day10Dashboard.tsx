@@ -799,6 +799,55 @@ function ConversionBarChart({
 }
 
 
+// ─── Recent proposals mock data ───────────────────────────────────────────────
+
+interface RecentProposal {
+  id:          string;
+  type:        string;
+  typeColor:   string;
+  title:       string;
+  cas:         string;
+  date:        string;
+  compound:    string;
+  industry:    string;
+  status:      string;
+  statusColor: string;
+}
+
+const CRO_RECENT_PROPOSALS: RecentProposal[] = [
+  {
+    id: "PRJ-2026-0603", type: "CMO", typeColor: "#0E6F5C",
+    title: "Manufacturing of a Vitamin D3 Intermediate for Nutraceutical Applications",
+    cas: "67-97-0", date: "16 Apr 2026",
+    compound: "Vitamin D3 Intermediate VD-07", industry: "Nutraceuticals",
+    status: "PO Issued", statusColor: "#1a6b4f",
+  },
+  {
+    id: "PRJ-2026-0054", type: "RFQ", typeColor: "#2F66D0",
+    title: "Custom bromine derivative for flame retardant application",
+    cas: "79-94-7", date: "16 Apr 2026",
+    compound: "Tetrabromobisphenol A (TBBPA)", industry: "Elemental Derivatives",
+    status: "Under Review", statusColor: "#d97706",
+  },
+];
+
+const RESEARCHER_RECENT_PROPOSALS: RecentProposal[] = [
+  {
+    id: "PRJ-2026-0481", type: "Research", typeColor: "#5B3BA8",
+    title: "Synthesis and characterisation of novel peptide-based drug delivery scaffolds",
+    cas: "N/A", date: "12 Apr 2026",
+    compound: "PEG-Peptide Conjugate PPC-03", industry: "Pharmaceuticals",
+    status: "Under Review", statusColor: "#d97706",
+  },
+  {
+    id: "PRJ-2026-0392", type: "Collab", typeColor: "#0E6F5C",
+    title: "Green solvent extraction process for plant-derived bioactives",
+    cas: "84-74-2", date: "8 Apr 2026",
+    compound: "Dibutyl Phthalate Alternative DBP-X", industry: "Food & Nutrition",
+    status: "Shortlisted", statusColor: "#2F66D0",
+  },
+];
+
 // ─── Opportunity Pipeline Section — two separate side-by-side cards ───────────
 
 function OpportunityPipelineSection({ profileType }: { profileType: ProfileType }) {
@@ -820,10 +869,10 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
       <div className="flex-[7] min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
         {/* Card header */}
-        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-4 flex-wrap">
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-1">
-              01 · OPPORTUNITY FLOW
+              OPPORTUNITY FLOW
             </p>
             <h2
               className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]"
@@ -833,22 +882,40 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
             </h2>
           </div>
 
-          {/* Period toggle */}
-          <div className="flex p-1 bg-slate-100 rounded-lg gap-0.5">
-            {(["week", "month"] as const).map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={cn(
-                  "px-3.5 py-1 rounded-md text-[11px] font-semibold transition-all duration-200",
-                  period === p
-                    ? "bg-white text-[#1e293b] shadow-sm"
-                    : "text-slate-400 hover:text-slate-600",
-                )}
-              >
-                This {p}
-              </button>
-            ))}
+          {/* Legend + period toggle — right side */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Legend chips (moved here from chart footer) */}
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(90deg,#1a6b4f,#29a06a)" }} />
+                <span className="text-[9.5px] text-slate-400 font-medium">Total pipeline</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }} />
+                <span className="text-[9.5px] text-slate-400 font-medium">Hover to explore</span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block w-px h-4 bg-slate-200" />
+
+            {/* Period toggle */}
+            <div className="flex p-1 bg-slate-100 rounded-lg gap-0.5">
+              {(["week", "month"] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-[11px] font-semibold transition-all duration-200",
+                    period === p
+                      ? "bg-white text-[#1e293b] shadow-sm"
+                      : "text-slate-400 hover:text-slate-600",
+                  )}
+                >
+                  This {p}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -909,33 +976,85 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
               hoverIdx={hoverIdx}
               setHoverIdx={setHoverIdx}
             />
-
-            {/* Legend + CTA row */}
-            <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 flex-wrap">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm" style={{ background: "linear-gradient(90deg,#1a6b4f,#29a06a)" }} />
-                  <span className="text-[10px] text-[#68747a] font-medium">Total pipeline</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }}
-                  />
-                  <span className="text-[10px] text-[#68747a] font-medium">Hover to explore</span>
-                </div>
-              </div>
-
-              {/* Pipeline CTA */}
-              <button
-                className="flex items-center gap-1 text-[11px] font-semibold transition-colors duration-200 hover:opacity-75"
-                style={{ color: isResearcher ? "#5B3BA8" : "#2F66D0" }}
-              >
-                {isResearcher ? "View proposals" : "Track proposals"}
-                <ArrowRight size={11} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
+
+          {/* ── Recent Proposals sub-section ── */}
+          {(() => {
+            const proposals    = isResearcher ? RESEARCHER_RECENT_PROPOSALS : CRO_RECENT_PROPOSALS;
+            const primaryColor = isResearcher ? "#5B3BA8" : "#2F66D0";
+            const subheading   = isResearcher
+              ? "Latest proposals you have submitted for review"
+              : "Most recent proposals submitted to active requirements";
+
+            return (
+              <div className="flex flex-col gap-2.5 pt-1 border-t border-slate-100">
+
+                {/* Sub-section header */}
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] font-bold text-[#1e293b]">Recent Proposals</p>
+                    <p className="text-[9.5px] text-slate-400 leading-snug">{subheading}</p>
+                  </div>
+                  <button
+                    className="shrink-0 flex items-center gap-1 text-[10.5px] font-semibold whitespace-nowrap hover:opacity-75 transition-opacity"
+                    style={{ color: primaryColor }}
+                  >
+                    View all proposals <ArrowRight size={10} strokeWidth={2.5} />
+                  </button>
+                </div>
+
+                {/* Compact proposal cards */}
+                {proposals.map((pr, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-slate-200 bg-white p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200"
+                  >
+                    {/* Row 1: tags + status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">
+                          Proposal
+                        </span>
+                        <span
+                          className="text-[8px] rounded-full px-1.5 py-[2px] text-white font-bold leading-none"
+                          style={{ background: pr.typeColor }}
+                        >
+                          {pr.type}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="text-[8.5px] font-semibold flex items-center gap-1 leading-none"
+                          style={{ color: pr.statusColor }}
+                        >
+                          <span className="w-1 h-1 rounded-full inline-block shrink-0" style={{ background: pr.statusColor }} />
+                          {pr.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Row 2: title */}
+                    <p className="text-[10.5px] font-semibold text-[#1e293b] leading-snug truncate">
+                      {pr.title}
+                    </p>
+
+                    {/* Row 3: meta + track CTA */}
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8.5px] text-slate-400 truncate">
+                        {pr.id} · {pr.compound} · {pr.industry}
+                      </p>
+                      <button
+                        className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold hover:opacity-75 transition-opacity"
+                        style={{ color: primaryColor }}
+                      >
+                        Track <ArrowRight size={8} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
