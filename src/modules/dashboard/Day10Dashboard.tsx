@@ -642,7 +642,7 @@ function AnimatedProgressBar({ metric, delay }: { metric: ProfileMetric; delay: 
   );
 }
 
-// ─── Conversion bar chart (horizontal rows — mirrors Day 1 style) ─────────────
+// ─── Conversion bar chart — mirrors Day 1 horizontal bar style exactly ────────
 
 function ConversionBarChart({
   stages,
@@ -655,14 +655,14 @@ function ConversionBarChart({
   hoverIdx:    number | null;
   setHoverIdx: (i: number | null) => void;
 }) {
-  const [entered, setEntered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setTimeout(() => setEntered(true), 120); obs.disconnect(); } },
+      ([e]) => { if (e.isIntersecting) { setTimeout(() => setLoaded(true), 120); obs.disconnect(); } },
       { threshold: 0.2 },
     );
     obs.observe(el);
@@ -673,49 +673,75 @@ function ConversionBarChart({
   const maxCount = Math.max(...counts);
 
   return (
-    <div ref={ref} className="w-full flex flex-col gap-2.5">
+    <div ref={ref} className="w-full flex flex-col gap-2">
       {stages.map((stage, i) => {
-        const count  = counts[i];
-        const pct    = count / maxCount;
-        const barW   = entered ? Math.max(pct * 100, 2) : 0;
-        const isHov  = hoverIdx === i;
+        const count      = counts[i];
+        const totalPct   = (count / maxCount) * 100;
+        const isActive   = hoverIdx === i;
+        const entryDelay = i * 45;
 
         return (
           <div
             key={i}
-            className="flex items-center gap-3 cursor-pointer select-none group"
+            className="flex items-center gap-3 cursor-pointer"
             onMouseEnter={() => setHoverIdx(i)}
             onMouseLeave={() => setHoverIdx(null)}
           >
-            {/* Stage label */}
-            <span
-              className="text-[10.5px] font-semibold w-[90px] shrink-0 text-right leading-snug"
-              style={{ color: isHov ? "#1e293b" : "#94a3b8" }}
+            {/* Label — matches Day 1 w-[150px] */}
+            <div
+              className={cn(
+                "shrink-0 w-[110px] text-[11px] text-right leading-snug transition-colors duration-200",
+                isActive ? "font-bold text-[#171717]" : "font-medium text-[#64748b]",
+              )}
             >
               {stage.shortLabel}
-            </span>
+            </div>
 
-            {/* Bar track */}
-            <div className="flex-1 h-[14px] bg-slate-100 rounded-sm overflow-hidden">
+            {/* Bar track — rounded-full, same background as Day 1 */}
+            <div
+              className="flex-1 relative h-[18px] rounded-full overflow-hidden"
+              style={{ background: "#edf2f5" }}
+            >
+              {/* Hatch fill — visible when inactive */}
               <div
-                className="h-full rounded-sm"
+                className="absolute left-0 top-0 h-full rounded-full"
                 style={{
-                  width:      `${barW}%`,
-                  transition: `width 750ms cubic-bezier(0.4,0,0.2,1) ${i * 80}ms`,
-                  background: isHov
-                    ? stage.color
-                    : "repeating-linear-gradient(-45deg,rgba(100,116,139,0.22) 0px,rgba(100,116,139,0.22) 2px,transparent 2px,transparent 8px)",
+                  width:           loaded ? `${totalPct}%` : "0%",
+                  opacity:         isActive ? 0 : 1,
+                  transition:      `width 620ms cubic-bezier(0.25,0.46,0.45,0.94) ${entryDelay}ms, opacity 240ms ease`,
+                  backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)",
                 }}
               />
+
+              {/* Colour fill — visible when active */}
+              <div
+                className="absolute left-0 top-0 h-full rounded-full"
+                style={{
+                  width:      (loaded && isActive) ? `${totalPct}%` : "0%",
+                  opacity:    isActive ? 1 : 0,
+                  transition: "width 350ms cubic-bezier(0.25,0.46,0.45,0.94), opacity 200ms ease",
+                  background: "linear-gradient(90deg,#1a6b4f,#29a06a)",
+                }}
+              />
+
+              {/* Glow on active */}
+              {isActive && (
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{ boxShadow: "0 0 10px rgba(31,111,84,0.28)" }}
+                />
+              )}
             </div>
 
             {/* Count */}
-            <span
-              className="text-[11px] font-bold tabular-nums w-8 shrink-0"
-              style={{ color: isHov ? "#1e293b" : "#94a3b8" }}
+            <div
+              className={cn(
+                "shrink-0 w-8 text-right text-[12px] tabular-nums transition-colors duration-200",
+                isActive ? "font-bold text-[#171717]" : "font-medium text-[#94a3b8]",
+              )}
             >
               {count}
-            </span>
+            </div>
           </div>
         );
       })}
@@ -724,61 +750,61 @@ function ConversionBarChart({
 }
 
 
-// ─── Opportunity Pipeline Section ─────────────────────────────────────────────
+// ─── Opportunity Pipeline Section — two separate side-by-side cards ───────────
 
 function OpportunityPipelineSection({ profileType }: { profileType: ProfileType }) {
   const [period,   setPeriod]   = useState<"week" | "month">("month");
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  const isResearcher = profileType === "researcher";
-  const stages  = isResearcher ? RESEARCHER_STAGES        : CRO_STAGES;
-  const metrics = isResearcher ? RESEARCHER_PROFILE_METRICS : CRO_PROFILE_METRICS;
-
-  const gaugeValue    = isResearcher ? 81 : 86;
-  const signalLabel   = isResearcher ? "RESEARCHER PROFILE SIGNAL" : "CRO PROFILE SIGNAL";
-  const readinessTitle = isResearcher ? "Research Readiness"  : "Capability Readiness";
-  const overallLabel  = isResearcher ? "Overall Readiness"   : "Overall Readiness";
-
-  const counts = stages.map(s => period === "week" ? s.weekCount : s.monthCount);
+  const isResearcher   = profileType === "researcher";
+  const stages         = isResearcher ? RESEARCHER_STAGES          : CRO_STAGES;
+  const metrics        = isResearcher ? RESEARCHER_PROFILE_METRICS : CRO_PROFILE_METRICS;
+  const gaugeValue     = isResearcher ? 81   : 86;
+  const signalLabel    = isResearcher ? "RESEARCHER PROFILE SIGNAL" : "CRO PROFILE SIGNAL";
+  const readinessTitle = isResearcher ? "Research Readiness"        : "Capability Readiness";
+  const counts         = stages.map(s => period === "week" ? s.weekCount : s.monthCount);
 
   return (
-    <section className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div className="flex flex-col lg:flex-row gap-4">
 
-      {/* ── Section header ── */}
-      <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-1">
-            01 · OPPORTUNITY FLOW
-          </p>
-          <h2 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
-            Industrial Opportunity Pipeline
-          </h2>
-        </div>
+      {/* ── LEFT CARD — Industrial Opportunity Pipeline ── */}
+      <div className="flex-[7] min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
-        {/* Period toggle */}
-        <div className="flex p-1 bg-slate-100 rounded-lg gap-0.5">
-          {(["week", "month"] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={cn(
-                "px-3.5 py-1 rounded-md text-[11px] font-semibold transition-all duration-200",
-                period === p
-                  ? "bg-white text-[#1e293b] shadow-sm"
-                  : "text-slate-400 hover:text-slate-600",
-              )}
+        {/* Card header */}
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-1">
+              01 · OPPORTUNITY FLOW
+            </p>
+            <h2
+              className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]"
+              style={{ fontFamily: "Poppins,sans-serif" }}
             >
-              This {p}
-            </button>
-          ))}
+              Industrial Opportunity Pipeline
+            </h2>
+          </div>
+
+          {/* Period toggle */}
+          <div className="flex p-1 bg-slate-100 rounded-lg gap-0.5">
+            {(["week", "month"] as const).map(p => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={cn(
+                  "px-3.5 py-1 rounded-md text-[11px] font-semibold transition-all duration-200",
+                  period === p
+                    ? "bg-white text-[#1e293b] shadow-sm"
+                    : "text-slate-400 hover:text-slate-600",
+                )}
+              >
+                This {p}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* ── Main 70/30 body ── */}
-      <div className="flex flex-col lg:flex-row">
-
-        {/* ── LEFT 70% ── */}
-        <div className="flex-[7] px-5 sm:px-6 py-5 flex flex-col gap-5 min-w-0">
+        {/* Card body */}
+        <div className="px-5 sm:px-6 py-5 flex flex-col gap-5">
 
           {/* Stage cards strip */}
           <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1">
@@ -786,27 +812,26 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
               const isHov = hoverIdx === i;
               return (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-1 min-w-0">
-                  {/* Card */}
                   <div
                     className="flex-1 min-w-0 p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none"
                     style={{
-                      background:   isHov ? "rgba(74,222,128,0.07)" : "#f8fafc",
-                      borderColor:  isHov ? stage.color : "#e2e8f0",
-                      boxShadow:    isHov ? `0 0 0 1px ${stage.color}33` : "none",
+                      background:  isHov ? "rgba(26,107,79,0.06)" : "#f8fafc",
+                      borderColor: isHov ? "#1a6b4f" : "#e2e8f0",
+                      boxShadow:   isHov ? "0 0 0 1px rgba(26,107,79,0.18)" : "none",
                     }}
                     onMouseEnter={() => setHoverIdx(i)}
                     onMouseLeave={() => setHoverIdx(null)}
                   >
                     <p
-                      className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wide leading-snug mb-1 truncate"
-                      style={{ color: isHov ? "#059669" : "#94a3b8" }}
+                      className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wide leading-snug mb-1 truncate transition-colors duration-200"
+                      style={{ color: isHov ? "#1a6b4f" : "#94a3b8" }}
                     >
                       {stage.shortLabel}
                     </p>
                     <p
-                      className="text-[20px] sm:text-[22px] font-black leading-none tabular-nums"
+                      className="text-[20px] sm:text-[22px] font-black leading-none tabular-nums transition-colors duration-200"
                       style={{
-                        color:      isHov ? "#1e293b" : "#334155",
+                        color:      isHov ? "#1a6b4f" : "#334155",
                         fontFamily: "Poppins,sans-serif",
                       }}
                     >
@@ -814,9 +839,8 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
                     </p>
                   </div>
 
-                  {/* Arrow connector (except after last) */}
                   {i < stages.length - 1 && (
-                    <svg width="14" height="14" viewBox="0 0 14 14" className="shrink-0 text-slate-300">
+                    <svg width="12" height="12" viewBox="0 0 14 14" className="shrink-0 text-slate-300">
                       <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                     </svg>
                   )}
@@ -825,9 +849,9 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
             })}
           </div>
 
-          {/* Bar chart */}
+          {/* Horizontal bar chart */}
           <div>
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-3">
+            <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-3">
               Proposal Conversion Flow
             </p>
             <ConversionBarChart
@@ -836,27 +860,46 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
               hoverIdx={hoverIdx}
               setHoverIdx={setHoverIdx}
             />
+
+            {/* Legend */}
+            <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm" style={{ background: "linear-gradient(90deg,#1a6b4f,#29a06a)" }} />
+                <span className="text-[10px] text-[#68747a] font-medium">Total pipeline</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-3 h-3 rounded-sm"
+                  style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }}
+                />
+                <span className="text-[10px] text-[#68747a] font-medium">Hover to highlight</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* ── Vertical separator ── */}
-        <div className="hidden lg:block w-px bg-slate-100 shrink-0" />
+      {/* ── RIGHT CARD — Profile Signal ── */}
+      <div className="flex-[3] lg:min-w-[260px] lg:max-w-[320px] bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
-        {/* ── RIGHT 30% — Profile Signal ── */}
-        <div className="flex-[3] lg:min-w-[240px] lg:max-w-[300px] border-t border-slate-100 lg:border-t-0 px-5 sm:px-6 py-5 flex flex-col gap-4">
+        {/* Card header */}
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100">
+          <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-0.5">
+            {signalLabel}
+          </p>
+          <h2
+            className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]"
+            style={{ fontFamily: "Poppins,sans-serif" }}
+          >
+            {readinessTitle}
+          </h2>
+        </div>
 
-          {/* Label + title */}
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-0.5">
-              {signalLabel}
-            </p>
-            <p className="text-[15px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
-              {readinessTitle}
-            </p>
-          </div>
+        {/* Card body */}
+        <div className="px-5 sm:px-6 py-5 flex flex-col gap-4">
 
-          {/* Semicircle gauge */}
-          <ProfileGauge value={gaugeValue} readinessLabel={overallLabel} />
+          {/* Gauge */}
+          <ProfileGauge value={gaugeValue} readinessLabel="Overall Readiness" />
 
           {/* Progress bars */}
           <div className="flex flex-col gap-3">
@@ -865,13 +908,13 @@ function OpportunityPipelineSection({ profileType }: { profileType: ProfileType 
             ))}
           </div>
 
-          {/* Footer note */}
+          {/* Footer */}
           <p className="text-[9px] text-slate-400 leading-relaxed pt-1 border-t border-slate-100">
             Scores are updated based on profile completeness, activity history, and verified data.
           </p>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
