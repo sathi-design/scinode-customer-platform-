@@ -642,9 +642,7 @@ function AnimatedProgressBar({ metric, delay }: { metric: ProfileMetric; delay: 
   );
 }
 
-// ─── Conversion bar chart (vertical columns) ──────────────────────────────────
-
-const CHART_H = 130; // px — available bar height
+// ─── Conversion bar chart (horizontal rows — mirrors Day 1 style) ─────────────
 
 function ConversionBarChart({
   stages,
@@ -671,78 +669,60 @@ function ConversionBarChart({
     return () => obs.disconnect();
   }, []);
 
-  const counts  = stages.map(s => period === "week" ? s.weekCount : s.monthCount);
+  const counts   = stages.map(s => period === "week" ? s.weekCount : s.monthCount);
   const maxCount = Math.max(...counts);
 
   return (
-    <div className="w-full">
-      {/* Bars */}
-      <div
-        ref={ref}
-        className="flex items-end gap-2 sm:gap-3"
-        style={{ height: CHART_H }}
-      >
-        {stages.map((stage, i) => {
-          const count  = counts[i];
-          const pct    = count / maxCount;
-          const barH   = entered ? Math.max(pct * (CHART_H - 24), 6) : 0; // 24px headroom for count label
-          const isHov  = hoverIdx === i;
+    <div ref={ref} className="w-full flex flex-col gap-2.5">
+      {stages.map((stage, i) => {
+        const count  = counts[i];
+        const pct    = count / maxCount;
+        const barW   = entered ? Math.max(pct * 100, 2) : 0;
+        const isHov  = hoverIdx === i;
 
-          return (
-            <div
-              key={i}
-              className="flex-1 flex flex-col items-center justify-end cursor-pointer select-none"
-              style={{ height: CHART_H }}
-              onMouseEnter={() => setHoverIdx(i)}
-              onMouseLeave={() => setHoverIdx(null)}
-            >
-              {/* Count label above bar */}
-              <span
-                className="text-[10.5px] font-bold mb-1 tabular-nums leading-none"
-                style={{
-                  color:      isHov ? stage.color : "#94a3b8",
-                  opacity:    entered ? 1 : 0,
-                  transition: `opacity 300ms ease ${200 + i * 70}ms`,
-                }}
-              >
-                {count}
-              </span>
-
-              {/* Bar */}
-              <div
-                className="w-full rounded-t-md"
-                style={{
-                  height:     barH,
-                  transition: `height 700ms cubic-bezier(0.4,0,0.2,1) ${i * 80}ms`,
-                  background: isHov
-                    ? stage.color
-                    : "repeating-linear-gradient(-45deg,rgba(100,116,139,0.18) 0px,rgba(100,116,139,0.18) 2px,transparent 2px,transparent 8px)",
-                  border:     isHov
-                    ? `1px solid ${stage.color}`
-                    : "1px solid rgba(100,116,139,0.18)",
-                }}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* X-axis labels */}
-      <div className="flex gap-2 sm:gap-3 mt-2">
-        {stages.map((stage, i) => (
-          <div key={i} className="flex-1 text-center">
+        return (
+          <div
+            key={i}
+            className="flex items-center gap-3 cursor-pointer select-none group"
+            onMouseEnter={() => setHoverIdx(i)}
+            onMouseLeave={() => setHoverIdx(null)}
+          >
+            {/* Stage label */}
             <span
-              className="text-[8.5px] font-medium leading-snug"
-              style={{ color: hoverIdx === i ? "#1e293b" : "#94a3b8" }}
+              className="text-[10.5px] font-semibold w-[90px] shrink-0 text-right leading-snug"
+              style={{ color: isHov ? "#1e293b" : "#94a3b8" }}
             >
               {stage.shortLabel}
             </span>
+
+            {/* Bar track */}
+            <div className="flex-1 h-[14px] bg-slate-100 rounded-sm overflow-hidden">
+              <div
+                className="h-full rounded-sm"
+                style={{
+                  width:      `${barW}%`,
+                  transition: `width 750ms cubic-bezier(0.4,0,0.2,1) ${i * 80}ms`,
+                  background: isHov
+                    ? stage.color
+                    : "repeating-linear-gradient(-45deg,rgba(100,116,139,0.22) 0px,rgba(100,116,139,0.22) 2px,transparent 2px,transparent 8px)",
+                }}
+              />
+            </div>
+
+            {/* Count */}
+            <span
+              className="text-[11px] font-bold tabular-nums w-8 shrink-0"
+              style={{ color: isHov ? "#1e293b" : "#94a3b8" }}
+            >
+              {count}
+            </span>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
+
 
 // ─── Opportunity Pipeline Section ─────────────────────────────────────────────
 
