@@ -34,6 +34,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DemandDiscoveryDay1 } from "./DemandDiscoverySection";
 
 // ─── Primitive types ───────────────────────────────────────────────────────────
 
@@ -1744,6 +1745,9 @@ function Day1DashboardInner({ profileType }: { profileType: ProfileType }) {
         ? <ResearcherOpenProjects />
         : <CROOpenProjects />
       }
+
+      {/* ── Demand Discovery (Day 1) ── */}
+      <DemandDiscoveryDay1 profileType={profileType} />
 
       {/* ── Quick Wins (Day 1 persona-specific) ── */}
       <Day1QuickWins profileType={profileType} />

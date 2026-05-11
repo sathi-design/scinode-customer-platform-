@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { DemandDiscoveryDay0 } from "./DemandDiscoverySection";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -391,6 +392,7 @@ export function CRODashboard() {
       <ActivationBanner />
       <OpenProjects />
       <PlatformStats />
+      <DemandDiscoveryDay0 profileType="cro" />
       <QuickWins />
       <Testimonials />
       <TalkToExpert />

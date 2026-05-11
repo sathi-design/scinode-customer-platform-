@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { DemandDiscoveryDay0 } from "./DemandDiscoverySection";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -324,6 +325,7 @@ export function ResearcherDashboard() {
       <ActivationBanner />
       <OpenProjects />
       <PlatformStats />
+      <DemandDiscoveryDay0 profileType="researcher" />
       <QuickWins />
       <Testimonials />
       <TalkToExpert />
