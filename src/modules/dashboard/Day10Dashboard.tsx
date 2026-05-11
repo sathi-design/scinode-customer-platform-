@@ -1277,10 +1277,10 @@ function OpportunityProjectCard({
           <button
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
             style={{
-              background: primaryColor,
+              background: "#0E6F5C",
               opacity:    hovered ? 1 : 0,
               transform:  hovered ? "scale(1) translateY(0px)" : "scale(0.8) translateY(4px)",
-              boxShadow:  hovered ? `0 0 14px ${primaryColor}55` : "none",
+              boxShadow:  hovered ? "0 0 14px rgba(14,111,92,0.45)" : "none",
               pointerEvents: hovered ? "auto" : "none",
             }}
           >
