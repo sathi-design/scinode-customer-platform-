@@ -139,60 +139,81 @@ function InsightPanel({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DAY 0  — blurred / locked preview
+// DAY 0  — aspirational locked preview
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const D0_CRO_PRODUCTS = [
-  { name: "Lithium Sulfite",          status: "Discovery inactive"                  },
-  { name: "Vitamin D3 Intermediate",  status: "Awaiting listing"                   },
-  { name: "KSM Intermediate",         status: "Signal locked"                      },
+  { name: "Lithium Sulfite",          category: "Specialty Chemical",    status: "Discovery inactive" },
+  { name: "Vitamin D3 Intermediate",  category: "Nutraceutical",         status: "Awaiting listing"   },
+  { name: "KSM Intermediate",         category: "Pharma Intermediate",   status: "Signal locked"      },
 ];
 
 const D0_RESEARCHER_PRODUCTS = [
-  { name: "Lithium Sulfite",          status: "Potential collaboration visibility"  },
-  { name: "Novel Catalyst Scaffold",  status: "Awaiting profile activation"        },
-  { name: "Peptide Intermediate",     status: "Discovery signals locked"           },
+  { name: "Lithium Sulfite",          category: "Specialty Chemical",    status: "Collaboration locked"     },
+  { name: "Novel Catalyst Scaffold",  category: "Research Material",     status: "Awaiting activation"      },
+  { name: "Peptide Intermediate",     category: "Bioactive Compound",    status: "Discovery signals locked" },
 ];
 
-function LockedProductCard({ name, status }: { name: string; status: string }) {
+// Ghost sparkline — clean dashed line, not blurred
+function GhostSparkline() {
   return (
-    <div className="flex-1 min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+    <div className="w-[72px] h-[28px] rounded-lg bg-slate-100 shrink-0 flex items-end px-1.5 pb-1 gap-[3px]">
+      {[4, 7, 5, 9, 6, 8, 10, 7].map((h, i) => (
+        <div
+          key={i}
+          className="flex-1 rounded-sm bg-slate-300/70"
+          style={{ height: `${h * 2}px` }}
+        />
+      ))}
+    </div>
+  );
+}
 
-      {/* Name + blurred sparkline placeholder */}
+function LockedProductCard({
+  name, category, status, primaryColor,
+}: { name: string; category: string; status: string; primaryColor: string }) {
+  return (
+    <div
+      className="flex-1 min-w-0 rounded-2xl p-4 flex flex-col gap-3"
+      style={{ background: "#f8fafc", border: "1.5px dashed #e2e8f0" }}
+    >
+      {/* Name + ghost sparkline */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-[12.5px] font-bold text-[#1e293b] leading-snug">{name}</p>
-          <span className="text-[10px] text-slate-400">No active signals yet</span>
+          <p className="text-[9.5px] text-slate-400 mt-0.5">{category}</p>
         </div>
-        {/* Blurred ghost sparkline */}
-        <div className="w-[72px] h-[28px] rounded-lg overflow-hidden relative shrink-0">
-          <div className="absolute inset-0 bg-slate-100 rounded-lg"/>
-          <svg width="72" height="28" viewBox="0 0 72 28" className="absolute inset-0 opacity-40" style={{ filter: "blur(2px)" }}>
-            <path d="M0,22 L12,18 L24,20 L36,14 L48,16 L60,10 L72,8"
-              fill="none" stroke="#94a3b8" strokeWidth="1.7" strokeLinecap="round"/>
-          </svg>
-        </div>
+        <GhostSparkline />
       </div>
 
-      <div className="h-px bg-slate-100"/>
+      <div className="h-px bg-slate-200"/>
 
-      {/* Blurred stats */}
-      <div className="flex items-stretch gap-0">
-        {[{ lbl: "enquiries" }, { lbl: "RFQs" }, { lbl: "conversion" }].map(({ lbl }, idx) => (
-          <div key={lbl} className={`flex flex-col gap-0.5 flex-1 ${idx > 0 ? "pl-3 border-l border-slate-100 ml-3" : ""}`}>
-            <div className="h-5 w-8 rounded bg-slate-200" style={{ filter: "blur(3px)" }}/>
+      {/* Metric placeholders — clean dashes, no blur */}
+      <div className="flex items-stretch">
+        {(["enquiries", "RFQs", "conversion"] as const).map((lbl, idx) => (
+          <div
+            key={lbl}
+            className={`flex flex-col gap-1 flex-1 ${idx > 0 ? "pl-3 border-l border-slate-200 ml-3" : ""}`}
+          >
+            <span className="text-[20px] font-black text-slate-300 leading-none select-none">—</span>
             <span className="text-[8.5px] text-slate-400">{lbl}</span>
           </div>
         ))}
       </div>
 
-      {/* Status + mini CTA */}
+      {/* Status pill + CTA */}
       <div className="flex items-center justify-between mt-auto">
-        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9.5px] font-medium bg-slate-100 text-slate-400 leading-none">
+        <span
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-medium leading-none"
+          style={{ background: `${primaryColor}0f`, border: `1px solid ${primaryColor}22`, color: `${primaryColor}cc` }}
+        >
           🔒 {status}
         </span>
-        <button className="flex items-center gap-1 text-[10px] font-semibold text-[#1a6b4f]">
-          Add product <ArrowRight size={10} strokeWidth={2.5}/>
+        <button
+          className="flex items-center gap-1 text-[10px] font-semibold hover:opacity-75 transition-opacity"
+          style={{ color: "#0E6F5C" }}
+        >
+          List product <ArrowRight size={10} strokeWidth={2.5}/>
         </button>
       </div>
     </div>
@@ -209,7 +230,7 @@ export function DemandDiscoveryDay0({ profileType }: { profileType: ProfileType 
   const canNext      = carouselStart + VISIBLE < products.length;
   const visible      = products.slice(carouselStart, carouselStart + VISIBLE);
 
-  const sectionLabel   = isCRO ? "CATALOGUE DISCOVERY"         : "RESEARCH PRODUCT SIGNALS";
+  const sectionLabel   = isCRO ? "CATALOGUE DISCOVERY"          : "RESEARCH PRODUCT SIGNALS";
   const sectionTitle   = isCRO
     ? "Buyers Search For Capabilities Through Product Discovery"
     : "Industry Discovery Begins With Your Product Listings";
@@ -217,11 +238,23 @@ export function DemandDiscoveryDay0({ profileType }: { profileType: ProfileType 
     ? "List technology-ready and commercially available products to receive qualified procurement enquiries."
     : "List your research-ready products and compounds to unlock visibility across active collaboration searches.";
 
+  // Right panel unlock bullets
+  const bigStat     = isCRO ? "3×"  : "42%";
+  const statLabel   = isCRO ? "more procurement visibility" : "more discovery interactions";
+  const unlockItems = isCRO
+    ? ["Buyer enquiry matching & alerts", "Procurement discovery placement", "Catalogue ranking in buyer searches"]
+    : ["Collaboration interest signals",  "Research discovery placement",    "Product visibility in industry searches"];
+  const rightInsight = isCRO
+    ? "CROs with active catalogues receive 3× more procurement visibility from qualified buyers."
+    : "Researchers with listed products receive 42% more discovery interactions across platforms.";
+
   return (
     <div className="flex flex-col lg:flex-row gap-4">
 
-      {/* LEFT 65% */}
+      {/* ── LEFT 65% ── */}
       <div className="flex-[65] min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+        {/* Header */}
         <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">{sectionLabel}</p>
@@ -230,15 +263,25 @@ export function DemandDiscoveryDay0({ profileType }: { profileType: ProfileType 
             </h2>
             <p className="text-[11px] text-slate-400 mt-1 leading-relaxed max-w-lg">{sectionSubtext}</p>
           </div>
-          <button className="flex items-center gap-1 text-[11px] font-semibold shrink-0 hover:opacity-75 transition-opacity" style={{ color: primaryColor }}>
+          <button
+            className="flex items-center gap-1 text-[11px] font-semibold shrink-0 hover:opacity-75 transition-opacity"
+            style={{ color: primaryColor }}
+          >
             Add Products <ArrowRight size={11} strokeWidth={2.5}/>
           </button>
         </div>
 
+        {/* Cards */}
         <div className="px-5 sm:px-6 pt-4 pb-5 relative">
           <div className="flex gap-4">
             {visible.map((p, i) => (
-              <LockedProductCard key={carouselStart + i} name={p.name} status={p.status}/>
+              <LockedProductCard
+                key={carouselStart + i}
+                name={p.name}
+                category={p.category}
+                status={p.status}
+                primaryColor={primaryColor}
+              />
             ))}
           </div>
           <CarouselNav
@@ -251,24 +294,77 @@ export function DemandDiscoveryDay0({ profileType }: { profileType: ProfileType 
         </div>
       </div>
 
-      {/* RIGHT 35% */}
-      <InsightPanel
-        primaryColor={primaryColor}
-        heading="Visibility Unlocks After Listing"
-        stat={isCRO ? "3×" : "42%"}
-        statLabel={isCRO ? "more procurement visibility" : "more discovery interactions"}
-        insight={
-          isCRO
-            ? "CROs with active catalogues receive 3× more procurement visibility from qualified buyers."
-            : "Researchers with listed products receive 42% more discovery interactions across platforms."
-        }
-        ctaLabel="Add Products"
-        extraContent={
-          <p className="text-[9.5px] text-slate-500 leading-snug -mt-1">
-            List technology-ready, in-stock, and collaboration-ready products to increase visibility across industry searches.
+      {/* ── RIGHT 35% — custom unlock panel ── */}
+      <div className="flex-[35] lg:min-w-[240px] lg:max-w-[320px]">
+        <div
+          className="h-full rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden border"
+          style={{ background: `linear-gradient(140deg,${primaryColor}12 0%,${primaryColor}05 100%)`, borderColor: `${primaryColor}20` }}
+        >
+          {/* Ambient glow */}
+          <div className="pointer-events-none absolute -top-14 -right-14 w-44 h-44 rounded-full opacity-[0.15]"
+            style={{ background: `radial-gradient(circle,${primaryColor} 0%,transparent 70%)`, filter: "blur(40px)" }}/>
+
+          {/* Heading */}
+          <p className="text-[8.5px] font-black uppercase tracking-widest" style={{ color: `${primaryColor}aa` }}>
+            What You Unlock
           </p>
-        }
-      />
+
+          {/* Big stat */}
+          <div
+            className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+            style={{ background: `${primaryColor}10`, border: `1px solid ${primaryColor}20` }}
+          >
+            <span
+              className="text-[32px] font-black leading-none"
+              style={{ color: primaryColor, fontFamily: "Poppins,sans-serif" }}
+            >
+              {bigStat}
+            </span>
+            <span className="text-[10px] text-slate-500 leading-snug font-medium">{statLabel}</span>
+          </div>
+
+          {/* Unlock bullets */}
+          <div className="flex flex-col gap-2">
+            {unlockItems.map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <span
+                  className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center"
+                  style={{ background: `${primaryColor}15`, border: `1px solid ${primaryColor}28` }}
+                >
+                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                    <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke={primaryColor} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <p className="text-[10.5px] text-[#334155] leading-snug">{item}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Insight */}
+          <div
+            className="flex items-start gap-2 p-3 rounded-xl flex-1"
+            style={{ background: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.9)" }}
+          >
+            <span className="text-[14px] shrink-0 mt-0.5">💡</span>
+            <p className="text-[10px] text-[#475569] leading-relaxed">{rightInsight}</p>
+          </div>
+
+          {/* CTA */}
+          <button
+            className="w-full py-2.5 text-[12px] font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-[0.98] hover:opacity-90"
+            style={{ background: primaryColor, color: "white", boxShadow: `0 2px 14px ${primaryColor}40` }}
+          >
+            Add Products <ArrowRight size={12} strokeWidth={2.5}/>
+          </button>
+
+          <button
+            className="w-full text-center text-[10.5px] font-medium hover:opacity-70 transition-opacity -mt-1"
+            style={{ color: primaryColor }}
+          >
+            Learn what gets discovered
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
