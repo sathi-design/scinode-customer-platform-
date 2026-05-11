@@ -1326,9 +1326,20 @@ function UrgencyCountdownCard({ profileType }: { profileType: ProfileType }) {
     ? "Proposal response due in 2 days · Priority industry requirement"
     : "Customer awaiting technical response · Commercial review in progress";
   const ctaLabel    = isResearcher ? "Review opportunity" : "Send proposal";
-  const priorityTag = isResearcher ? "Priority Review" : "Fast-track";
-  const industryTag = isResearcher ? "Energy Storage"  : "Pharmaceuticals";
-  const budgetTag   = isResearcher ? "$680K"           : "€2.4M";
+  const priorityTag = isResearcher ? "Priority Review"  : "Fast-track";
+  const industryTag = isResearcher ? "Energy Storage"   : "Pharmaceuticals";
+  const budgetTag   = isResearcher ? "$680K"            : "€2.4M";
+  const requirements = isResearcher
+    ? [
+        "Solid-state electrolyte synthesis expertise",
+        "Battery testing laboratory access required",
+        "Prior grant or industry R&D experience",
+      ]
+    : [
+        "cGMP-certified manufacturing facility",
+        "50g → 5kg batch scale-up capability",
+        "Phase II timeline compliance required",
+      ];
 
   return (
     <div
@@ -1340,7 +1351,7 @@ function UrgencyCountdownCard({ profileType }: { profileType: ProfileType }) {
         style={{ background: "radial-gradient(circle,#4ade80 0%,transparent 70%)", filter: "blur(52px)" }} />
 
       {/* ── Main content ────────────────────────────────── */}
-      <div className="flex flex-col gap-4 p-5 flex-1">
+      <div className="flex flex-col gap-4 p-5 flex-1 justify-between">
 
         {/* Pulsing live dot + label */}
         <div className="flex items-center gap-2">
@@ -1433,6 +1444,29 @@ function UrgencyCountdownCard({ profileType }: { profileType: ProfileType }) {
           >
             📋 {budgetTag}
           </span>
+        </div>
+
+        {/* Key requirements */}
+        <div
+          className="flex flex-col gap-2 rounded-xl p-3.5"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+        >
+          <p className="text-[8px] font-black uppercase tracking-widest text-white/30 mb-0.5">
+            Key Requirements
+          </p>
+          {requirements.map((req, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span
+                className="mt-0.5 w-3.5 h-3.5 rounded-full shrink-0 flex items-center justify-center"
+                style={{ background: "rgba(74,222,128,0.15)", border: "1px solid rgba(74,222,128,0.25)" }}
+              >
+                <svg width="7" height="7" viewBox="0 0 7 7" fill="none">
+                  <path d="M1 3.5L2.8 5.2L6 1.5" stroke="#4ade80" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <p className="text-[10px] text-white/55 leading-snug">{req}</p>
+            </div>
+          ))}
         </div>
       </div>
 
