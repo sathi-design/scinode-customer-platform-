@@ -1278,8 +1278,10 @@ function OpportunityProjectCard({
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
             style={{
               background: primaryColor,
-              transform:  hovered ? "scale(1.12)" : "scale(1)",
+              opacity:    hovered ? 1 : 0,
+              transform:  hovered ? "scale(1) translateY(0px)" : "scale(0.8) translateY(4px)",
               boxShadow:  hovered ? `0 0 14px ${primaryColor}55` : "none",
+              pointerEvents: hovered ? "auto" : "none",
             }}
           >
             <ArrowRight size={13} strokeWidth={2.5} color="white" />
