@@ -1165,10 +1165,11 @@ const RESEARCHER_OPPORTUNITIES: OpportunityCard[] = [
 
 // ─── Opportunity project card ─────────────────────────────────────────────────
 
-const MATCH_COLORS: Record<OpportunityCard["matchLabel"], { bg: string; text: string }> = {
-  "HIGH MATCH": { bg: "#1a6b4f", text: "#B2F3B7" },
-  "STRONG FIT": { bg: "#2F66D0", text: "white"   },
-  "EMERGING":   { bg: "#5B3BA8", text: "white"   },
+// Match pill config: dot colour + light pill tint
+const MATCH_PILL: Record<OpportunityCard["matchLabel"], { dot: string; bg: string; border: string; label: string }> = {
+  "HIGH MATCH": { dot: "#1a6b4f", bg: "rgba(26,107,79,0.10)",  border: "rgba(26,107,79,0.22)",  label: "Well Matched"  },
+  "STRONG FIT": { dot: "#2F66D0", bg: "rgba(47,102,208,0.10)", border: "rgba(47,102,208,0.22)", label: "Strong Fit"    },
+  "EMERGING":   { dot: "#5B3BA8", bg: "rgba(91,59,168,0.10)",  border: "rgba(91,59,168,0.22)",  label: "Emerging"      },
 };
 
 function OpportunityProjectCard({
@@ -1179,100 +1180,109 @@ function OpportunityProjectCard({
   primaryColor: string;
 }) {
   const [hovered, setHovered] = useState(false);
-  const mc = MATCH_COLORS[card.matchLabel];
+  const mp        = MATCH_PILL[card.matchLabel];
   const showTimer = card.daysLeft <= 21;
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden cursor-pointer flex-1 min-w-0 select-none"
-      style={{
-        height:              240,
-        backgroundImage:     `url(https://picsum.photos/seed/${card.imgSeed}/400/240)`,
-        backgroundSize:      "cover",
-        backgroundPosition:  "center",
-      }}
+      className="flex flex-col flex-1 min-w-0 rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-white cursor-pointer select-none transition-shadow duration-200 hover:shadow-md"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Dark gradient overlay — stronger at bottom */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, rgba(0,18,10,0.52) 0%, rgba(0,18,10,0.92) 100%)" }}
-      />
+      {/* ── Image section ──────────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ height: 150 }}>
+        <img
+          src={`https://picsum.photos/seed/${card.imgSeed}/400/300`}
+          alt={card.title}
+          className="w-full h-full object-cover transition-transform duration-500"
+          style={{ transform: hovered ? "scale(1.04)" : "scale(1)" }}
+        />
 
-      {/* ── Top row: type badge + Match Relevance ── */}
-      <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
-        <span
-          className="text-[8px] font-bold uppercase px-2 py-1 rounded-full leading-none border backdrop-blur-sm"
-          style={card.type === "exclusive"
-            ? { background: "rgba(245,158,11,0.22)", borderColor: "rgba(245,158,11,0.55)", color: "#fbbf24" }
-            : { background: "rgba(255,255,255,0.14)", borderColor: "rgba(255,255,255,0.30)", color: "rgba(255,255,255,0.85)" }
-          }
-        >
-          {card.type === "exclusive" ? "★ Exclusive" : "Open"}
-        </span>
-        <div className="flex flex-col items-end">
-          <span className="text-[8px] text-white/55 font-medium leading-none mb-0.5">Match Relevance</span>
-          <span className="text-[22px] font-black text-white leading-none tabular-nums" style={{ fontFamily: "Poppins,sans-serif" }}>
-            {card.matchPct}%
-          </span>
-        </div>
-      </div>
+        {/* Subtle scrim — just enough for text legibility */}
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.08) 60%, transparent 100%)" }}
+        />
 
-      {/* ── Status badge ── */}
-      <div className="absolute top-12 left-3">
-        <span
-          className="text-[8px] font-bold uppercase px-2 py-1 rounded-full leading-none"
-          style={{ background: mc.bg, color: mc.text }}
-        >
-          {card.matchLabel}
-        </span>
-      </div>
-
-      {/* ── Urgency timer pill ── */}
-      {showTimer && (
-        <div className="absolute left-3" style={{ bottom: 100 }}>
+        {/* ── Bottom strip: type pill + match % ── */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6 flex items-end justify-between gap-2">
+          {/* Type pill */}
           <span
-            className="text-[8px] font-bold px-2 py-1 rounded-full leading-none flex items-center gap-1"
-            style={{ background: "rgba(239,68,68,0.22)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.35)" }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9.5px] font-semibold leading-none backdrop-blur-sm"
+            style={card.type === "exclusive"
+              ? { background: "rgba(245,158,11,0.25)", border: "1px solid rgba(245,158,11,0.50)", color: "#fde68a" }
+              : { background: "rgba(0,0,0,0.45)",      border: "1px solid rgba(255,255,255,0.22)", color: "rgba(255,255,255,0.92)" }
+            }
           >
-            ⏱ {card.daysLeft}d {card.hoursLeft}h left
+            <span className="text-[10px]">{card.type === "exclusive" ? "★" : "★"}</span>
+            {card.type === "exclusive" ? "Exclusive" : "Open Project"}
           </span>
-        </div>
-      )}
 
-      {/* ── Bottom content overlay ── */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 flex flex-col gap-1">
-        {/* Funder · industry */}
+          {/* Match % */}
+          <div className="flex items-baseline gap-0.5">
+            <span
+              className="font-black text-white leading-none tabular-nums"
+              style={{ fontSize: 24, fontFamily: "Poppins,sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}
+            >
+              {card.matchPct}%
+            </span>
+            <span className="text-white/65 text-[9px] font-medium mb-0.5">Match</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── White content section ──────────────────────────────── */}
+      <div className="flex flex-col flex-1 px-3.5 pt-3 pb-3 gap-2">
+
+        {/* Pills row: match quality + industry + timer */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[8.5px] text-white/50 font-medium leading-none">{card.funder}</span>
-          <span className="text-white/25 text-[8px]">·</span>
+          {/* Match quality pill (dot + label) */}
           <span
-            className="text-[8px] px-1.5 py-0.5 rounded-full font-medium leading-none"
-            style={{ background: "rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.65)" }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold leading-none"
+            style={{ background: mp.bg, border: `1px solid ${mp.border}`, color: mp.dot }}
           >
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: mp.dot }} />
+            {mp.label}
+          </span>
+
+          {/* Industry pill */}
+          <span className="px-2.5 py-1 rounded-full text-[9.5px] font-medium leading-none bg-slate-100 text-slate-500">
             {card.industry}
           </span>
+
+          {/* Timer pill — shown when ≤21 days */}
+          {showTimer && (
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-[9.5px] font-semibold leading-none"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.22)", color: "#dc2626" }}
+            >
+              ⏱ {card.daysLeft}d {card.hoursLeft}h left
+            </span>
+          )}
         </div>
 
         {/* Title */}
-        <p className="text-[11px] font-bold text-white leading-snug line-clamp-2">{card.title}</p>
+        <h3 className="text-[13px] font-bold text-[#1e293b] leading-snug line-clamp-2 flex-1">
+          {card.title}
+        </h3>
 
         {/* Description */}
-        <p className="text-[9px] text-white/50 leading-snug line-clamp-1">{card.description}</p>
+        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+          {card.description}
+        </p>
 
-        {/* Budget + hover arrow */}
+        {/* Footer: funder + arrow */}
         <div className="flex items-center justify-between mt-0.5">
-          <span className="text-[8.5px] text-white/45 font-medium">📋 {card.budget}</span>
+          <span className="text-[10px] text-slate-400 font-medium truncate">{card.funder}</span>
           <button
-            className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
             style={{
-              background: hovered ? primaryColor : "rgba(255,255,255,0.18)",
-              transform:  hovered ? "scale(1.15)"  : "scale(1)",
-              boxShadow:  hovered ? `0 0 12px ${primaryColor}66` : "none",
+              background: primaryColor,
+              transform:  hovered ? "scale(1.12)" : "scale(1)",
+              boxShadow:  hovered ? `0 0 14px ${primaryColor}55` : "none",
             }}
           >
-            <ArrowRight size={11} strokeWidth={2.5} className="text-white" />
+            <ArrowRight size={13} strokeWidth={2.5} color="white" />
           </button>
         </div>
       </div>
