@@ -1606,6 +1606,297 @@ function TrendingOpportunitiesSection({ profileType }: { profileType: ProfileTyp
   );
 }
 
+// ─── Demand Discovery Section ─────────────────────────────────────────────────
+
+interface SignalProduct {
+  id:          string;
+  name:        string;
+  spark:       number[];   // 8 normalised data points for sparkline
+  trendPct:    number;
+  enquiries:   number;
+  rfqs?:       number;
+  shortlisted?:number;
+  discussions: number;
+  conversion:  number;
+  badge:       string;
+  badgeColor:  string;
+  ctaLabel:    string;
+}
+
+const CRO_SIGNAL_PRODUCTS: SignalProduct[] = [
+  { id:"ls-cro",  name:"Lithium Sulfite",         spark:[8,12,10,18,22,19,28,32], trendPct:21, enquiries:32, rfqs:6,  discussions:2, conversion:19, badge:"High Buyer Interest", badgeColor:"#1a6b4f", ctaLabel:"Manage Enquiries"    },
+  { id:"vd3-cro", name:"Vitamin D3 Intermediate", spark:[5,8,9,12,14,17,19,21],  trendPct:9,  enquiries:21, rfqs:3,  discussions:1, conversion:14, badge:"Active Discovery",    badgeColor:"#2F66D0", ctaLabel:"Review Buyer Signals" },
+  { id:"ksm-cro", name:"KSM-47 Intermediate",     spark:[3,4,6,5,8,9,11,13],     trendPct:7,  enquiries:13, rfqs:1,  discussions:0, conversion:8,  badge:"Emerging",           badgeColor:"#5B3BA8", ctaLabel:"View Signals"         },
+];
+
+const RESEARCHER_SIGNAL_PRODUCTS: SignalProduct[] = [
+  { id:"ls-res",  name:"Lithium Sulfite",     spark:[6,10,9,15,18,22,25,28], trendPct:18, enquiries:28, shortlisted:4, discussions:1, conversion:14, badge:"Growing Interest", badgeColor:"#1a6b4f", ctaLabel:"Open Pipeline"        },
+  { id:"cat-res", name:"Catalyst Scaffold",   spark:[4,7,8,11,13,15,17,19], trendPct:11, enquiries:19, shortlisted:2, discussions:2, conversion:11, badge:"Emerging Demand",  badgeColor:"#2F66D0", ctaLabel:"Review Match Quality" },
+  { id:"pep-res", name:"Peptide Intermediate",spark:[2,3,4,5,6,7,8,9],      trendPct:5,  enquiries:9,  shortlisted:1, discussions:0, conversion:6,  badge:"Early Signal",     badgeColor:"#5B3BA8", ctaLabel:"View Enquiries"       },
+];
+
+// Mini sparkline ---------------------------------------------------------------
+function Sparkline({ points, color, uid }: { points: number[]; color: string; uid: string }) {
+  const W = 72, H = 28;
+  const min = Math.min(...points), max = Math.max(...points);
+  const range = (max - min) || 1;
+  const xs = points.map((_, i) => (i / (points.length - 1)) * W);
+  const ys = points.map(p => H - 4 - ((p - min) / range) * (H - 8));
+  const pathD = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(" ");
+  const areaD = `${pathD} L${W},${H} L0,${H} Z`;
+  const gid   = `sg-${uid}`;
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={color} stopOpacity="0.22"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gid})`}/>
+      <path d={pathD} fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx={xs[xs.length-1]} cy={ys[ys.length-1]} r="2.5" fill={color}/>
+    </svg>
+  );
+}
+
+// Signal product card ----------------------------------------------------------
+function SignalProductCard({
+  product, isCRO, primaryColor,
+}: { product: SignalProduct; isCRO: boolean; primaryColor: string }) {
+  const bbg    = product.badgeColor + "18";
+  const bbr    = product.badgeColor + "33";
+
+  return (
+    <div className="flex-1 min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3 hover:shadow-md transition-shadow duration-200">
+
+      {/* Name + sparkline */}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-[12.5px] font-bold text-[#1e293b] leading-snug">{product.name}</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span className="text-[10px] font-semibold" style={{ color: product.badgeColor }}>↗ +{product.trendPct}%</span>
+            <span className="text-[9px] text-slate-400">this week</span>
+          </div>
+        </div>
+        <Sparkline points={product.spark} color={product.badgeColor} uid={product.id}/>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-slate-100"/>
+
+      {/* Stats row */}
+      <div className="flex items-stretch gap-0">
+        {/* Enquiries */}
+        <div className="flex flex-col gap-0.5 flex-1">
+          <span className="text-[19px] font-black text-[#1e293b] leading-none">{product.enquiries}</span>
+          <span className="text-[8.5px] text-slate-400">{isCRO ? "enquiries" : "enquiries"}</span>
+        </div>
+        {/* RFQs (CRO) / Shortlisted (Researcher) */}
+        {isCRO && product.rfqs !== undefined && (
+          <>
+            <div className="w-px bg-slate-100 mx-3 self-stretch"/>
+            <div className="flex flex-col gap-0.5 flex-1">
+              <span className="text-[19px] font-black text-[#1e293b] leading-none">{product.rfqs}</span>
+              <span className="text-[8.5px] text-slate-400">RFQs</span>
+            </div>
+          </>
+        )}
+        {!isCRO && product.shortlisted !== undefined && (
+          <>
+            <div className="w-px bg-slate-100 mx-3 self-stretch"/>
+            <div className="flex flex-col gap-0.5 flex-1">
+              <span className="text-[19px] font-black text-[#1e293b] leading-none">{product.shortlisted}</span>
+              <span className="text-[8.5px] text-slate-400">shortlisted</span>
+            </div>
+          </>
+        )}
+        {/* Conversion */}
+        <div className="w-px bg-slate-100 mx-3 self-stretch"/>
+        <div className="flex flex-col gap-0.5 flex-1 items-end">
+          <span className="text-[19px] font-black leading-none" style={{ color: primaryColor }}>{product.conversion}%</span>
+          <span className="text-[8.5px] text-slate-400">conversion</span>
+        </div>
+      </div>
+
+      {/* Badge + CTA */}
+      <div className="flex items-center justify-between mt-auto">
+        <span
+          className="px-2.5 py-1 rounded-full text-[9.5px] font-semibold leading-none"
+          style={{ background: bbg, border: `1px solid ${bbr}`, color: product.badgeColor }}
+        >
+          {product.badge}
+        </span>
+        <button className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: primaryColor }}>
+          {product.ctaLabel} <ArrowRight size={10} strokeWidth={2.5}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Full section -----------------------------------------------------------------
+function DemandDiscoverySection({ profileType }: { profileType: ProfileType }) {
+  const [carouselStart, setCarouselStart] = useState(0);
+  const isCRO        = profileType === "cro";
+  const primaryColor = isCRO ? "#2F66D0" : "#5B3BA8";
+  const products     = isCRO ? CRO_SIGNAL_PRODUCTS : RESEARCHER_SIGNAL_PRODUCTS;
+  const VISIBLE      = 2;
+  const canPrev      = carouselStart > 0;
+  const canNext      = carouselStart + VISIBLE < products.length;
+  const visible      = products.slice(carouselStart, carouselStart + VISIBLE);
+
+  // Section text
+  const sectionLabel   = isCRO ? "CATALOGUE PERFORMANCE INTELLIGENCE" : "PRODUCT PERFORMANCE INTELLIGENCE";
+  const sectionTitle   = isCRO
+    ? "Your Product Catalogue Is Converting Into Buyer Demand"
+    : "Your Research Assets Are Driving Collaboration Discovery";
+  const sectionSubtext = isCRO
+    ? "Track procurement discovery activity and identify which products are driving buyer engagement."
+    : "Track which products are attracting attention and converting into active scientific opportunities.";
+
+  // Right panel
+  const rightHeading = isCRO ? "Top Buyer Interest"    : "Top Performing Asset";
+  const totalEvents  = isCRO ? 48                      : 32;
+  const eventsLabel  = isCRO ? "product discovery events this week" : "discovery events this week";
+  const rightStats   = isCRO
+    ? [{ val:"132", lbl:"impressions" }, { val:"32", lbl:"enquiries" }, { val:"6", lbl:"RFQs" }]
+    : [{ val:"92",  lbl:"profile views" }, { val:"28", lbl:"enquiries" }, { val:"4", lbl:"shortlist adds" }];
+  const rightInsight = isCRO
+    ? "Ranked #3 in active pharma sourcing searches this week"
+    : "Ranking in the top 8% of discovery searches across your field";
+  const rightCTA     = isCRO ? "Expand Catalogue" : "Boost Visibility";
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-4">
+
+      {/* ── LEFT 65% — signal cards ── */}
+      <div className="flex-[65] min-w-0 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+        {/* Header */}
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">{sectionLabel}</p>
+            <h2 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+              {sectionTitle}
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-1 leading-relaxed max-w-lg">{sectionSubtext}</p>
+          </div>
+          <button className="flex items-center gap-1 text-[11px] font-semibold shrink-0 hover:opacity-75 transition-opacity" style={{ color: primaryColor }}>
+            View all <ArrowRight size={11} strokeWidth={2.5}/>
+          </button>
+        </div>
+
+        {/* Cards + carousel */}
+        <div className="px-5 sm:px-6 pt-4 pb-5 relative">
+          <div className="flex gap-4">
+            {visible.map((product, i) => (
+              <SignalProductCard
+                key={carouselStart + i}
+                product={product}
+                isCRO={isCRO}
+                primaryColor={primaryColor}
+              />
+            ))}
+          </div>
+
+          {/* Chevron — prev */}
+          {canPrev && (
+            <button
+              onClick={() => setCarouselStart(s => Math.max(s - 1, 0))}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path d="M8 2L3 6.5L8 11" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </button>
+          )}
+          {/* Chevron — next */}
+          {canNext && (
+            <button
+              onClick={() => setCarouselStart(s => Math.min(s + 1, products.length - VISIBLE))}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors z-10"
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path d="M5 2L10 6.5L5 11" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Dot indicators */}
+          <div className="flex items-center justify-center gap-1.5 mt-4">
+            {Array.from({ length: products.length - VISIBLE + 1 }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCarouselStart(i)}
+                className="rounded-full transition-all duration-250"
+                style={{ width: carouselStart === i ? 18 : 6, height: 6, background: carouselStart === i ? primaryColor : "#cbd5e1" }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT 35% — insight panel ── */}
+      <div className="flex-[35] lg:min-w-[240px] lg:max-w-[320px]">
+        <div
+          className="h-full rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden border"
+          style={{
+            background: `linear-gradient(140deg,${primaryColor}14 0%,${primaryColor}06 100%)`,
+            borderColor: `${primaryColor}22`,
+          }}
+        >
+          {/* Ambient glow */}
+          <div className="pointer-events-none absolute -top-14 -right-14 w-44 h-44 rounded-full opacity-[0.18]"
+            style={{ background: `radial-gradient(circle,${primaryColor} 0%,transparent 70%)`, filter: "blur(38px)" }}/>
+
+          {/* Heading + product */}
+          <div>
+            <p className="text-[8.5px] font-black uppercase tracking-widest mb-1" style={{ color: primaryColor + "aa" }}>
+              {rightHeading}
+            </p>
+            <p className="text-[16px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+              Lithium Sulfite
+            </p>
+          </div>
+
+          {/* Total events badge */}
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl" style={{ background: `${primaryColor}12`, border: `1px solid ${primaryColor}22` }}>
+            <span className="text-[26px] font-black leading-none" style={{ color: primaryColor, fontFamily: "Poppins,sans-serif" }}>
+              {totalEvents}
+            </span>
+            <span className="text-[10px] text-slate-500 leading-snug">{eventsLabel}</span>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2">
+            {rightStats.map(({ val, lbl }) => (
+              <div key={lbl} className="flex flex-col items-center gap-0.5 py-2.5 rounded-xl bg-white/70 border border-white/90">
+                <span className="text-[16px] font-black text-[#1e293b] leading-none">{val}</span>
+                <span className="text-[8px] text-slate-400 text-center leading-snug">{lbl}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Insight */}
+          <div className="flex items-start gap-2 p-3 rounded-xl flex-1" style={{ background: "rgba(255,255,255,0.60)", border: "1px solid rgba(255,255,255,0.85)" }}>
+            <span className="text-[15px] shrink-0 mt-0.5">💡</span>
+            <p className="text-[10.5px] text-[#1e293b] font-medium leading-relaxed">{rightInsight}</p>
+          </div>
+
+          {/* CTA */}
+          <button
+            className="w-full py-2.5 text-[12px] font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-[0.98] hover:opacity-90"
+            style={{ background: primaryColor, color: "white", boxShadow: `0 2px 14px ${primaryColor}40` }}
+          >
+            {rightCTA} <ArrowRight size={12} strokeWidth={2.5}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Public exports ────────────────────────────────────────────────────────────
 
 export function Day10ResearcherDashboard() {
@@ -1614,6 +1905,7 @@ export function Day10ResearcherDashboard() {
       <Day10HeroSection profileType="researcher" />
       <OpportunityPipelineSection profileType="researcher" />
       <TrendingOpportunitiesSection profileType="researcher" />
+      <DemandDiscoverySection profileType="researcher" />
     </div>
   );
 }
@@ -1624,6 +1916,7 @@ export function Day10CRODashboard() {
       <Day10HeroSection profileType="cro" />
       <OpportunityPipelineSection profileType="cro" />
       <TrendingOpportunitiesSection profileType="cro" />
+      <DemandDiscoverySection profileType="cro" />
     </div>
   );
 }
