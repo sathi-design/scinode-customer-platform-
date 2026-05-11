@@ -1302,131 +1302,147 @@ function UrgencyCountdownCard({ profileType }: { profileType: ProfileType }) {
     return () => clearInterval(id);
   }, []);
 
-  const isResearcher  = profileType === "researcher";
-  const BASE          = 2 * 86400 + 11 * 3600 + 48 * 60;
-  const rem           = Math.max(BASE - tick, 0);
-  const days          = Math.floor(rem / 86400);
-  const hours         = Math.floor((rem % 86400) / 3600);
-  const minutes       = Math.floor((rem % 3600) / 60);
-  const seconds       = rem % 60;
+  const isResearcher = profileType === "researcher";
 
-  const urgencyLabel  = isResearcher ? "🔥 PROJECT NEEDING QUICK REVIEW" : "⏳ FAST-TRACK OPPORTUNITY";
-  const projectTitle  = isResearcher
+  // Countdown math
+  const BASE    = 2 * 86400 + 11 * 3600 + 48 * 60;
+  const TOTAL   = 5 * 86400; // 5-day total response window
+  const rem     = Math.max(BASE - tick, 0);
+  const pctUsed = Math.min(100, Math.round(((TOTAL - rem) / TOTAL) * 100));
+  const days    = Math.floor(rem / 86400);
+  const hours   = Math.floor((rem % 86400) / 3600);
+  const minutes = Math.floor((rem % 3600) / 60);
+  const seconds = rem % 60;
+
+  // Progress bar colour: green → amber → red as deadline approaches
+  const barColor = pctUsed > 80 ? "#ef4444" : pctUsed > 60 ? "#f59e0b" : "#4ade80";
+
+  // Persona content
+  const urgencyLabel = isResearcher ? "🔥 PROJECT NEEDING QUICK REVIEW" : "⏳ FAST-TRACK OPPORTUNITY";
+  const projectTitle = isResearcher
     ? "Advanced electrolyte additives for solid-state batteries"
     : "Pilot-scale peptide manufacturing support";
-  const subtitle      = isResearcher
+  const subtitle = isResearcher
     ? "Proposal response due in 2 days · Priority industry requirement"
     : "Customer awaiting technical response · Commercial review in progress";
-  const ctaLabel      = isResearcher ? "Review opportunity" : "Send proposal";
+  const ctaLabel    = isResearcher ? "Review opportunity" : "Send proposal";
+  const priorityTag = isResearcher ? "Priority Review" : "Fast-track";
+  const industryTag = isResearcher ? "Energy Storage"  : "Pharmaceuticals";
+  const budgetTag   = isResearcher ? "$680K"           : "€2.4M";
 
   return (
     <div
-      className="h-full rounded-2xl p-5 flex flex-col gap-3.5 relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg,#00200f 0%,#001a0a 52%,#071422 100%)", minHeight: 380 }}
+      className="h-full rounded-2xl flex flex-col relative overflow-hidden"
+      style={{ background: "linear-gradient(160deg,#001c0e 0%,#001408 55%,#080f1e 100%)", minHeight: 380 }}
     >
-      {/* Ambient glows */}
-      <div className="pointer-events-none absolute -top-16 -right-16 w-52 h-52 rounded-full opacity-20"
-        style={{ background: "radial-gradient(circle,#4ade80 0%,transparent 70%)", filter: "blur(40px)" }} />
-      <div className="pointer-events-none absolute bottom-0 left-0 w-40 h-40 rounded-full opacity-10"
-        style={{ background: "radial-gradient(circle,#818cf8 0%,transparent 70%)", filter: "blur(36px)" }} />
+      {/* Ambient glow — top right */}
+      <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-[0.13]"
+        style={{ background: "radial-gradient(circle,#4ade80 0%,transparent 70%)", filter: "blur(52px)" }} />
 
-      {/* Label */}
-      <p className="text-[8.5px] font-black uppercase tracking-[0.18em] text-emerald-300/75 leading-snug">
-        {urgencyLabel}
-      </p>
+      {/* ── Main content ────────────────────────────────── */}
+      <div className="flex flex-col gap-4 p-5 flex-1">
 
-      {/* Project title + subtitle */}
-      <div>
-        <h3 className="text-[15px] font-bold text-white leading-snug" style={{ fontFamily: "Poppins,sans-serif" }}>
-          {projectTitle}
-        </h3>
-        <p className="text-[9.5px] text-white/45 mt-1.5 leading-relaxed">{subtitle}</p>
-      </div>
-
-      {/* Countdown grid */}
-      <div className="grid grid-cols-4 gap-1.5">
-        {[
-          { val: days,    lbl: "DAYS"  },
-          { val: hours,   lbl: "HRS"   },
-          { val: minutes, lbl: "MINS"  },
-        ].map(({ val, lbl }) => (
-          <div
-            key={lbl}
-            className="flex flex-col items-center gap-1 py-2.5 rounded-xl col-span-1"
-            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.09)" }}
-          >
-            <span
-              className="text-[24px] font-black text-white leading-none tabular-nums"
-              style={{ fontFamily: "Poppins,sans-serif" }}
-            >
-              {String(val).padStart(2, "0")}
-            </span>
-            <span className="text-[7px] font-bold text-white/30 tracking-widest">{lbl}</span>
-          </div>
-        ))}
-        {/* Seconds — ticking, red-tinted */}
-        <div
-          className="flex flex-col items-center gap-1 py-2.5 rounded-xl col-span-1"
-          style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.22)" }}
-        >
+        {/* Pulsing live dot + label */}
+        <div className="flex items-center gap-2">
           <span
-            className="text-[24px] font-black text-red-400 leading-none tabular-nums"
-            style={{ fontFamily: "Poppins,sans-serif" }}
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ background: "#4ade80", boxShadow: "0 0 6px #4ade80", animation: "d10-pulse 1.8s ease-in-out infinite" }}
+          />
+          <p className="text-[8px] font-black uppercase tracking-[0.15em] text-emerald-300/80 leading-none">
+            {urgencyLabel}
+          </p>
+        </div>
+
+        {/* Title + subtitle */}
+        <div className="flex flex-col gap-2">
+          <h3 className="text-[15px] font-bold text-white leading-snug" style={{ fontFamily: "Poppins,sans-serif" }}>
+            {projectTitle}
+          </h3>
+          <p className="text-[10px] text-white/45 leading-relaxed">{subtitle}</p>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+
+        {/* Countdown — DD / HH / MM in 3 equal boxes */}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            {[
+              { val: days,    lbl: "DAYS" },
+              { val: hours,   lbl: "HRS"  },
+              { val: minutes, lbl: "MINS" },
+            ].map(({ val, lbl }) => (
+              <div
+                key={lbl}
+                className="flex-1 flex flex-col items-center gap-1 py-3 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.09)" }}
+              >
+                <span className="text-[26px] font-black text-white leading-none tabular-nums"
+                  style={{ fontFamily: "Poppins,sans-serif" }}>
+                  {String(val).padStart(2, "0")}
+                </span>
+                <span className="text-[7px] font-bold text-white/30 tracking-widest">{lbl}</span>
+              </div>
+            ))}
+          </div>
+          {/* Ticking seconds — compact inline row */}
+          <div className="flex items-center justify-end gap-1.5 pr-0.5">
+            <span className="text-[9px] text-white/25 font-medium">+</span>
+            <span className="text-[20px] font-black text-red-400 tabular-nums leading-none"
+              style={{ fontFamily: "Poppins,sans-serif" }}>
+              {String(seconds).padStart(2, "0")}
+            </span>
+            <span className="text-[7px] font-bold text-red-400/50 tracking-widest">SEC</span>
+          </div>
+        </div>
+
+        {/* Deadline progress bar */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-white/35 font-medium">Deadline window</span>
+            <span className="text-[9px] font-bold tabular-nums" style={{ color: barColor }}>{pctUsed}% used</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-1000"
+              style={{ width: `${pctUsed}%`, background: barColor, boxShadow: `0 0 8px ${barColor}66` }}
+            />
+          </div>
+          <p className="text-[8px] text-white/22 leading-snug">
+            Response window closes automatically if no action is taken
+          </p>
+        </div>
+
+        {/* Context chips */}
+        <div className="flex flex-wrap gap-1.5">
+          <span
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-semibold"
+            style={{ background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.20)", color: "#4ade80" }}
           >
-            {String(seconds).padStart(2, "0")}
+            ⚡ {priorityTag}
           </span>
-          <span className="text-[7px] font-bold text-red-400/50 tracking-widest">SEC</span>
+          <span
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-medium"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(255,255,255,0.50)" }}
+          >
+            {industryTag}
+          </span>
+          <span
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-medium"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(255,255,255,0.50)" }}
+          >
+            📋 {budgetTag}
+          </span>
         </div>
       </div>
 
-      {/* Animated character */}
-      <div className="flex-1 flex items-end justify-center pb-1 relative">
-        {/* Glow ring under character */}
-        <div
-          className="absolute bottom-4 w-20 h-4 rounded-full opacity-30"
-          style={{ background: "radial-gradient(ellipse,#4ade80 0%,transparent 70%)", filter: "blur(6px)" }}
-        />
-        {/* Character SVG — floating */}
-        <svg
-          width="80" height="90"
-          viewBox="0 0 80 90"
-          className="relative z-10"
-          style={{ animation: "d10-float 2.8s ease-in-out infinite" }}
-        >
-          {/* Lab coat body */}
-          <rect x="18" y="50" width="44" height="36" rx="10" fill="white" opacity="0.92"/>
-          {/* Coat lapels */}
-          <path d="M 30 50 L 22 82 L 40 66 L 58 82 L 50 50" fill="#dff3ee" opacity="0.95"/>
-          {/* Green collar line */}
-          <rect x="36" y="48" width="8" height="6" rx="2" fill="#1a6b4f" opacity="0.8"/>
-          {/* Head */}
-          <circle cx="40" cy="34" r="22" fill="#fde8d0"/>
-          {/* Hair */}
-          <path d="M 19 28 Q 21 12 40 11 Q 59 12 61 28 Q 56 18 40 18 Q 24 18 19 28Z" fill="#5c3317"/>
-          {/* Eyes */}
-          <circle cx="32" cy="32" r="4" fill="white"/>
-          <circle cx="48" cy="32" r="4" fill="white"/>
-          <circle cx="33" cy="33" r="2.2" fill="#1e293b"/>
-          <circle cx="49" cy="33" r="2.2" fill="#1e293b"/>
-          {/* Eye shine */}
-          <circle cx="34" cy="32" r="0.8" fill="white"/>
-          <circle cx="50" cy="32" r="0.8" fill="white"/>
-          {/* Smile */}
-          <path d="M 33 42 Q 40 49 47 42" fill="none" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round"/>
-          {/* Flask in hand */}
-          <rect x="56" y="62" width="12" height="18" rx="4" fill="#4ade80" opacity="0.85"/>
-          <rect x="59" y="56" width="6" height="8" rx="2" fill="#94a3b8"/>
-          {/* Flask bubbles */}
-          <circle cx="61" cy="67" r="1.5" fill="white" opacity="0.6"/>
-          <circle cx="64" cy="72" r="1" fill="white" opacity="0.5"/>
-        </svg>
+      {/* ── CTA ─────────────────────────────────────────── */}
+      <div className="px-5 pb-5">
+        <button className="w-full py-3 bg-white text-[#002d16] text-[12.5px] font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#f0fdf4] active:scale-[0.98] transition-all duration-200 shadow-sm">
+          {ctaLabel}
+          <ArrowRight size={13} strokeWidth={2.5} />
+        </button>
       </div>
-
-      {/* CTA */}
-      <button className="w-full py-2.5 bg-white text-[#002d16] text-[12.5px] font-bold rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#f0fdf4] active:scale-[0.98] transition-all duration-200 shadow-sm">
-        {ctaLabel}
-        <ArrowRight size={13} strokeWidth={2.5} />
-      </button>
     </div>
   );
 }
@@ -1545,11 +1561,11 @@ function TrendingOpportunitiesSection({ profileType }: { profileType: ProfileTyp
         <UrgencyCountdownCard profileType={profileType} />
       </div>
 
-      {/* Float keyframe (scoped here) */}
+      {/* Keyframes scoped to this section */}
       <style>{`
-        @keyframes d10-float {
-          0%, 100% { transform: translateY(0px);  }
-          50%       { transform: translateY(-9px); }
+        @keyframes d10-pulse {
+          0%, 100% { opacity: 1;   transform: scale(1);    }
+          50%       { opacity: 0.4; transform: scale(0.82); }
         }
       `}</style>
     </div>
