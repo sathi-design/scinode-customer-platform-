@@ -9,7 +9,8 @@
  */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight, TrendingUp, Settings2, FileText, Tag, ShieldCheck, UserCheck, FlaskConical, BookOpen, Microscope, Users, Globe } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1897,6 +1898,214 @@ function DemandDiscoverySection({ profileType }: { profileType: ProfileType }) {
   );
 }
 
+// ─── Day 10 Optimise Section ──────────────────────────────────────────────────
+
+type ImpactLevel = "high" | "recommended" | "optimization";
+
+interface OptimizeCard {
+  title:       string;
+  benefit:     string;
+  Icon:        LucideIcon;
+  iconBg:      string;
+  iconColor:   string;
+  impactLabel: string;
+  impactLevel: ImpactLevel;
+  ctaLabel:    string;
+}
+
+const IMPACT_STYLES: Record<ImpactLevel, { bg: string; text: string; dot: string; priority: string }> = {
+  high:         { bg: "rgba(26,107,79,0.10)",  text: "#1a6b4f", dot: "#1a6b4f", priority: "High Impact"    },
+  recommended:  { bg: "rgba(217,119,6,0.10)",  text: "#b45309", dot: "#d97706", priority: "Recommended"    },
+  optimization: { bg: "rgba(47,102,208,0.10)", text: "#2F66D0", dot: "#2F66D0", priority: "Optimisation"   },
+};
+
+const CRO_OPTIMIZE_CARDS: OptimizeCard[] = [
+  {
+    title:       "Refine Service Positioning",
+    benefit:     "Improve how buyers discover your technical capabilities across active searches.",
+    Icon:        Settings2,
+    iconBg:      "#f0faf5",
+    iconColor:   "#1a6b4f",
+    impactLabel: "+12% visibility",
+    impactLevel: "high",
+    ctaLabel:    "Optimise",
+  },
+  {
+    title:       "Add Commercial Product Specs",
+    benefit:     "Detailed specifications improve enquiry quality and reduce back-and-forth.",
+    Icon:        FileText,
+    iconBg:      "#eff6ff",
+    iconColor:   "#2F66D0",
+    impactLabel: "Better-fit buyers",
+    impactLevel: "recommended",
+    ctaLabel:    "Add Specs",
+  },
+  {
+    title:       "Strengthen Capability Keywords",
+    benefit:     "Improve matching accuracy across buyer requirement searches.",
+    Icon:        Tag,
+    iconBg:      "#f3f0ff",
+    iconColor:   "#5B3BA8",
+    impactLabel: "+18% match precision",
+    impactLevel: "high",
+    ctaLabel:    "Refine",
+  },
+  {
+    title:       "Update Compliance Certifications",
+    benefit:     "Required for regulated procurement opportunities in pharma and biotech.",
+    Icon:        ShieldCheck,
+    iconBg:      "#fffbeb",
+    iconColor:   "#d97706",
+    impactLabel: "Access regulated demand",
+    impactLevel: "recommended",
+    ctaLabel:    "Update",
+  },
+  {
+    title:       "Complete Buyer-Facing Profile",
+    benefit:     "A stronger company profile increases trust signals and shortlist rate.",
+    Icon:        UserCheck,
+    iconBg:      "#f0fdf4",
+    iconColor:   "#16a34a",
+    impactLabel: "Higher shortlist rate",
+    impactLevel: "optimization",
+    ctaLabel:    "Complete",
+  },
+];
+
+const RESEARCHER_OPTIMIZE_CARDS: OptimizeCard[] = [
+  {
+    title:       "Add Experimental Validation Data",
+    benefit:     "Increase proposal credibility for active industry opportunities.",
+    Icon:        FlaskConical,
+    iconBg:      "#f0faf5",
+    iconColor:   "#1a6b4f",
+    impactLabel: "+14% proposal strength",
+    impactLevel: "high",
+    ctaLabel:    "Add",
+  },
+  {
+    title:       "Update Publication Record",
+    benefit:     "Recent publications improve expertise relevance in discovery searches.",
+    Icon:        BookOpen,
+    iconBg:      "#eff6ff",
+    iconColor:   "#2F66D0",
+    impactLabel: "Unlock hidden matches",
+    impactLevel: "recommended",
+    ctaLabel:    "Update",
+  },
+  {
+    title:       "Refine Research Keywords",
+    benefit:     "Improve alignment with scientific problem statements from industry partners.",
+    Icon:        Microscope,
+    iconBg:      "#f3f0ff",
+    iconColor:   "#5B3BA8",
+    impactLabel: "+18% match accuracy",
+    impactLevel: "high",
+    ctaLabel:    "Refine",
+  },
+  {
+    title:       "Add Collaboration Outcomes",
+    benefit:     "Past project results strengthen trust and improve shortlist potential.",
+    Icon:        Users,
+    iconBg:      "#fffbeb",
+    iconColor:   "#d97706",
+    impactLabel: "Higher shortlist potential",
+    impactLevel: "recommended",
+    ctaLabel:    "Add",
+  },
+  {
+    title:       "Complete Research Identity",
+    benefit:     "Strengthen scientific visibility across global industry discovery programs.",
+    Icon:        Globe,
+    iconBg:      "#f0fdf4",
+    iconColor:   "#16a34a",
+    impactLabel: "Expanded discovery reach",
+    impactLevel: "optimization",
+    ctaLabel:    "Complete",
+  },
+];
+
+function Day10OptimizeSection({ profileType }: { profileType: ProfileType }) {
+  const isCRO  = profileType === "cro";
+  const cards  = isCRO ? CRO_OPTIMIZE_CARDS : RESEARCHER_OPTIMIZE_CARDS;
+  const title  = isCRO
+    ? "Optimise Your Match Performance"
+    : "Increase Research Match Quality";
+  const subtext = isCRO
+    ? "Small improvements can increase buyer visibility and improve project conversion."
+    : "Fine-tune your profile to improve proposal success and collaboration fit.";
+
+  return (
+    <section className="flex flex-col gap-3.5">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-[16px] font-bold text-[#171717]" style={{ fontFamily: "Poppins, sans-serif" }}>
+            {title}
+          </h2>
+          <p className="text-[12px] text-[#68747a] mt-0.5">{subtext}</p>
+        </div>
+        {/* Profile optimisation % */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] text-slate-400 font-medium">Profile optimisation</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-24 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+              <div className="h-full rounded-full bg-[#1a6b4f]" style={{ width: "72%" }}/>
+            </div>
+            <span className="text-[11px] font-bold text-[#1a6b4f]">72%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Cards strip */}
+      <div className="overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-3 lg:grid lg:grid-cols-5 min-w-max lg:min-w-0">
+          {cards.map((c) => {
+            const imp = IMPACT_STYLES[c.impactLevel];
+            const Icon = c.Icon;
+            return (
+              <div
+                key={c.title}
+                className="bg-white rounded-xl border border-[#e8edf2] shadow-sm hover:shadow-md hover:border-[#1f6f54]/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-2.5 p-4 w-[210px] lg:w-auto relative"
+              >
+                {/* Top row: icon + impact badge */}
+                <div className="flex items-start justify-between gap-1">
+                  <div
+                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: c.iconBg }}
+                  >
+                    <Icon style={{ color: c.iconColor, width: 18, height: 18 }}/>
+                  </div>
+                  {/* Impact badge */}
+                  <span
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[8.5px] font-bold leading-none shrink-0"
+                    style={{ background: imp.bg, color: imp.text }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: imp.dot }}/>
+                    {c.impactLabel}
+                  </span>
+                </div>
+
+                {/* Text */}
+                <div className="flex flex-col gap-1 flex-1">
+                  <p className="text-[13px] font-bold text-[#171717] leading-snug">{c.title}</p>
+                  <p className="text-[11px] text-[#68747a] leading-relaxed">{c.benefit}</p>
+                </div>
+
+                {/* CTA */}
+                <button className="mt-auto flex items-center gap-1 text-[11.5px] font-semibold hover:gap-2 transition-all duration-150 w-fit" style={{ color: imp.text }}>
+                  {c.ctaLabel} <ArrowRight size={11} strokeWidth={2.5}/>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Public exports ────────────────────────────────────────────────────────────
 
 export function Day10ResearcherDashboard() {
@@ -1906,6 +2115,7 @@ export function Day10ResearcherDashboard() {
       <OpportunityPipelineSection profileType="researcher" />
       <TrendingOpportunitiesSection profileType="researcher" />
       <DemandDiscoverySection profileType="researcher" />
+      <Day10OptimizeSection profileType="researcher" />
     </div>
   );
 }
@@ -1917,6 +2127,7 @@ export function Day10CRODashboard() {
       <OpportunityPipelineSection profileType="cro" />
       <TrendingOpportunitiesSection profileType="cro" />
       <DemandDiscoverySection profileType="cro" />
+      <Day10OptimizeSection profileType="cro" />
     </div>
   );
 }
