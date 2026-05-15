@@ -65,33 +65,25 @@ const PROFILE_CATEGORIES = [
 ];
 
 const MAP_PINS = [
-  { id: "IN", country: "India",     flag: "🇮🇳", left: "67%", top: "48%", rfqs: 92, products: "Aroma intermediates, APIs", growth: "+34%", tier: "critical" },
-  { id: "DE", country: "Germany",   flag: "🇩🇪", left: "49%", top: "26%", rfqs: 47, products: "Solvents, Lab chemicals",   growth: "+18%", tier: "high"     },
-  { id: "US", country: "USA",       flag: "🇺🇸", left: "18%", top: "37%", rfqs: 38, products: "Specialty chemicals",       growth: "+12%", tier: "high"     },
-  { id: "JP", country: "Japan",     flag: "🇯🇵", left: "79%", top: "36%", rfqs: 24, products: "Fine chemicals, Pharma",    growth: "+9%",  tier: "medium"   },
-  { id: "BR", country: "Brazil",    flag: "🇧🇷", left: "28%", top: "66%", rfqs: 19, products: "SLES, Surfactants",         growth: "+22%", tier: "medium"   },
-  { id: "GB", country: "UK",        flag: "🇬🇧", left: "45%", top: "23%", rfqs: 16, products: "Research chemicals",       growth: "+7%",  tier: "low"      },
-  { id: "CN", country: "China",     flag: "🇨🇳", left: "74%", top: "40%", rfqs: 31, products: "Industrial chemicals",     growth: "+15%", tier: "high"     },
-  { id: "AU", country: "Australia", flag: "🇦🇺", left: "80%", top: "67%", rfqs: 11, products: "Semiconductor chemicals",  growth: "+28%", tier: "medium"   },
+  { id: "IN", country: "India",     flag: "🇮🇳", left: "67%", top: "48%", rfqs: 92, samples: 38, newBuyers: 14, products: "Aroma intermediates, APIs", growth: "+34%", tier: "top"      },
+  { id: "DE", country: "Germany",   flag: "🇩🇪", left: "49%", top: "26%", rfqs: 47, samples: 19, newBuyers: 7,  products: "Solvents, Lab chemicals",   growth: "+18%", tier: "high"     },
+  { id: "US", country: "USA",       flag: "🇺🇸", left: "18%", top: "37%", rfqs: 38, samples: 22, newBuyers: 9,  products: "Specialty chemicals",       growth: "+12%", tier: "high"     },
+  { id: "JP", country: "Japan",     flag: "🇯🇵", left: "79%", top: "36%", rfqs: 24, samples: 11, newBuyers: 4,  products: "Fine chemicals, Pharma",    growth: "+9%",  tier: "emerging" },
+  { id: "BR", country: "Brazil",    flag: "🇧🇷", left: "28%", top: "66%", rfqs: 19, samples: 8,  newBuyers: 5,  products: "SLES, Surfactants",         growth: "+22%", tier: "emerging" },
+  { id: "GB", country: "UK",        flag: "🇬🇧", left: "45%", top: "23%", rfqs: 16, samples: 6,  newBuyers: 3,  products: "Research chemicals",        growth: "+7%",  tier: "active"   },
+  { id: "CN", country: "China",     flag: "🇨🇳", left: "74%", top: "40%", rfqs: 31, samples: 14, newBuyers: 6,  products: "Industrial chemicals",      growth: "+15%", tier: "high"     },
+  { id: "AU", country: "Australia", flag: "🇦🇺", left: "80%", top: "67%", rfqs: 11, samples: 9,  newBuyers: 4,  products: "Semiconductor chemicals",   growth: "+28%", tier: "emerging" },
 ];
 
-const PIN_COLORS: Record<string, string> = {
-  critical: "#f5c842",
-  high:     "#8b5cf6",
-  medium:   "#3b82f6",
-  low:      "#22c55e",
+// Tier config — positive, opportunity-framed labels
+const TIER_CONFIG: Record<string, { label: string; color: string }> = {
+  top:      { label: "Top Market",  color: "#f59e0b" },   // amber
+  high:     { label: "High Demand", color: "#8b5cf6" },   // violet
+  emerging: { label: "Emerging",    color: "#3b82f6" },   // blue
+  active:   { label: "Active",      color: "#22c55e" },   // green
 };
 
-const COUNTRY_BARS = [
-  { country: "India",     flag: "🇮🇳", rfqs: 92 },
-  { country: "Germany",   flag: "🇩🇪", rfqs: 47 },
-  { country: "China",     flag: "🇨🇳", rfqs: 31 },
-  { country: "USA",       flag: "🇺🇸", rfqs: 38 },
-  { country: "Japan",     flag: "🇯🇵", rfqs: 24 },
-  { country: "Brazil",    flag: "🇧🇷", rfqs: 19 },
-  { country: "UK",        flag: "🇬🇧", rfqs: 16 },
-  { country: "Australia", flag: "🇦🇺", rfqs: 11 },
-];
+// Sidebar data derived from MAP_PINS — no separate array needed
 
 // ─── Brand-gradient gauge — larger semicircle (green → teal → purple) ────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
@@ -703,40 +695,57 @@ function OpportunitySection() {
 }
 
 // ─── Location pin SVG ─────────────────────────────────────────────────────────
-function LocationPin({ color, scale = 1 }: { color: string; scale?: number }) {
+function LocationPin({ color, active = false }: { color: string; active?: boolean }) {
   return (
     <svg
-      width={16 * scale} height={22 * scale}
+      width={active ? 20 : 16} height={active ? 27 : 22}
       viewBox="0 0 16 22" fill="none"
-      style={{ filter: `drop-shadow(0 2px 4px ${color}80)` }}
+      style={{
+        filter:     `drop-shadow(0 3px 6px ${color}70)`,
+        transition: "width 200ms ease, height 200ms ease",
+      }}
     >
       <path
         d="M8 0.5C4.41 0.5 1.5 3.41 1.5 7c0 5.46 6.5 14.5 6.5 14.5S14.5 12.46 14.5 7C14.5 3.41 11.59 0.5 8 0.5z"
         fill={color}
-        stroke="rgba(255,255,255,0.30)"
-        strokeWidth="0.6"
+        stroke="rgba(255,255,255,0.50)"
+        strokeWidth="0.8"
       />
-      <circle cx="8" cy="7" r="2.6" fill="white" opacity="0.90" />
+      <circle cx="8" cy="7" r="2.6" fill="white" opacity="0.92" />
     </svg>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — WORLD RFQ MAP
+// SECTION 3 — GLOBAL BUYER ACTIVITY MAP
 // ═══════════════════════════════════════════════════════════════════════════════
 function WorldRFQMap() {
   const [hovered,   setHovered]   = useState<string | null>(null);
   const [selected,  setSelected]  = useState<string | null>(null);
+  const [signal,    setSignal]    = useState<"rfqs" | "samples" | "newBuyers">("rfqs");
   const [timeframe, setTimeframe] = useState<"monthly" | "quarterly">("monthly");
   const mounted = useMounted(200);
-  const maxRFQ  = Math.max(...COUNTRY_BARS.map(c => c.rfqs));
+
+  // Derive signal value for sidebar bars
+  const getVal = (pin: typeof MAP_PINS[0]) =>
+    signal === "rfqs" ? pin.rfqs : signal === "samples" ? pin.samples : pin.newBuyers;
+  const sortedPins = [...MAP_PINS].sort((a, b) => getVal(b) - getVal(a));
+  const maxVal     = Math.max(...MAP_PINS.map(getVal));
+
+  const hoveredPin = hovered ? MAP_PINS.find(p => p.id === hovered) : null;
+
+  const SIGNAL_LABELS = {
+    rfqs:      { label: "RFQs",           desc: "Formal purchase requests" },
+    samples:   { label: "Sample Requests", desc: "Pre-qualification demand" },
+    newBuyers: { label: "New Buyers",      desc: "First-time inquiries this month" },
+  };
 
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <style>{`
         @keyframes rfqPinGlow {
-          0%,100% { opacity: 0.35; transform: scale(0.85); }
-          50%      { opacity: 0.75; transform: scale(1.30); }
+          0%,100% { opacity: 0.30; transform: scale(0.80); }
+          50%      { opacity: 0.65; transform: scale(1.25); }
         }
         @keyframes tooltipFade {
           from { opacity:0; transform:translateY(5px) scale(0.96); }
@@ -745,25 +754,38 @@ function WorldRFQMap() {
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="px-5 pt-3 pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+      <div className="px-5 pt-3 pb-3 border-b border-slate-100 flex items-start justify-between flex-wrap gap-2">
         <div>
           <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400 mb-0.5">GLOBAL INTELLIGENCE</p>
-          <h3 className="text-[16px] font-bold text-slate-900 leading-snug">Global RFQ Intelligence</h3>
-          <p className="text-[11px] text-slate-400">Track where verified buyer demand is emerging.</p>
+          <h3 className="text-[16px] font-bold text-slate-900 leading-snug">Global Buyer Activity</h3>
+          <p className="text-[11px] text-slate-400">Live buyer signals across markets — updated daily.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Signal type tabs */}
+          <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
+            {(["rfqs", "samples", "newBuyers"] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSignal(s)}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all whitespace-nowrap",
+                  signal === s ? "bg-white shadow-sm text-[#1e293b]" : "text-slate-500 hover:text-slate-700",
+                )}
+              >
+                {SIGNAL_LABELS[s].label}
+              </button>
+            ))}
+          </div>
+          <div className="hidden sm:block w-px h-4 bg-slate-200" />
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50">
-            <Search size={12} className="text-slate-400" />
-            <input className="text-[11px] bg-transparent outline-none w-24 placeholder:text-slate-400"
+            <Search size={11} className="text-slate-400" />
+            <input className="text-[10px] bg-transparent outline-none w-20 placeholder:text-slate-400"
               placeholder="Search market…" />
           </div>
-          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 hover:bg-slate-50">
-            <Filter size={11} /> Category
-          </button>
           <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
             {(["monthly", "quarterly"] as const).map(t => (
               <button key={t} onClick={() => setTimeframe(t)}
-                className={cn("px-2.5 py-1 rounded-md text-[10px] font-semibold capitalize transition-all",
+                className={cn("px-2 py-1 rounded-md text-[10px] font-semibold capitalize transition-all",
                   timeframe === t ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-700")}>
                 {t}
               </button>
@@ -778,12 +800,18 @@ function WorldRFQMap() {
         {/* MAP */}
         <div className="flex-1 relative" style={{ minHeight: 270 }}>
 
-          {/* Dark ocean base */}
+          {/* Light ocean background */}
           <div className="absolute inset-0" style={{
-            background: "linear-gradient(135deg,#0d1117 0%,#0f1923 55%,#0d1117 100%)",
+            background: "linear-gradient(160deg, #eef2f8 0%, #e8edf5 60%, #eaf0f7 100%)",
           }} />
 
-          {/* Real world map SVG — land silhouette */}
+          {/* Subtle grid */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: "linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px)",
+            backgroundSize: "40px 40px",
+          }} />
+
+          {/* Real world map SVG — gray land on light ocean */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/world-map.svg"
@@ -791,77 +819,96 @@ function WorldRFQMap() {
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
             style={{
-              opacity: 0.22,
-              filter: "brightness(2.4) saturate(0)",
-              objectPosition: "center 40%",
+              opacity:         0.55,
+              filter:          "brightness(0.68) saturate(0)",
+              objectPosition:  "center 40%",
             }}
           />
 
-          {/* Subtle grid overlay */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)",
-            backgroundSize: "40px 40px",
-          }} />
-
           {/* RFQ Pins */}
           {MAP_PINS.map((pin, idx) => {
-            const color  = PIN_COLORS[pin.tier];
+            const cfg    = TIER_CONFIG[pin.tier];
+            const color  = cfg.color;
             const isHov  = hovered  === pin.id;
             const isSel  = selected === pin.id;
             const active = isHov || isSel;
+
             return (
               <div
                 key={pin.id}
                 className="absolute cursor-pointer"
                 style={{
-                  left: pin.left, top: pin.top,
-                  transform: "translate(-50%,-100%)",   /* pin tip anchors to geo point */
-                  zIndex: active ? 30 : 10,
+                  left:      pin.left,
+                  top:       pin.top,
+                  transform: "translate(-50%,-100%)",
+                  zIndex:    active ? 30 : 10,
                 }}
                 onMouseEnter={() => setHovered(pin.id)}
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => setSelected(s => s === pin.id ? null : pin.id)}
               >
-                {/* Soft radial glow ring — slow, gentle */}
+                {/* Soft radial glow — slow, staggered per pin */}
                 <div
                   className="absolute rounded-full pointer-events-none"
                   style={{
-                    width: 32, height: 32,
-                    top: "50%", left: "50%",
-                    transform: "translate(-50%,-50%)",
-                    background: `radial-gradient(circle,${color}55 0%,transparent 70%)`,
-                    animation: `rfqPinGlow ${3.5 + idx * 0.4}s ease-in-out infinite`,
-                    animationDelay: `${idx * 0.25}s`,
+                    width:          36, height: 36,
+                    top:            "40%", left: "50%",
+                    transform:      "translate(-50%,-50%)",
+                    background:     `radial-gradient(circle,${color}45 0%,transparent 70%)`,
+                    animation:      `rfqPinGlow ${3.8 + idx * 0.35}s ease-in-out infinite`,
+                    animationDelay: `${idx * 0.22}s`,
                   }}
                 />
 
-                {/* Pin icon */}
-                <div style={{ transform: active ? "scale(1.25) translateY(-2px)" : "scale(1)", transition: "transform 200ms ease" }}>
-                  <LocationPin color={color} />
-                </div>
+                <LocationPin color={color} active={active} />
 
                 {/* Hover tooltip */}
                 {isHov && (
                   <div
-                    className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-44 rounded-xl shadow-2xl overflow-hidden"
-                    style={{ animation: "tooltipFade 0.18s ease both", zIndex: 40 }}
+                    className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-48 rounded-xl overflow-hidden"
+                    style={{
+                      animation: "tooltipFade 0.18s ease both",
+                      zIndex: 40,
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)",
+                    }}
                   >
-                    <div className="bg-[#1e293b] text-white p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="bg-white border border-slate-200 p-2.5">
+                      {/* Country header */}
+                      <div className="flex items-center gap-1.5 mb-2">
                         <span className="text-base">{pin.flag}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-bold leading-tight truncate">{pin.country}</p>
-                          <p className="text-[9px] text-slate-400">{pin.rfqs} active RFQs</p>
+                          <p className="text-[12px] font-bold text-[#1e293b] leading-tight">{pin.country}</p>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span
+                              className="text-[8px] font-bold px-1.5 py-[2px] rounded-full"
+                              style={{ background: `${color}18`, color }}
+                            >
+                              {cfg.label}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-[9px] font-bold text-emerald-400 shrink-0">{pin.growth}</span>
+                        <span className="text-[10px] font-bold text-emerald-600 shrink-0">{pin.growth}</span>
                       </div>
-                      <p className="text-[9px] text-slate-400 mb-2 leading-snug">{pin.products}</p>
-                      <button
-                        className="w-full py-1 rounded-lg text-[9px] font-bold text-white"
-                        style={{ background: "#1F6F54" }}
-                      >
-                        View RFQs →
-                      </button>
+                      {/* Signal breakdown */}
+                      <div className="grid grid-cols-3 gap-1 mb-2 p-1.5 rounded-lg" style={{ background: "#f8fafc" }}>
+                        {([
+                          { key: "rfqs",      val: pin.rfqs,      label: "RFQs"    },
+                          { key: "samples",   val: pin.samples,   label: "Samples" },
+                          { key: "newBuyers", val: pin.newBuyers, label: "New"     },
+                        ] as const).map(item => (
+                          <div key={item.key} className="text-center">
+                            <p className={cn(
+                              "text-[13px] font-black leading-none",
+                              signal === item.key ? "text-[#1F6F54]" : "text-[#334155]",
+                            )}>
+                              {item.val}
+                            </p>
+                            <p className="text-[8px] text-slate-400 mt-0.5">{item.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Products */}
+                      <p className="text-[9px] text-slate-500 leading-snug">{pin.products}</p>
                     </div>
                   </div>
                 )}
@@ -869,17 +916,22 @@ function WorldRFQMap() {
             );
           })}
 
-          {/* Legend */}
-          <div className="absolute bottom-3 left-3 flex gap-2.5 flex-wrap">
-            {(["Critical hotspot","High volume","Medium","Low"] as const).map((label, i) => {
-              const tier = (["critical","high","medium","low"] as const)[i];
+          {/* Legend — highlights hovered tier */}
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 flex-wrap px-2 py-1.5 rounded-lg"
+            style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(4px)", border: "1px solid rgba(0,0,0,0.06)" }}>
+            {Object.entries(TIER_CONFIG).map(([tier, cfg]) => {
+              const isActiveTier = hoveredPin?.tier === tier;
               return (
-                <div key={tier} className="flex items-center gap-1">
-                  <svg width="10" height="14" viewBox="0 0 16 22" fill="none">
+                <div key={tier} className="flex items-center gap-1 transition-opacity duration-200"
+                  style={{ opacity: hoveredPin && !isActiveTier ? 0.38 : 1 }}>
+                  <svg width="9" height="12" viewBox="0 0 16 22" fill="none">
                     <path d="M8 0.5C4.41 0.5 1.5 3.41 1.5 7c0 5.46 6.5 14.5 6.5 14.5S14.5 12.46 14.5 7C14.5 3.41 11.59 0.5 8 0.5z"
-                      fill={PIN_COLORS[tier]} />
+                      fill={cfg.color} />
                   </svg>
-                  <span className="text-[8.5px] text-white/45">{label}</span>
+                  <span className="text-[8.5px] font-medium"
+                    style={{ color: isActiveTier ? cfg.color : "#64748b" }}>
+                    {cfg.label}
+                  </span>
                 </div>
               );
             })}
@@ -889,10 +941,10 @@ function WorldRFQMap() {
           <div className="absolute top-3 right-3 flex flex-col gap-1">
             {[ZoomIn, ZoomOut, RotateCcw].map((Icon, i) => (
               <button key={i}
-                className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
-                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.50)" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.16)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
+                className="w-6 h-6 rounded-md flex items-center justify-center transition-colors border"
+                style={{ background: "rgba(255,255,255,0.85)", color: "#64748b", borderColor: "rgba(0,0,0,0.08)" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#f1f5f9")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.85)")}>
                 <Icon size={11} />
               </button>
             ))}
@@ -900,33 +952,48 @@ function WorldRFQMap() {
         </div>
 
         {/* SIDEBAR */}
-        <div className="w-52 shrink-0 border-l border-slate-100 bg-slate-50/50 flex flex-col">
+        <div className="w-52 shrink-0 border-l border-slate-100 bg-slate-50/40 flex flex-col">
           <div className="px-3 pt-3 pb-2 flex-1">
-            <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400 mb-2">TOP RFQ MARKETS</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400">TOP MARKETS</p>
+              <p className="text-[9px] text-slate-400">{SIGNAL_LABELS[signal].label}</p>
+            </div>
             <div className="flex flex-col gap-1">
-              {COUNTRY_BARS.sort((a, b) => b.rfqs - a.rfqs).map((c, i) => {
-                const pinId = MAP_PINS.find(p => p.country === c.country)?.id;
-                const isHov = hovered === pinId;
+              {sortedPins.map((pin, i) => {
+                const isHov  = hovered === pin.id;
+                const cfg    = TIER_CONFIG[pin.tier];
+                const val    = getVal(pin);
                 return (
                   <div
-                    key={i}
-                    className={cn("cursor-pointer rounded-lg px-2 py-1.5 transition-all", isHov ? "bg-white shadow-sm" : "hover:bg-white/70")}
-                    onMouseEnter={() => setHovered(pinId ?? null)}
+                    key={pin.id}
+                    className="cursor-pointer rounded-lg px-2 py-1.5 transition-all duration-200"
+                    style={{
+                      background:  isHov ? "#fff"      : "transparent",
+                      borderLeft:  isHov ? `3px solid ${cfg.color}` : "3px solid transparent",
+                      boxShadow:   isHov ? "0 1px 6px rgba(0,0,0,0.08)" : "none",
+                    }}
+                    onMouseEnter={() => setHovered(pin.id)}
                     onMouseLeave={() => setHovered(null)}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-[12px]">{c.flag}</span>
-                        <span className="text-[11px] font-semibold text-slate-700">{c.country}</span>
+                        <span className="text-[12px]">{pin.flag}</span>
+                        <span className="text-[11px] font-semibold text-slate-700">{pin.country}</span>
+                        {i === 0 && (
+                          <span className="text-[7px] font-bold px-1 py-[1px] rounded-full"
+                            style={{ background: `${cfg.color}18`, color: cfg.color }}>
+                            #1
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[10px] font-bold text-slate-500">{c.rfqs}</span>
+                      <span className="text-[10px] font-bold" style={{ color: isHov ? cfg.color : "#64748b" }}>{val}</span>
                     </div>
                     <div className="w-full h-[4px] bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-700"
                         style={{
-                          width:           mounted ? `${(c.rfqs / maxRFQ) * 100}%` : "0%",
-                          background:      isHov ? "#1F6F54" : "#94a3b8",
-                          transitionDelay: `${i * 60}ms`,
+                          width:           mounted ? `${(val / maxVal) * 100}%` : "0%",
+                          background:      isHov ? cfg.color : "#cbd5e1",
+                          transitionDelay: `${i * 50}ms`,
                         }} />
                     </div>
                   </div>
@@ -934,7 +1001,8 @@ function WorldRFQMap() {
               })}
             </div>
           </div>
-          <div className="px-3 pb-3">
+          <div className="px-3 pb-3 border-t border-slate-100 pt-2">
+            <p className="text-[9px] text-slate-400 mb-1.5">{SIGNAL_LABELS[signal].desc}</p>
             <button className="w-full py-1.5 rounded-xl border border-[#1F6F54] text-[#1F6F54] text-[11px] font-semibold hover:bg-[#1F6F54] hover:text-white transition-all">
               <Globe size={11} className="inline mr-1" /> Explore All Markets
             </button>
