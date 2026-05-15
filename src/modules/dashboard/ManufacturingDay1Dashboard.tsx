@@ -287,7 +287,7 @@ function HeroSection() {
       <div className="relative z-10 grid grid-cols-12">
 
         {/* ══ LEFT PANEL — 70% ══ */}
-        <div className="col-span-12 lg:col-span-8 px-6 pt-5 pb-5 sm:px-8 sm:pt-6 sm:pb-6 flex flex-col justify-between gap-4">
+        <div className="col-span-12 lg:col-span-8 px-6 pt-4 pb-4 sm:px-8 sm:pt-5 sm:pb-5 flex flex-col justify-between gap-3">
 
           {/* SCINODE SECURE badge — exact Day 0 style */}
           <div className="relative inline-block self-start">
@@ -326,7 +326,7 @@ function HeroSection() {
           {/* Headline */}
           <div>
             <h1
-              className="text-[22px] sm:text-[26px] md:text-[30px] font-black text-white leading-[1.15] tracking-[-0.02em] mb-2"
+              className="text-[20px] sm:text-[23px] md:text-[26px] font-black text-white leading-[1.15] tracking-[-0.02em] mb-1.5"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Let&apos;s get your plant in front of{" "}
@@ -335,38 +335,34 @@ function HeroSection() {
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               }}>130+ countries</span>{" "}of buyers.
             </h1>
-            <p className="text-[13px] leading-relaxed max-w-[520px]" style={{ color: "rgba(255,255,255,0.60)" }}>
+            <p className="text-[12px] leading-relaxed max-w-[520px]" style={{ color: "rgba(255,255,255,0.60)" }}>
               Manufacturers with completed profiles receive <strong className="text-emerald-400">38% more</strong> aligned buyer inquiries within their first 30 days.
             </p>
           </div>
 
           {/* Progress bar — Day 0 single-bar style */}
-          <div className="flex flex-col gap-1.5 max-w-[520px]">
-            <div className="w-full h-[8px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.13)" }}>
+          <div className="flex flex-col gap-1 max-w-[520px]">
+            <div className="w-full h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.13)" }}>
               <div className="h-full rounded-full" style={{
                 width:      progressMounted ? "28%" : "0%",
                 transition: "width 1.2s cubic-bezier(0.22,1,0.36,1) 0.4s",
                 background: "linear-gradient(90deg,#4ade80 0%,#34d399 100%)",
-                boxShadow:  "0 0 12px rgba(74,222,128,0.50)",
+                boxShadow:  "0 0 10px rgba(74,222,128,0.50)",
               }} />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[12px] font-bold" style={{ color: "#4ade80" }}>28% Complete</span>
-              <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.35)" }}>Profile Setup In Progress</span>
+              <span className="text-[11px] font-bold" style={{ color: "#4ade80" }}>28% Complete · Profile Setup In Progress</span>
             </div>
-            <p className="text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.60)" }}>
-              Complete capabilities to unlock better RFQ matching.
-            </p>
           </div>
 
-          {/* CTA buttons — no Skip Guided Tour */}
-          <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#002d14] text-[13px] font-bold rounded-lg hover:bg-emerald-50 hover:shadow-[0_0_16px_rgba(255,255,255,0.22)] active:scale-[0.98] transition-all duration-200 shadow-sm">
-              Continue Setup — Add Capabilities <ArrowRight size={14} strokeWidth={2.5} />
+          {/* CTA buttons */}
+          <div className="flex flex-wrap gap-2.5">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-[#002d14] text-[12px] font-bold rounded-lg hover:bg-emerald-50 hover:shadow-[0_0_16px_rgba(255,255,255,0.22)] active:scale-[0.98] transition-all duration-200 shadow-sm">
+              Continue Setup — Add Capabilities <ArrowRight size={13} strokeWidth={2.5} />
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 border border-white/30 text-[13px] font-semibold rounded-lg hover:bg-white/10 hover:border-white/50 transition-all duration-200"
+            <button className="flex items-center gap-2 px-4 py-2 border border-white/30 text-[12px] font-semibold rounded-lg hover:bg-white/10 hover:border-white/50 transition-all duration-200"
               style={{ color: "rgba(255,255,255,0.90)" }}>
-              Explore Buyer Demand <ArrowRight size={14} strokeWidth={2} />
+              Explore Buyer Demand <ArrowRight size={13} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -375,61 +371,61 @@ function HeroSection() {
         <div className="col-span-12 lg:col-span-4 flex overflow-hidden">
           <div className="hidden lg:block w-px self-stretch bg-white/[0.07] shrink-0" />
           <div
-            className="flex-1 flex flex-col px-5 pt-6 pb-5 sm:px-6 justify-between gap-4"
+            className="flex-1 flex flex-col px-5 pt-4 pb-4 sm:px-6 justify-between gap-3"
             style={{ background: "rgba(0,0,0,0.22)" }}
           >
             {/* Heading */}
             <h3
-              className="text-white text-[15px] font-bold leading-snug shrink-0"
+              className="text-white text-[13px] font-bold leading-snug shrink-0"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Trending RFQs Matched to Your Category
             </h3>
 
-            {/* Active card — fade on key change, exactly Day 0 structure */}
+            {/* Active card */}
             {(() => {
               return (
                 <div
                   key={cardIdx}
-                  className="flex flex-col gap-2.5 flex-1"
+                  className="flex flex-col gap-1.5 flex-1"
                   style={{ animation: "mfg1-cardFade 0.38s ease both" }}
                 >
                   {/* Flag */}
-                  <span className="text-[44px] leading-none">{rfq.flag}</span>
+                  <span className="text-[34px] leading-none">{rfq.flag}</span>
 
                   {/* Country */}
-                  <p className="text-white text-[17px] font-bold leading-snug">{rfq.country}</p>
+                  <p className="text-white text-[15px] font-bold leading-snug">{rfq.country}</p>
 
                   {/* SCINODE VERIFIED badge */}
                   <div
-                    className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full border border-emerald-400/25 w-fit"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-[4px] rounded-full border border-emerald-400/25 w-fit"
                     style={{ background: "rgba(52,211,153,0.08)" }}
                   >
-                    <span className="relative flex h-[6px] w-[6px] shrink-0">
+                    <span className="relative flex h-[5px] w-[5px] shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-emerald-400" />
+                      <span className="relative inline-flex rounded-full h-[5px] w-[5px] bg-emerald-400" />
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-300 tracking-[0.14em]">SCINODE VERIFIED</span>
+                    <span className="text-[9px] font-bold text-emerald-300 tracking-[0.12em]">SCINODE VERIFIED</span>
                   </div>
 
                   {/* Role */}
-                  <p className="text-[10px] font-bold tracking-[0.15em]" style={{ color: "rgba(52,211,153,0.80)" }}>
+                  <p className="text-[9px] font-bold tracking-[0.14em]" style={{ color: "rgba(52,211,153,0.80)" }}>
                     {rfq.role}
                   </p>
 
                   {/* Product heading */}
-                  <p className="text-white text-[13px] font-semibold">{rfq.product}</p>
+                  <p className="text-white text-[12px] font-semibold">{rfq.product}</p>
 
-                  {/* Request as quote — fills remaining space */}
+                  {/* Request as quote */}
                   <p
-                    className="text-[13px] leading-[1.7] italic flex-1"
+                    className="text-[12px] leading-[1.6] italic flex-1"
                     style={{ color: "rgba(255,255,255,0.60)", wordBreak: "break-word", overflow: "hidden" }}
                   >
                     &ldquo;{rfq.request}&rdquo;
                   </p>
 
                   {/* Timestamp */}
-                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>Updated just now</p>
+                  <p className="text-[9px]" style={{ color: "rgba(255,255,255,0.25)" }}>Updated just now</p>
                 </div>
               );
             })()}
@@ -462,13 +458,13 @@ function HeroSection() {
           { label: "Visibility Rank",           value: visibilityRank, suffix: "%" },
           { label: "New RFQs Today",            value: newRFQs,        suffix: ""  },
         ].map((m, i) => (
-          <div key={i} className="px-5 py-3">
-            <p className="text-[10px] font-semibold tracking-[0.10em] mb-1" style={{ color: "rgba(255,255,255,0.40)" }}>
+          <div key={i} className="px-4 py-2.5">
+            <p className="text-[9px] font-semibold tracking-[0.10em] mb-0.5" style={{ color: "rgba(255,255,255,0.40)" }}>
               {m.label.toUpperCase()}
             </p>
-            <p className="text-[26px] font-black text-white leading-none">
+            <p className="text-[22px] font-black text-white leading-none">
               {m.value}{m.suffix}
-              {i === 2 && <span className="text-[14px] text-white/50 font-semibold ml-1">Top</span>}
+              {i === 2 && <span className="text-[12px] text-white/50 font-semibold ml-1">Top</span>}
             </p>
           </div>
         ))}
