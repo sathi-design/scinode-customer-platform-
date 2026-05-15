@@ -95,12 +95,12 @@ const COUNTRY_BARS = [
 
 // ─── Brand-gradient gauge — larger semicircle (green → teal → purple) ────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
-  const r  = 82, cx = 105, cy = 100;
+  const r  = 68, cx = 105, cy = 100;
   const circumference = Math.PI * r;
   const dash = mounted ? (pct / 100) * circumference : 0;
 
   return (
-    <svg width="100%" viewBox="0 0 210 118" style={{ maxWidth: 260 }}>
+    <svg width="100%" viewBox="0 0 210 118" style={{ maxWidth: 200 }}>
       <defs>
         <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%"   stopColor="#B7D77A" />
@@ -154,7 +154,7 @@ function FunnelView({ mounted }: { mounted: boolean }) {
   ];
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-1.5">
       {PIPELINE_STAGES.map((s, i) => {
         const w     = mounted ? (s.monthVal / max) * 100 : 0;
         const isHov = hovIdx === i;
@@ -174,7 +174,7 @@ function FunnelView({ mounted }: { mounted: boolean }) {
             </div>
 
             {/* Bar track */}
-            <div className="flex-1 relative h-[18px] rounded-full overflow-hidden" style={{ background: "#edf2f5" }}>
+            <div className="flex-1 relative h-[14px] rounded-full overflow-hidden" style={{ background: "#edf2f5" }}>
               {/* Hatch fill — shown when not hovered */}
               <div
                 className="absolute left-0 top-0 h-full rounded-full"
@@ -482,19 +482,19 @@ function OpportunitySection() {
   const mounted = useMounted(500);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
 
       {/* ── LEFT 70% — single combined card ── */}
       <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
 
         {/* Card header */}
-        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
+        <div className="px-4 pt-3 pb-3 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-1">OPPORTUNITY FLOW</p>
-            <h2 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+            <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-0.5">OPPORTUNITY FLOW</p>
+            <h2 className="text-[15px] sm:text-[17px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
               Opportunity Pipeline
             </h2>
-            <p className="text-[12px] text-slate-400 mt-0.5">Track proposal activity this month</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Track proposal activity this month</p>
           </div>
 
           {/* Legend + period toggle */}
@@ -527,7 +527,7 @@ function OpportunitySection() {
         </div>
 
         {/* Nudge banner — inside card, above stat cards */}
-        <div className="mx-5 mt-4 flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl"
+        <div className="mx-4 mt-2 flex items-center justify-between gap-3 px-3 py-1.5 rounded-xl"
           style={{ background: "linear-gradient(90deg,#e8f5f0 0%,#f0faf5 100%)", border: "1px solid #b6e4d4" }}>
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
@@ -542,7 +542,7 @@ function OpportunitySection() {
         </div>
 
         {/* Stage stat cards — Day10 style with arrows */}
-        <div className="px-5 sm:px-6 pt-4 pb-4">
+        <div className="px-4 pt-2 pb-2">
           <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1">
             {PIPELINE_STAGES.map((stage, i) => {
               const count = period === "week" ? stage.weekVal : stage.monthVal;
@@ -550,7 +550,7 @@ function OpportunitySection() {
               return (
                 <div key={i} className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-1 min-w-0">
                   <div
-                    className="flex-1 min-w-0 p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none"
+                    className="flex-1 min-w-0 p-1.5 sm:p-2 rounded-xl border cursor-pointer transition-all duration-200 select-none"
                     style={{
                       background:  isHov ? "rgba(26,107,79,0.06)" : "#f8fafc",
                       borderColor: isHov ? "#1a6b4f" : "#e2e8f0",
@@ -563,7 +563,7 @@ function OpportunitySection() {
                       style={{ color: isHov ? "#1a6b4f" : "#94a3b8" }}>
                       {stage.shortLabel}
                     </p>
-                    <p className="text-[20px] sm:text-[22px] font-black leading-none tabular-nums transition-colors duration-200"
+                    <p className="text-[17px] sm:text-[19px] font-black leading-none tabular-nums transition-colors duration-200"
                       style={{ color: isHov ? "#1a6b4f" : "#334155", fontFamily: "Poppins,sans-serif" }}>
                       {count}
                     </p>
@@ -580,14 +580,14 @@ function OpportunitySection() {
         </div>
 
         {/* Proposal Conversion Flow (funnel bars) */}
-        <div className="px-5 sm:px-6 pb-5">
-          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-3">PROPOSAL CONVERSION FLOW</p>
+        <div className="px-4 pb-3">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-2">PROPOSAL CONVERSION FLOW</p>
           <FunnelView mounted={mounted} />
         </div>
 
         {/* ── Recent Proposals — separated by border ── */}
-        <div className="border-t border-slate-100 px-5 sm:px-6 py-5 flex-1">
-          <div className="flex items-center justify-between mb-3">
+        <div className="border-t border-slate-100 px-4 py-3 flex-1">
+          <div className="flex items-center justify-between mb-2">
             <div>
               <p className="text-[11px] font-bold text-[#1e293b]">Recent Proposals</p>
               <p className="text-[9.5px] text-slate-400 leading-snug">Most recent proposals submitted to active requirements</p>
@@ -597,9 +597,9 @@ function OpportunitySection() {
             </button>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-1.5">
             {/* Proposal 1 — Draft (incomplete, needs action) */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-2.5 flex flex-col gap-1 hover:border-amber-300 hover:shadow-sm transition-all duration-200">
+            <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-2 flex flex-col gap-1 hover:border-amber-300 hover:shadow-sm transition-all duration-200">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
                   <span className="text-[8px] border border-amber-300 rounded-full px-1.5 py-[2px] text-amber-700 font-medium leading-none">Draft</span>
@@ -623,7 +623,7 @@ function OpportunitySection() {
             </div>
 
             {/* Proposal 2 — Evaluation ended */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-2 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
                   <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">Proposal</span>
@@ -647,27 +647,27 @@ function OpportunitySection() {
       </div>
 
       {/* ── RIGHT 30% — Profile Readiness (same height, stretched) ── */}
-      <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
+      <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col">
 
-        <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-1">MANUFACTURING PROFILE SIGNAL</p>
-        <h3 className="text-[17px] font-bold text-[#1e293b] mb-5" style={{ fontFamily: "Poppins,sans-serif" }}>
+        <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-0.5">MANUFACTURING PROFILE SIGNAL</p>
+        <h3 className="text-[15px] font-bold text-[#1e293b] mb-2" style={{ fontFamily: "Poppins,sans-serif" }}>
           Profile Performance
         </h3>
 
         {/* Gauge */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-3">
           <Gauge pct={86} mounted={mounted} />
         </div>
 
-        {/* Progress bars — larger text, more spacing */}
-        <div className="flex flex-col gap-4 flex-1">
+        {/* Progress bars */}
+        <div className="flex flex-col gap-2 flex-1">
           {PROFILE_CATEGORIES.map((c, i) => (
             <div key={i}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[13px] text-slate-600 font-medium">{c.label}</span>
-                <span className="text-[13px] font-bold text-[#1e293b]">{c.pct}%</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] text-slate-600 font-medium">{c.label}</span>
+                <span className="text-[11px] font-bold text-[#1e293b]">{c.pct}%</span>
               </div>
-              <div className="w-full h-[8px] bg-slate-100 rounded-full overflow-hidden">
+              <div className="w-full h-[6px] bg-slate-100 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-1000"
                   style={{
@@ -683,15 +683,15 @@ function OpportunitySection() {
         </div>
 
         {/* Opportunity nudge */}
-        <div className="mt-6 rounded-xl p-4" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
-          <p className="text-[10px] font-bold tracking-[0.10em] text-slate-400 mb-2">OPPORTUNITY VALUE</p>
-          <p className="text-[12px] text-slate-300 leading-snug mb-1">Incomplete profile may be costing an estimated</p>
-          <p className="text-[38px] font-black text-white leading-none mb-0.5">
-            $50,000<span className="text-[16px] font-semibold text-slate-400">/mo</span>
+        <div className="mt-3 rounded-xl p-3" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
+          <p className="text-[9px] font-bold tracking-[0.10em] text-slate-400 mb-1">OPPORTUNITY VALUE</p>
+          <p className="text-[11px] text-slate-300 leading-snug">Incomplete profile may be costing an estimated</p>
+          <p className="text-[28px] font-black text-white leading-none mb-0.5">
+            $50,000<span className="text-[13px] font-semibold text-slate-400">/mo</span>
           </p>
-          <p className="text-[11px] text-slate-500 mb-3">in missed buyer opportunities.</p>
+          <p className="text-[10px] text-slate-500 mb-2">in missed buyer opportunities.</p>
           <button
-            className="w-full py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
+            className="w-full py-2 rounded-xl text-white text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
             style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}
           >
             Complete Profile Now →
@@ -890,7 +890,7 @@ function WorldRFQMap() {
 // ═══════════════════════════════════════════════════════════════════════════════
 export function ManufacturingDay1Dashboard() {
   return (
-    <div className="space-y-5 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
+    <div className="space-y-4 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
       <HeroSection />
       <OpportunitySection />
       <WorldRFQMap />
