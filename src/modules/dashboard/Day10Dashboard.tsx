@@ -771,14 +771,14 @@ function ConversionBarChart({
                 }}
               />
 
-              {/* Colour fill — visible when active */}
+              {/* Colour fill — visible when active (green → blue) */}
               <div
                 className="absolute left-0 top-0 h-full rounded-full"
                 style={{
                   width:      (loaded && isActive) ? `${totalPct}%` : "0%",
                   opacity:    isActive ? 1 : 0,
                   transition: "width 350ms cubic-bezier(0.25,0.46,0.45,0.94), opacity 200ms ease",
-                  background: "linear-gradient(90deg,#1a6b4f,#29a06a)",
+                  background: `linear-gradient(90deg,#1a6b4f,${["#29a06a","#1ABC9C","#2F66D0","#4f46e5","#5B3BA8"][Math.min(i,4)]})`,
                 }}
               />
 

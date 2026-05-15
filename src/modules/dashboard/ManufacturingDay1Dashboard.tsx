@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  ArrowRight, ChevronLeft, ChevronRight, Check, TrendingUp,
+  ArrowRight, ChevronLeft, ChevronRight,
   Globe, Search, Filter, ZoomIn, ZoomOut, RotateCcw,
-  AlertCircle, Eye, FileText, Send, Award, BarChart2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,27 +39,29 @@ function useMounted(delay = 300) {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const RFQ_CARDS = [
-  { flag: "🇩🇪", country: "Germany",   role: "PROCUREMENT MANAGER",       product: "High-Purity Solvents",         request: "Seeking 2-tonne monthly supply. ISO + COA required.", urgency: "Urgent",   urgencyColor: "#ef4444" },
-  { flag: "🇮🇳", country: "India",     role: "HEAD OF STRATEGIC SOURCING", product: "Bismuth Citrate",              request: "Need 115 kg CIF by air. Please share COA and ISO cert.", urgency: "Standard", urgencyColor: "#f59e0b" },
-  { flag: "🇧🇷", country: "Brazil",    role: "SUPPLY CHAIN DIRECTOR",      product: "SLES 70%",                     request: "Regular monthly container shipments. Please share availability and terms.", urgency: "Strategic", urgencyColor: "#3b82f6" },
-  { flag: "🇯🇵", country: "Japan",     role: "R&D MANAGER",                product: "Methyl Benzoate (CAS: 93-58-3)", request: "MSDS + TDS needed. 1 kg sample for testing requested.", urgency: "Standard", urgencyColor: "#f59e0b" },
-  { flag: "🇺🇸", country: "USA",       role: "TECHNICAL PURCHASING LEAD",  product: "Titanium Phosphate",           request: "Surface conditioning agent — quote 200 kg delivered.", urgency: "Urgent",   urgencyColor: "#ef4444" },
-  { flag: "🇦🇺", country: "Australia", role: "FOUNDER & TECH LEAD",        product: "Specialty Semiconductor Chemical", request: "Looking for manufacturing partner with R&D support for electronics applications.", urgency: "Strategic", urgencyColor: "#3b82f6" },
+  { flag: "🇩🇪", country: "Germany",   role: "PROCUREMENT MANAGER",       product: "High-Purity Solvents",              request: "Seeking 2-tonne monthly supply. ISO + COA required.",                                                     urgency: "Urgent",    urgencyColor: "#ef4444" },
+  { flag: "🇮🇳", country: "India",     role: "HEAD OF STRATEGIC SOURCING", product: "Bismuth Citrate",                   request: "Need 115 kg CIF by air. Please share COA and ISO cert.",                                                  urgency: "Standard",  urgencyColor: "#f59e0b" },
+  { flag: "🇧🇷", country: "Brazil",    role: "SUPPLY CHAIN DIRECTOR",      product: "SLES 70%",                          request: "Regular monthly container shipments. Please share availability and terms.",                               urgency: "Strategic", urgencyColor: "#3b82f6" },
+  { flag: "🇯🇵", country: "Japan",     role: "R&D MANAGER",                product: "Methyl Benzoate (CAS: 93-58-3)",    request: "MSDS + TDS needed. 1 kg sample for testing requested.",                                                   urgency: "Standard",  urgencyColor: "#f59e0b" },
+  { flag: "🇺🇸", country: "USA",       role: "TECHNICAL PURCHASING LEAD",  product: "Titanium Phosphate",                request: "Surface conditioning agent — quote 200 kg delivered.",                                                    urgency: "Urgent",    urgencyColor: "#ef4444" },
+  { flag: "🇦🇺", country: "Australia", role: "FOUNDER & TECH LEAD",        product: "Specialty Semiconductor Chemical",  request: "Looking for manufacturing partner with R&D support for electronics applications.",                        urgency: "Strategic", urgencyColor: "#3b82f6" },
 ];
 
-const PIPELINE = [
-  { label: "Projects Viewed",       value: 24, color: "#1F6F54", icon: Eye },
-  { label: "Draft Proposals",       value: 6,  color: "#f59e0b", icon: FileText },
-  { label: "Sent Proposals",        value: 3,  color: "#3b82f6", icon: Send },
-  { label: "Under Evaluation",      value: 2,  color: "#8b5cf6", icon: Award },
-  { label: "Converted to Active",   value: 1,  color: "#10b981", icon: Check },
+// Unified pipeline data — used for both stat cards and funnel bars
+const PIPELINE_STAGES = [
+  { shortLabel: "IDENTIFIED",  label: "Projects Available",  monthVal: 186, weekVal: 26 },
+  { shortLabel: "SHORTLISTED", label: "Shortlisted",         monthVal: 62,  weekVal: 9  },
+  { shortLabel: "PROPOSALS",   label: "Proposals Sent",      monthVal: 31,  weekVal: 5  },
+  { shortLabel: "TECH. EVAL.", label: "Under Evaluation",    monthVal: 14,  weekVal: 2  },
+  { shortLabel: "COMMERCIAL",  label: "Commercial Stage",    monthVal: 6,   weekVal: 1  },
 ];
 
+// Profile progress bars — brand green→teal→purple palette
 const PROFILE_CATEGORIES = [
-  { label: "Manufacturing Basics",  pct: 100, color: "#1F6F54" },
-  { label: "Capabilities",          pct: 62,  color: "#3b82f6" },
-  { label: "Certifications",        pct: 38,  color: "#f59e0b" },
-  { label: "Catalogue Strength",    pct: 24,  color: "#ef4444" },
+  { label: "Manufacturing Basics", pct: 100, color: "linear-gradient(90deg,#B7D77A,#1ABC9C)" },
+  { label: "Capabilities",         pct: 62,  color: "linear-gradient(90deg,#1ABC9C,#5B3BA8)" },
+  { label: "Certifications",       pct: 38,  color: "linear-gradient(90deg,#5B3BA8,#7c5cc4)" },
+  { label: "Catalogue Strength",   pct: 24,  color: "#5B3BA8"                                 },
 ];
 
 const MAP_PINS = [
@@ -92,126 +93,120 @@ const COUNTRY_BARS = [
   { country: "Australia", flag: "🇦🇺", rfqs: 11 },
 ];
 
-// ─── Semi-circle gauge ────────────────────────────────────────────────────────
+// ─── Brand-gradient gauge (green → teal → purple) ────────────────────────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
   const r  = 62, cx = 80, cy = 78;
   const circumference = Math.PI * r;
   const dash = mounted ? (pct / 100) * circumference : 0;
 
-  const gradId = "gaugeGrad";
   return (
     <svg width={160} height={95} viewBox="0 0 160 95">
       <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#1F6F54" />
-          <stop offset="100%" stopColor="#3b82f6" />
+        <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#B7D77A" />
+          <stop offset="45%"  stopColor="#1ABC9C" />
+          <stop offset="100%" stopColor="#5B3BA8" />
+        </linearGradient>
+        <linearGradient id="gaugeTextGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#1ABC9C" />
+          <stop offset="100%" stopColor="#5B3BA8" />
         </linearGradient>
       </defs>
       {/* Track */}
       <path
         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="#e2e8f0" strokeWidth={10} strokeLinecap="round"
+        fill="none" stroke="#e2e8f0" strokeWidth={12} strokeLinecap="round"
       />
       {/* Fill */}
       <path
         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke={`url(#${gradId})`} strokeWidth={10} strokeLinecap="round"
+        fill="none" stroke="url(#gaugeGrad)" strokeWidth={12} strokeLinecap="round"
         strokeDasharray={`${dash} ${circumference}`}
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s" }}
       />
-      {/* Dot */}
+      {/* Tip dot */}
       {mounted && (() => {
         const angle = -180 + (pct / 100) * 180;
-        const rad = (angle * Math.PI) / 180;
-        const dx = cx + r * Math.cos(rad), dy = cy + r * Math.sin(rad);
-        return <circle cx={dx} cy={dy} r={5} fill="#3b82f6" />;
+        const rad   = (angle * Math.PI) / 180;
+        const dx    = cx + r * Math.cos(rad);
+        const dy    = cy + r * Math.sin(rad);
+        return <circle cx={dx} cy={dy} r={5} fill="#5B3BA8" />;
       })()}
-      {/* Label */}
-      <text x={cx} y={cy - 6} textAnchor="middle" fontSize={22} fontWeight={800} fill="#0f172a">{pct}%</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fontSize={9} fill="#94a3b8" letterSpacing={1}>BUYER READINESS</text>
+      {/* Labels */}
+      <text x={cx} y={cy - 6}  textAnchor="middle" fontSize={22} fontWeight={800} fill="url(#gaugeTextGrad)">{pct}%</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fontSize={9}  fill="#94a3b8" letterSpacing={1}>BUYER READINESS</text>
     </svg>
   );
 }
 
-// ─── Bar chart (SVG) ─────────────────────────────────────────────────────────
-function BarChart({ mounted }: { mounted: boolean }) {
-  const weeks = ["W1", "W2", "W3", "W4"];
-  const data = [
-    { label: "Viewed",  vals: [8, 12, 18, 24], color: "#1F6F54" },
-    { label: "Drafted", vals: [2, 4,  5,  6],  color: "#f59e0b" },
-    { label: "Sent",    vals: [0, 1,  2,  3],  color: "#3b82f6" },
-  ];
-  const maxVal = 24;
-  const W = 380, H = 140, padL = 28, padB = 24, barW = 8, gap = 4;
-  const groupW = data.length * (barW + gap) + 12;
-  const colW   = (W - padL) / weeks.length;
-
-  return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
-      {[0, 25, 50, 75, 100].map(v => {
-        const y = H - padB - ((v / 100) * (H - padB - 8));
-        return <line key={v} x1={padL} y1={y} x2={W} y2={y} stroke="#f1f5f9" strokeWidth={1} />;
-      })}
-      {weeks.map((w, wi) => {
-        const cx = padL + wi * colW + colW / 2;
-        return (
-          <g key={w}>
-            <text x={cx} y={H - 6} textAnchor="middle" fontSize={9} fill="#94a3b8">{w}</text>
-            {data.map((d, di) => {
-              const barH = mounted ? ((d.vals[wi] / maxVal) * (H - padB - 8)) : 0;
-              const x = cx - (data.length * (barW + gap)) / 2 + di * (barW + gap);
-              const y = H - padB - barH;
-              return (
-                <rect key={di} x={x} y={y} width={barW} height={barH} rx={2}
-                  fill={d.color} opacity={0.85}
-                  style={{ transition: `height 0.8s cubic-bezier(0.22,1,0.36,1) ${di * 80}ms, y 0.8s cubic-bezier(0.22,1,0.36,1) ${di * 80}ms` }}
-                />
-              );
-            })}
-          </g>
-        );
-      })}
-      {/* Legend */}
-      {data.map((d, i) => (
-        <g key={i} transform={`translate(${padL + i * 80}, 6)`}>
-          <rect width={8} height={8} rx={2} fill={d.color} />
-          <text x={12} y={7} fontSize={8} fill="#64748b">{d.label}</text>
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-// ─── Funnel view ──────────────────────────────────────────────────────────────
+// ─── Funnel — diagonal hatch default, green→blue gradient on hover ─────────────
 function FunnelView({ mounted }: { mounted: boolean }) {
-  const steps = [
-    { label: "Discovery",  val: 186, color: "#1F6F54" },
-    { label: "Viewed",     val: 62,  color: "#3b82f6"  },
-    { label: "Drafted",    val: 31,  color: "#f59e0b"  },
-    { label: "Submitted",  val: 14,  color: "#8b5cf6"  },
-    { label: "Evaluated",  val: 6,   color: "#ef4444"  },
-    { label: "Won",        val: 1,   color: "#10b981"  },
-  ];
+  const [hovIdx, setHovIdx] = useState<number | null>(null);
   const max = 186;
+
+  // Per-row hover gradient: steps from green → blue across the funnel
+  const hoverGradients = [
+    "linear-gradient(90deg,#1a6b4f,#29a06a)",
+    "linear-gradient(90deg,#1a6b4f,#2F66D0)",
+    "linear-gradient(90deg,#1ABC9C,#2F66D0)",
+    "linear-gradient(90deg,#2F66D0,#4f46e5)",
+    "linear-gradient(90deg,#4f46e5,#5B3BA8)",
+  ];
+
   return (
-    <div className="flex flex-col gap-2 pt-1">
-      {steps.map((s, i) => {
-        const w = mounted ? (s.val / max) * 100 : 0;
+    <div className="flex flex-col gap-2.5">
+      {PIPELINE_STAGES.map((s, i) => {
+        const w     = mounted ? (s.monthVal / max) * 100 : 0;
+        const isHov = hovIdx === i;
         return (
-          <div key={i} className="flex items-center gap-3">
-            <span className="text-[11px] text-slate-500 w-20 text-right shrink-0">{s.label}</span>
-            <div className="flex-1 h-6 bg-slate-100 rounded-lg overflow-hidden relative">
+          <div
+            key={i}
+            className="flex items-center gap-3 cursor-pointer"
+            onMouseEnter={() => setHovIdx(i)}
+            onMouseLeave={() => setHovIdx(null)}
+          >
+            {/* Label */}
+            <div className={cn(
+              "shrink-0 w-[110px] text-[11px] text-right leading-snug transition-colors duration-200",
+              isHov ? "font-bold text-[#171717]" : "font-medium text-[#64748b]",
+            )}>
+              {s.shortLabel}
+            </div>
+
+            {/* Bar track */}
+            <div className="flex-1 relative h-[18px] rounded-full overflow-hidden" style={{ background: "#edf2f5" }}>
+              {/* Hatch fill — shown when not hovered */}
               <div
-                className="h-full rounded-lg flex items-center px-2"
+                className="absolute left-0 top-0 h-full rounded-full"
                 style={{
-                  width: `${w}%`,
-                  background: s.color,
-                  transition: `width 0.9s cubic-bezier(0.22,1,0.36,1) ${i * 80}ms`,
-                  minWidth: w > 0 ? 28 : 0,
+                  width:           w > 0 ? `${w}%` : "0%",
+                  opacity:         isHov ? 0 : 1,
+                  transition:      `width 620ms cubic-bezier(0.25,0.46,0.45,0.94) ${i * 80}ms, opacity 240ms ease`,
+                  backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)",
                 }}
-              >
-                <span className="text-[10px] text-white font-bold">{s.val}</span>
-              </div>
+              />
+              {/* Colour fill — shown on hover */}
+              <div
+                className="absolute left-0 top-0 h-full rounded-full"
+                style={{
+                  width:      (isHov && mounted) ? `${w}%` : "0%",
+                  opacity:    isHov ? 1 : 0,
+                  transition: "width 350ms cubic-bezier(0.25,0.46,0.45,0.94), opacity 200ms ease",
+                  background: hoverGradients[i],
+                }}
+              />
+              {isHov && (
+                <div className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{ boxShadow: "0 0 10px rgba(31,111,84,0.28)" }} />
+              )}
+            </div>
+
+            {/* Count */}
+            <div className={cn(
+              "shrink-0 w-8 text-right text-[12px] tabular-nums transition-colors duration-200",
+              isHov ? "font-bold text-[#171717]" : "font-medium text-[#94a3b8]",
+            )}>
+              {s.monthVal}
             </div>
           </div>
         );
@@ -221,7 +216,7 @@ function FunnelView({ mounted }: { mounted: boolean }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 1 — HERO
+// SECTION 1 — HERO (unchanged)
 // ═══════════════════════════════════════════════════════════════════════════════
 function HeroSection() {
   const [cardIdx, setCardIdx] = useState(0);
@@ -248,9 +243,9 @@ function HeroSection() {
     <section className="relative overflow-hidden rounded-2xl" style={{ background: HERO_BG }}>
       <style>{`
         @keyframes mfg1-shimmer { 0%,100%{background-position:-200% center} 50%{background-position:200% center} }
-        @keyframes mfg1-grid { 0%,100%{opacity:0.025} 50%{opacity:0.045} }
+        @keyframes mfg1-grid    { 0%,100%{opacity:0.025} 50%{opacity:0.045} }
         @keyframes mfg1-rfqFade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes mfg1-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.6} }
+        @keyframes mfg1-pulse   { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.6} }
       `}</style>
 
       {/* Grid texture */}
@@ -303,18 +298,17 @@ function HeroSection() {
               <span className="text-[12px] font-bold text-emerald-400">28% Complete</span>
               <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>Profile Setup In Progress</span>
             </div>
-            {/* Bar */}
             <div className="flex gap-1 mb-2">
               {[
-                { label: "Basics", done: true },
-                { label: "Capabilities", done: false },
-                { label: "Certifications", done: false },
-                { label: "Catalogue", done: false },
+                { label: "Basics",        done: true  },
+                { label: "Capabilities",  done: false },
+                { label: "Certifications",done: false },
+                { label: "Catalogue",     done: false },
               ].map((seg, i) => (
                 <div key={i} className="flex-1 flex flex-col gap-1">
                   <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.10)" }}>
                     <div className="h-full rounded-full" style={{
-                      width: mounted ? (seg.done ? "100%" : "0%") : "0%",
+                      width:      mounted ? (seg.done ? "100%" : "0%") : "0%",
                       background: seg.done ? "linear-gradient(90deg,#4ade80,#34d399)" : undefined,
                       transition: `width 0.9s cubic-bezier(0.22,1,0.36,1) ${i * 150}ms`,
                     }} />
@@ -364,7 +358,7 @@ function HeroSection() {
                   <div className="min-w-0">
                     <p className="text-white text-[14px] font-bold leading-tight">{rfq.country}</p>
                     <div className="inline-flex items-center gap-1 mt-0.5">
-                      <span className="w-[5px] h-[5px] rounded-full bg-emerald-400 animate-ping" style={{ position: "relative" }} />
+                      <span className="w-[5px] h-[5px] rounded-full bg-emerald-400 animate-ping" />
                       <span className="text-[9px] font-bold text-emerald-300 tracking-[0.12em]">VERIFIED BUYER</span>
                     </div>
                   </div>
@@ -385,7 +379,7 @@ function HeroSection() {
               </div>
             </div>
 
-            {/* Nav */}
+            {/* Nav dots */}
             <div className="flex items-center justify-between shrink-0">
               <div className="flex gap-1.5">
                 {RFQ_CARDS.map((_, i) => (
@@ -411,10 +405,10 @@ function HeroSection() {
       {/* ── Bottom metrics ── */}
       <div className="relative z-10 border-t border-white/[0.07] grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/[0.07]">
         {[
-          { label: "Buyer Searches This Week", value: buyerSearches, suffix: "" },
-          { label: "Matched Categories",       value: matchedCats,    suffix: "" },
-          { label: "Visibility Rank",          value: visibilityRank, suffix: "%" },
-          { label: "New RFQs Today",           value: newRFQs,        suffix: "" },
+          { label: "Buyer Searches This Week", value: buyerSearches, suffix: ""    },
+          { label: "Matched Categories",        value: matchedCats,   suffix: ""    },
+          { label: "Visibility Rank",           value: visibilityRank, suffix: "%" },
+          { label: "New RFQs Today",            value: newRFQs,        suffix: ""  },
         ].map((m, i) => (
           <div key={i} className="px-5 py-4">
             <p className="text-[10px] font-semibold tracking-[0.10em] mb-1" style={{ color: "rgba(255,255,255,0.40)" }}>
@@ -432,23 +426,64 @@ function HeroSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 2 — 70/30 SPLIT
+// SECTION 2 — OPPORTUNITY + PROFILE READINESS
 // ═══════════════════════════════════════════════════════════════════════════════
 function OpportunitySection() {
-  const [tab, setTab] = useState<"bar" | "funnel">("bar");
+  const [period,   setPeriod]   = useState<"week" | "month">("month");
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const mounted = useMounted(500);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
 
-      {/* ── LEFT 70% ── */}
-      <div className="lg:col-span-7 flex flex-col gap-4">
+      {/* ── LEFT 70% — single combined card ── */}
+      <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
 
-        {/* Nudge banner */}
-        <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl"
+        {/* Card header */}
+        <div className="px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.20em] text-slate-400 mb-1">OPPORTUNITY FLOW</p>
+            <h2 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+              Opportunity Pipeline
+            </h2>
+            <p className="text-[12px] text-slate-400 mt-0.5">Track proposal activity this month</p>
+          </div>
+
+          {/* Legend + period toggle */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm"
+                  style={{ background: "linear-gradient(90deg,#1a6b4f,#2F66D0)" }} />
+                <span className="text-[9.5px] text-slate-400 font-medium">Total pipeline</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm"
+                  style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }} />
+                <span className="text-[9.5px] text-slate-400 font-medium">Hover to explore</span>
+              </div>
+            </div>
+            <div className="hidden sm:block w-px h-4 bg-slate-200" />
+            <div className="flex p-1 bg-slate-100 rounded-lg gap-0.5">
+              {(["week", "month"] as const).map(p => (
+                <button key={p} onClick={() => setPeriod(p)}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-[11px] font-semibold transition-all duration-200",
+                    period === p ? "bg-white text-[#1e293b] shadow-sm" : "text-slate-400 hover:text-slate-600",
+                  )}>
+                  This {p}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Nudge banner — inside card, above stat cards */}
+        <div className="mx-5 mt-4 flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl"
           style={{ background: "linear-gradient(90deg,#e8f5f0 0%,#f0faf5 100%)", border: "1px solid #b6e4d4" }}>
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" style={{ animation: "mfg1-pulse 2.5s ease infinite" }} />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
+              style={{ animation: "mfg1-pulse 2.5s ease infinite" }} />
             <p className="text-[13px] font-semibold text-emerald-900 truncate">
               <strong>124 buyer projects</strong> are currently aligned to your manufacturing category.
             </p>
@@ -458,142 +493,158 @@ function OpportunitySection() {
           </button>
         </div>
 
-        {/* Pipeline card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400 mb-0.5">OPPORTUNITY FLOW</p>
-                <h3 className="text-[17px] font-bold text-slate-900">Opportunity Pipeline</h3>
-                <p className="text-[12px] text-slate-400 mt-0.5">Track proposal activity this month</p>
-              </div>
-              {/* Tabs */}
-              <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
-                {(["bar", "funnel"] as const).map(t => (
-                  <button key={t} onClick={() => setTab(t)}
-                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all",
-                      tab === t ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
-                    {t === "bar" ? <BarChart2 size={12} /> : <TrendingUp size={12} />}
-                    {t === "bar" ? "Bar" : "Funnel"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Pipeline metrics */}
-          <div className="grid grid-cols-5 divide-x divide-slate-100 border-b border-slate-100">
-            {PIPELINE.map((p, i) => {
-              const Icon = p.icon;
+        {/* Stage stat cards — Day10 style with arrows */}
+        <div className="px-5 sm:px-6 pt-4 pb-4">
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+            {PIPELINE_STAGES.map((stage, i) => {
+              const count = period === "week" ? stage.weekVal : stage.monthVal;
+              const isHov = hoverIdx === i;
               return (
-                <div key={i} className="px-3 py-3 text-center">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5"
-                    style={{ background: `${p.color}18` }}>
-                    <Icon size={13} style={{ color: p.color }} />
+                <div key={i} className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-1 min-w-0">
+                  <div
+                    className="flex-1 min-w-0 p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none"
+                    style={{
+                      background:  isHov ? "rgba(26,107,79,0.06)" : "#f8fafc",
+                      borderColor: isHov ? "#1a6b4f" : "#e2e8f0",
+                      boxShadow:   isHov ? "0 0 0 1px rgba(26,107,79,0.18)" : "none",
+                    }}
+                    onMouseEnter={() => setHoverIdx(i)}
+                    onMouseLeave={() => setHoverIdx(null)}
+                  >
+                    <p className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wide leading-snug mb-1 truncate transition-colors duration-200"
+                      style={{ color: isHov ? "#1a6b4f" : "#94a3b8" }}>
+                      {stage.shortLabel}
+                    </p>
+                    <p className="text-[20px] sm:text-[22px] font-black leading-none tabular-nums transition-colors duration-200"
+                      style={{ color: isHov ? "#1a6b4f" : "#334155", fontFamily: "Poppins,sans-serif" }}>
+                      {count}
+                    </p>
                   </div>
-                  <p className="text-[18px] font-black" style={{ color: p.color }}>{p.value}</p>
-                  <p className="text-[9px] text-slate-400 leading-tight mt-0.5">{p.label}</p>
+                  {i < PIPELINE_STAGES.length - 1 && (
+                    <svg width="12" height="12" viewBox="0 0 14 14" className="shrink-0 text-slate-300">
+                      <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </svg>
+                  )}
                 </div>
               );
             })}
           </div>
-
-          {/* Chart */}
-          <div className="px-5 py-4" style={{ minHeight: 180 }}>
-            {tab === "bar"    && <BarChart mounted={mounted} />}
-            {tab === "funnel" && <FunnelView mounted={mounted} />}
-          </div>
         </div>
 
-        {/* Recent proposals */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-4">
+        {/* Proposal Conversion Flow (funnel bars) */}
+        <div className="px-5 sm:px-6 pb-5">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-3">PROPOSAL CONVERSION FLOW</p>
+          <FunnelView mounted={mounted} />
+        </div>
+
+        {/* ── Recent Proposals — separated by border ── */}
+        <div className="border-t border-slate-100 px-5 sm:px-6 py-5 flex-1">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-[15px] font-bold text-slate-900">Proposal Activity</h3>
-              <p className="text-[12px] text-slate-400 mt-0.5">Complete drafts before buyer windows close</p>
+              <p className="text-[11px] font-bold text-[#1e293b]">Recent Proposals</p>
+              <p className="text-[9.5px] text-slate-400 leading-snug">Most recent proposals submitted to active requirements</p>
             </div>
-            <button className="text-[12px] font-semibold text-[#1F6F54] hover:underline flex items-center gap-1">
-              View All <ArrowRight size={11} />
+            <button className="shrink-0 flex items-center gap-1 text-[10.5px] font-semibold text-[#1F6F54] hover:opacity-75 transition-opacity">
+              View all proposals <ArrowRight size={10} strokeWidth={2.5} />
             </button>
           </div>
-          <div className="flex flex-col gap-3">
-            {/* Draft card */}
-            <div className="flex items-center gap-3 p-3.5 rounded-xl border border-amber-200 bg-amber-50/50">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                <FileText size={15} className="text-amber-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Draft</span>
-                  <span className="text-[10px] text-red-500 flex items-center gap-1 font-semibold">
-                    <AlertCircle size={9} /> Buyer review closes in 18 hrs
-                  </span>
+
+          <div className="flex flex-col gap-2.5">
+            {/* Proposal 1 */}
+            <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">Proposal</span>
+                  <span className="text-[8px] rounded-full px-1.5 py-[2px] text-white font-bold leading-none" style={{ background: "#0E6F5C" }}>CMO</span>
                 </div>
-                <p className="text-[13px] font-semibold text-slate-800 truncate">Triethyl Orthoformate Proposal</p>
+                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none" style={{ color: "#1a6b4f" }}>
+                  <span className="w-1 h-1 rounded-full inline-block shrink-0" style={{ background: "#1a6b4f" }} />
+                  PO Issued
+                </span>
               </div>
-              <button className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold rounded-lg transition-colors">
-                Complete Now
-              </button>
+              <p className="text-[10.5px] font-semibold text-[#1e293b] leading-snug truncate">
+                Manufacturing of a Vitamin D3 Intermediate for Nutraceutical Applications
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[8.5px] text-slate-400 truncate">PRJ-2026-0603 · Vitamin D3 Intermediate VD-07 · Nutraceuticals</p>
+                <button className="shrink-0 text-[9px] font-semibold text-[#1F6F54] hover:opacity-75">Track →</button>
+              </div>
             </div>
-            {/* Sent card */}
-            <div className="flex items-center gap-3 p-3.5 rounded-xl border border-blue-200 bg-blue-50/50">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                <Send size={15} className="text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="text-[10px] font-bold bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">Under Evaluation</span>
-                  <span className="text-[10px] text-blue-500 font-medium">Buyer reviewing</span>
+
+            {/* Proposal 2 */}
+            <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">Proposal</span>
+                  <span className="text-[8px] rounded-full px-1.5 py-[2px] text-white font-bold leading-none" style={{ background: "#2F66D0" }}>RFQ</span>
                 </div>
-                <p className="text-[13px] font-semibold text-slate-800 truncate">Lithium Sulfite RFQ</p>
+                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none" style={{ color: "#d97706" }}>
+                  <span className="w-1 h-1 rounded-full inline-block shrink-0 bg-amber-500" />
+                  Under Review
+                </span>
               </div>
-              <button className="shrink-0 px-3 py-1.5 border border-blue-300 text-blue-700 text-[11px] font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                Track Proposal
-              </button>
+              <p className="text-[10.5px] font-semibold text-[#1e293b] leading-snug truncate">
+                Custom bromine derivative for flame retardant application
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[8.5px] text-slate-400 truncate">PRJ-2026-0054 · Tetrabromobisphenol A (TBBPA) · Elemental Derivatives</p>
+                <button className="shrink-0 text-[9px] font-semibold text-[#2F66D0] hover:opacity-75">Track →</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── RIGHT 30% ── */}
-      <div className="lg:col-span-3 flex flex-col gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-          <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400 mb-1">CRO PROFILE SIGNAL</p>
-          <h3 className="text-[16px] font-bold text-slate-900 mb-4">Profile Readiness Score</h3>
+      {/* ── RIGHT 30% — Profile Readiness (same height, stretched) ── */}
+      <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
 
-          {/* Gauge */}
-          <div className="flex justify-center mb-4">
-            <Gauge pct={86} mounted={mounted} />
-          </div>
+        <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-1">MANUFACTURING PROFILE SIGNAL</p>
+        <h3 className="text-[17px] font-bold text-[#1e293b] mb-5" style={{ fontFamily: "Poppins,sans-serif" }}>
+          Profile Readiness Score
+        </h3>
 
-          {/* Progress bars */}
-          <div className="flex flex-col gap-3">
-            {PROFILE_CATEGORIES.map((c, i) => (
-              <div key={i}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[12px] text-slate-600 font-medium">{c.label}</span>
-                  <span className="text-[12px] font-bold" style={{ color: c.color }}>{c.pct}%</span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-1000"
-                    style={{ width: mounted ? `${c.pct}%` : "0%", background: c.color, transitionDelay: `${i * 120 + 400}ms` }} />
-                </div>
+        {/* Gauge */}
+        <div className="flex justify-center mb-6">
+          <Gauge pct={86} mounted={mounted} />
+        </div>
+
+        {/* Progress bars — larger text, more spacing */}
+        <div className="flex flex-col gap-4 flex-1">
+          {PROFILE_CATEGORIES.map((c, i) => (
+            <div key={i}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[13px] text-slate-600 font-medium">{c.label}</span>
+                <span className="text-[13px] font-bold text-[#1e293b]">{c.pct}%</span>
               </div>
-            ))}
-          </div>
+              <div className="w-full h-[8px] bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-1000"
+                  style={{
+                    width:           mounted ? `${c.pct}%` : "0%",
+                    background:      c.color,
+                    transitionDelay: `${i * 120 + 400}ms`,
+                    boxShadow:       mounted ? "0 1px 6px rgba(45,209,124,0.28)" : "none",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Business loss nudge */}
-          <div className="mt-5 rounded-xl p-4" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
-            <style>{`@keyframes lossGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,200,66,0.0)} 50%{box-shadow:0 0 20px rgba(245,200,66,0.15)}}`}</style>
-            <p className="text-[11px] font-bold tracking-[0.10em] text-slate-400 mb-2">OPPORTUNITY VALUE</p>
-            <p className="text-[12px] text-slate-300 leading-snug mb-1">Incomplete profile may be costing an estimated</p>
-            <p className="text-[30px] font-black text-white leading-none mb-0.5">$50,000<span className="text-[14px] font-semibold text-slate-400">/mo</span></p>
-            <p className="text-[11px] text-slate-500 mb-3">in missed buyer opportunities.</p>
-            <button className="w-full py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
-              style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}>
-              Complete Profile Now →
-            </button>
-          </div>
+        {/* Opportunity nudge */}
+        <div className="mt-6 rounded-xl p-4" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
+          <p className="text-[10px] font-bold tracking-[0.10em] text-slate-400 mb-2">OPPORTUNITY VALUE</p>
+          <p className="text-[12px] text-slate-300 leading-snug mb-1">Incomplete profile may be costing an estimated</p>
+          <p className="text-[28px] font-black text-white leading-none mb-0.5">
+            $50,000<span className="text-[13px] font-semibold text-slate-400">/mo</span>
+          </p>
+          <p className="text-[11px] text-slate-500 mb-3">in missed buyer opportunities.</p>
+          <button
+            className="w-full py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}
+          >
+            Complete Profile Now →
+          </button>
         </div>
       </div>
     </div>
@@ -601,22 +652,21 @@ function OpportunitySection() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — WORLD RFQ MAP
+// SECTION 3 — WORLD RFQ MAP (unchanged)
 // ═══════════════════════════════════════════════════════════════════════════════
 function WorldRFQMap() {
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [hovered,   setHovered]   = useState<string | null>(null);
+  const [selected,  setSelected]  = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<"monthly" | "quarterly">("monthly");
-  const mounted = useMounted(200);
-  const maxRFQ  = Math.max(...COUNTRY_BARS.map(c => c.rfqs));
+  const mounted  = useMounted(200);
+  const maxRFQ   = Math.max(...COUNTRY_BARS.map(c => c.rfqs));
 
-  const hoveredPin    = MAP_PINS.find(p => p.id === hovered);
-  const hoveredBar    = COUNTRY_BARS.find(c => c.country === hoveredPin?.country);
+  const hoveredPin = MAP_PINS.find(p => p.id === hovered);
 
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <style>{`
-        @keyframes pinPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.8);opacity:0.3} }
+        @keyframes pinPulse    { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.8);opacity:0.3} }
         @keyframes tooltipFade { from{opacity:0;transform:translateY(4px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
       `}</style>
 
@@ -628,17 +678,14 @@ function WorldRFQMap() {
           <p className="text-[12px] text-slate-400 mt-0.5">Track where verified buyer demand is emerging.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Search */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50">
             <Search size={13} className="text-slate-400" />
             <input className="text-[12px] bg-transparent outline-none w-28 placeholder:text-slate-400"
               placeholder="Search market…" />
           </div>
-          {/* Filter */}
           <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-[12px] text-slate-600 hover:bg-slate-50">
             <Filter size={12} /> Category
           </button>
-          {/* Toggle */}
           <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
             {(["monthly", "quarterly"] as const).map(t => (
               <button key={t} onClick={() => setTimeframe(t)}
@@ -653,40 +700,29 @@ function WorldRFQMap() {
 
       {/* Map + Sidebar */}
       <div className="flex">
-
-        {/* MAP — 75% */}
+        {/* MAP */}
         <div className="flex-1 relative" style={{ minHeight: 360 }}>
-          {/* Dark map background with grid */}
           <div className="absolute inset-0" style={{
             background: "linear-gradient(135deg, #0d1117 0%, #0f1923 50%, #0d1117 100%)",
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)
-            `,
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
             backgroundSize: "40px 40px",
           }} />
 
-          {/* Continent blobs (simplified visual) */}
+          {/* Continent blobs */}
           <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.12 }}>
-            {/* North America */}
-            <div className="absolute rounded-[40%]" style={{ width:"22%", height:"35%", left:"8%", top:"22%", background:"#2d4a6e" }} />
-            {/* South America */}
+            <div className="absolute rounded-[40%]" style={{ width:"22%", height:"35%", left:"8%",  top:"22%", background:"#2d4a6e" }} />
             <div className="absolute rounded-[40%]" style={{ width:"14%", height:"28%", left:"20%", top:"52%", background:"#2d4a6e" }} />
-            {/* Europe */}
             <div className="absolute rounded-[40%]" style={{ width:"12%", height:"20%", left:"44%", top:"18%", background:"#2d4a6e" }} />
-            {/* Africa */}
             <div className="absolute rounded-[40%]" style={{ width:"14%", height:"30%", left:"46%", top:"40%", background:"#2d4a6e" }} />
-            {/* Asia */}
             <div className="absolute rounded-[30%]" style={{ width:"28%", height:"32%", left:"58%", top:"20%", background:"#2d4a6e" }} />
-            {/* Australia */}
             <div className="absolute rounded-[40%]" style={{ width:"12%", height:"14%", left:"74%", top:"58%", background:"#2d4a6e" }} />
           </div>
 
           {/* Country pins */}
           {MAP_PINS.map(pin => {
-            const color  = PIN_COLORS[pin.tier];
-            const isHov  = hovered === pin.id;
-            const isSel  = selected === pin.id;
+            const color = PIN_COLORS[pin.tier];
+            const isHov = hovered === pin.id;
+            const isSel = selected === pin.id;
             return (
               <div
                 key={pin.id}
@@ -696,26 +732,19 @@ function WorldRFQMap() {
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => setSelected(s => s === pin.id ? null : pin.id)}
               >
-                {/* Pulse ring */}
-                <div className="absolute inset-0 rounded-full" style={{
+                <div className="absolute rounded-full" style={{
                   width: 28, height: 28, top: -6, left: -6,
                   border: `2px solid ${color}`,
                   animation: "pinPulse 3s ease infinite",
-                  animationDelay: `${Math.random() * 2}s`,
                 }} />
-                {/* Pin dot */}
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] shadow-lg transition-transform duration-200"
+                <div className="w-4 h-4 rounded-full transition-transform duration-200"
                   style={{
-                    background: color,
-                    transform: isHov || isSel ? "scale(1.4)" : "scale(1)",
-                    boxShadow: isHov ? `0 0 12px ${color}` : `0 0 6px ${color}60`,
-                  }}>
-                </div>
-
-                {/* Tooltip */}
+                    background:  color,
+                    transform:   isHov || isSel ? "scale(1.4)" : "scale(1)",
+                    boxShadow:   isHov ? `0 0 12px ${color}` : `0 0 6px ${color}60`,
+                  }} />
                 {isHov && (
-                  <div
-                    className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 rounded-xl shadow-2xl overflow-hidden"
+                  <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 rounded-xl shadow-2xl overflow-hidden"
                     style={{ animation: "tooltipFade 0.18s ease both", zIndex: 30 }}>
                     <div className="bg-[#1e293b] text-white p-3">
                       <div className="flex items-center gap-2 mb-2">
@@ -727,7 +756,7 @@ function WorldRFQMap() {
                         <span className="ml-auto text-[10px] font-bold text-emerald-400">{pin.growth}</span>
                       </div>
                       <p className="text-[10px] text-slate-400 mb-2 leading-snug">{pin.products}</p>
-                      <button className="w-full py-1.5 rounded-lg text-[10px] font-bold text-white transition-colors"
+                      <button className="w-full py-1.5 rounded-lg text-[10px] font-bold text-white"
                         style={{ background: "#1F6F54" }}>
                         View Requests →
                       </button>
@@ -751,7 +780,8 @@ function WorldRFQMap() {
           {/* Zoom controls */}
           <div className="absolute top-4 right-4 flex flex-col gap-1">
             {[ZoomIn, ZoomOut, RotateCcw].map((Icon, i) => (
-              <button key={i} className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+              <button key={i}
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
                 style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
@@ -761,7 +791,7 @@ function WorldRFQMap() {
           </div>
         </div>
 
-        {/* SIDEBAR — 25% */}
+        {/* SIDEBAR */}
         <div className="w-64 shrink-0 border-l border-slate-100 bg-slate-50/50">
           <div className="px-4 pt-4 pb-2">
             <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400 mb-3">TOP RFQ MARKETS</p>
@@ -772,8 +802,7 @@ function WorldRFQMap() {
                   <div key={i}
                     className={cn("cursor-pointer rounded-lg px-3 py-2 transition-all", isHov ? "bg-white shadow-sm" : "hover:bg-white/70")}
                     onMouseEnter={() => setHovered(MAP_PINS.find(p => p.country === c.country)?.id ?? null)}
-                    onMouseLeave={() => setHovered(null)}
-                  >
+                    onMouseLeave={() => setHovered(null)}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[14px]">{c.flag}</span>
@@ -784,8 +813,8 @@ function WorldRFQMap() {
                     <div className="w-full h-[5px] bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-700"
                         style={{
-                          width: mounted ? `${(c.rfqs / maxRFQ) * 100}%` : "0%",
-                          background: isHov ? "#1F6F54" : "#94a3b8",
+                          width:           mounted ? `${(c.rfqs / maxRFQ) * 100}%` : "0%",
+                          background:      isHov ? "#1F6F54" : "#94a3b8",
                           transitionDelay: `${i * 60}ms`,
                         }} />
                     </div>
