@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -51,56 +51,288 @@ export function ManufacturingDashboard() {
   );
 }
 
-// ─── 1. Welcome Banner ────────────────────────────────────────────────────────
+// ─── 1. Hero Banner — buyer signal data ──────────────────────────────────────
+
+const BUYER_SIGNALS = [
+  {
+    flag: "🇪🇬", city: "Cairo", country: "Egypt",
+    role: "PROCUREMENT MANAGER",
+    quote: "Hello, we're looking to purchase Bismuth Citrate. Could you please share your price for 115 kg CIF by air? Also, kindly provide the COA and ISO certificate for our review.",
+  },
+  {
+    flag: "🇨🇳", city: "Shanghai", country: "China",
+    role: "SUPPLY CHAIN DIRECTOR",
+    quote: "Hello, we're interested in 800 kg of Azacyclonol (CAS: 115-46-8). Please advise your shortest lead time and share the latest batch COA and MSDS for quality evaluation.",
+  },
+  {
+    flag: "🇮🇩", city: "Jakarta", country: "Indonesia",
+    role: "TECHNICAL PURCHASING ENGINEER",
+    quote: "Hi, we're sourcing Titanium Phosphate (CAS: 13765-94-1) for use as a surface conditioning agent in a zinc phosphating process. Do you currently have stock? Could you quote for around 200 kg delivered to Jakarta?",
+  },
+  {
+    flag: "🇧🇷", city: "São Paulo", country: "Brazil",
+    role: "HEAD OF STRATEGIC SOURCING",
+    quote: "Hello, we're looking for reliable suppliers of SLES 70% who can support regular monthly container shipments. Please let us know your availability and terms.",
+  },
+  {
+    flag: "🇫🇷", city: "Lyon", country: "France",
+    role: "R&D MANAGER",
+    quote: "Hello, we're interested in Methyl Benzoate (CAS: 93-58-3), technical grade. Could you share the MSDS and technical datasheet? Would it be possible to receive a 1 kg sample for testing?",
+  },
+  {
+    flag: "🇮🇳", city: "Mumbai", country: "India",
+    role: "FOUNDER & TECHNICAL LEAD",
+    quote: "Hi, we have a specialty chemical product for semiconductor/electronics applications and are looking to get it manufactured with a partner that offers strong R&D support. Could you help evaluate this?",
+  },
+];
+
+// ─── 1. Welcome Banner (Manufacturing Hero) ───────────────────────────────────
 function WelcomeBanner() {
-  const profileCompletion = 15;
-  const circumference = 2 * Math.PI * 40;
-  const strokeDash = (profileCompletion / 100) * circumference;
+  const [tipVisible,      setTipVisible]      = useState(false);
+  const [cardIdx,         setCardIdx]         = useState(0);
+  const [progressMounted, setProgressMounted] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(
+      () => setCardIdx((i) => (i + 1) % BUYER_SIGNALS.length),
+      4000,
+    );
+  }, []);
+
+  useEffect(() => {
+    resetTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [resetTimer]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setProgressMounted(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+
+  const goTo = (i: number) => { setCardIdx(i); resetTimer(); };
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#182133] to-[#016358] p-4 sm:p-6 md:p-8">
-      <div className="absolute -top-16 -right-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-emerald-300/10 rounded-full blur-2xl pointer-events-none" />
+    <>
+      <style>{`
+        @keyframes mfg-badgeShimmer {
+          0%, 100% { background-position: -200% center; }
+          50%       { background-position:  200% center; }
+        }
+        @keyframes mfg-grid {
+          0%, 100% { opacity: 0.025; }
+          50%       { opacity: 0.045; }
+        }
+        @keyframes mfg-cardFade {
+          from { opacity: 0; transform: translateY(7px); }
+          to   { opacity: 1; transform: translateY(0px); }
+        }
+      `}</style>
 
-      <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-        <div className="flex-1 max-w-xl">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
-            Welcome, Unlock Global Manufacturing Opportunities
-          </h1>
-          <p className="text-emerald-100/80 text-sm leading-relaxed mb-6">
-            List your products, share your plant strengths, and get matched with companies actively looking for reliable manufacturing partners.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-800 text-sm font-bold rounded-lg hover:bg-emerald-50 transition-all shadow-sm">
-              Set Up Your Plant Profile <ArrowRight size={15} />
-            </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 border border-white/40 text-white text-sm font-bold rounded-lg hover:bg-white/10 transition-all">
-              Browse Buyer Requirements <ArrowRight size={15} />
-            </button>
+      <section
+        className="relative overflow-hidden rounded-2xl"
+        style={{ background: "linear-gradient(125deg, #003A1B 0%, #001C08 55%, #000d04 100%)" }}
+      >
+        {/* ── Ambient glow blobs ── */}
+        <div className="pointer-events-none absolute -top-28 left-[28%] w-[420px] h-[420px] rounded-full opacity-[0.18]"
+          style={{ background: "radial-gradient(circle, #1db877 0%, transparent 68%)", filter: "blur(72px)" }} />
+        <div className="pointer-events-none absolute bottom-0 left-0 w-60 h-60 rounded-full opacity-[0.09]"
+          style={{ background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)", filter: "blur(48px)" }} />
+        <div className="pointer-events-none absolute top-0 right-0 w-72 h-full rounded-r-2xl opacity-[0.22]"
+          style={{ background: "radial-gradient(ellipse at top right, #0a3d1e 0%, transparent 70%)" }} />
+
+        {/* ── Subtle manufacturing grid texture ── */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24h48M24 0v48' stroke='%23ffffff' stroke-width='0.4'/%3E%3Ccircle cx='24' cy='24' r='1' fill='%23ffffff'/%3E%3C/svg%3E")`,
+            backgroundSize: "48px 48px",
+            animation: "mfg-grid 7s ease-in-out infinite",
+          }}
+        />
+
+        {/* ── 12-col grid: 8 left / 4 right ── */}
+        <div className="relative z-10 grid grid-cols-12">
+
+          {/* ══ LEFT PANEL — 70% ══ */}
+          <div className="col-span-12 lg:col-span-8 px-6 pt-6 pb-6 sm:px-8 sm:pt-7 sm:pb-7 flex flex-col justify-between gap-5">
+
+            {/* SCINODE Secure badge */}
+            <div className="relative inline-block self-start">
+              <button
+                type="button"
+                className="relative overflow-hidden flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold text-emerald-200/90 border border-emerald-400/20 hover:border-emerald-400/50 hover:scale-[1.03] hover:shadow-[0_0_18px_rgba(74,222,128,0.22)] transition-all duration-200"
+                style={{ background: "rgba(20,55,30,0.90)" }}
+                onMouseEnter={() => setTipVisible(true)}
+                onMouseLeave={() => setTipVisible(false)}
+              >
+                <div className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{
+                    background: "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.11) 50%, transparent 70%)",
+                    backgroundSize: "200% 100%",
+                    animation: "mfg-badgeShimmer 3.5s ease-in-out infinite",
+                  }}
+                />
+                <span className="relative z-10">🔒</span>
+                <span className="relative z-10 font-bold tracking-wide">SCINODE SECURE</span>
+              </button>
+              {/* Tooltip */}
+              <div
+                className="absolute left-0 top-full mt-2 z-20 w-[268px] pointer-events-none"
+                style={{
+                  opacity: tipVisible ? 1 : 0,
+                  transform: tipVisible ? "translateY(0)" : "translateY(-4px)",
+                  transition: "opacity 200ms ease, transform 200ms ease",
+                }}
+              >
+                <div className="bg-[#1e293b] text-white text-[11px] leading-relaxed rounded-[10px] px-3.5 py-2.5 shadow-2xl border border-white/10">
+                  <div className="absolute bottom-full left-5 border-[5px] border-transparent border-b-[#1e293b]" />
+                  <p className="font-semibold mb-0.5">Sign out</p>
+                  <p>Your data and IP remain encrypted and access-controlled at every step.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Headline + subtext */}
+            <div>
+              <h1
+                className="text-[24px] sm:text-[30px] md:text-[34px] font-bold text-white leading-[1.15] tracking-[-0.02em] mb-3"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Unlock Global Manufacturing<br className="hidden sm:block" /> Opportunities
+              </h1>
+              <p className="text-[#8faabb] text-[13px] sm:text-[14px] leading-relaxed max-w-[520px]">
+                Fill your production lines, access qualified buyer demand, and unlock high-value manufacturing collaborations across global scientific industries.
+              </p>
+            </div>
+
+            {/* Horizontal progress track */}
+            <div className="flex flex-col gap-1.5 max-w-[520px]">
+              <div className="w-full h-[8px] rounded-full overflow-hidden"
+                style={{ background: "rgba(255,255,255,0.13)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: progressMounted ? "6%" : "0%",
+                    transition: "width 1.2s cubic-bezier(0.22,1,0.36,1) 0.4s",
+                    background: "linear-gradient(90deg, #4ade80 0%, #34d399 100%)",
+                    boxShadow: "0 0 12px rgba(74,222,128,0.50)",
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-bold" style={{ color: "#4ade80" }}>6% Complete</span>
+                <span className="text-[11px] text-white/35 font-medium">Profile Setup In Progress</span>
+              </div>
+              <p className="text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.60)" }}>
+                Complete your manufacturing profile to start receiving verified buyer enquiries.
+              </p>
+            </div>
+
+            {/* CTA buttons */}
+            <div className="flex flex-wrap gap-3">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#002d14] text-[13px] font-bold rounded-lg hover:bg-emerald-50 hover:shadow-[0_0_16px_rgba(255,255,255,0.22)] active:scale-[0.98] transition-all duration-200 shadow-sm">
+                Set Up Plant Profile <ArrowRight size={14} strokeWidth={2.5} />
+              </button>
+              <button className="flex items-center gap-2 px-5 py-2.5 border border-white/30 text-[13px] font-semibold rounded-lg hover:bg-white/10 hover:border-white/50 transition-all duration-200" style={{ color: "rgba(255,255,255,0.90)" }}>
+                Explore Projects <ArrowRight size={14} strokeWidth={2} />
+              </button>
+            </div>
+
           </div>
-        </div>
 
-        <div className="flex flex-col items-center gap-3 shrink-0">
-          <div className="relative w-[168px] h-[168px]">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.15)" strokeWidth="6" fill="none" />
-              <circle
-                cx="50" cy="50" r="40"
-                stroke="white"
-                strokeWidth="6"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={`${strokeDash} ${circumference}`}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-black text-white">{profileCompletion}%</span>
+          {/* ══ RIGHT PANEL — 30%: Buyer Carousel ══ */}
+          <div className="col-span-12 lg:col-span-4 flex overflow-hidden">
+            <div className="hidden lg:block w-px self-stretch bg-white/[0.07] shrink-0" />
+            <div
+              className="flex-1 flex flex-col px-5 pt-6 pb-5 sm:px-6 justify-between gap-4"
+              style={{ background: "rgba(0,0,0,0.22)" }}
+            >
+              {/* Heading */}
+              <h3
+                className="text-white text-[15px] font-bold leading-snug shrink-0"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                What Buyers are Looking For?
+              </h3>
+
+              {/* Active card — rendered directly, natural height, fade on key change */}
+              {(() => {
+                const s = BUYER_SIGNALS[cardIdx];
+                return (
+                  <div
+                    key={cardIdx}
+                    className="flex flex-col gap-2.5 flex-1"
+                    style={{ animation: "mfg-cardFade 0.38s ease both" }}
+                  >
+                    {/* Flag */}
+                    <span className="text-[44px] leading-none">{s.flag}</span>
+
+                    {/* City + Country */}
+                    <p className="text-white text-[17px] font-bold leading-snug">
+                      {s.city}, {s.country}
+                    </p>
+
+                    {/* Verified badge */}
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full border border-emerald-400/25 w-fit"
+                      style={{ background: "rgba(52,211,153,0.08)" }}
+                    >
+                      <span className="relative flex h-[6px] w-[6px] shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                        <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-emerald-400" />
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-300 tracking-[0.14em]">SCINODE VERIFIED</span>
+                    </div>
+
+                    {/* Role */}
+                    <p className="text-[10px] font-bold tracking-[0.15em]" style={{ color: "rgba(52,211,153,0.80)" }}>
+                      {s.role}
+                    </p>
+
+                    {/* Quote — full text, wraps naturally */}
+                    <p
+                      className="text-[13px] leading-[1.7] italic flex-1"
+                      style={{
+                        color: "rgba(255,255,255,0.60)",
+                        wordBreak: "break-word",
+                        overflow: "hidden",
+                      }}
+                    >
+                      &ldquo;{s.quote}&rdquo;
+                    </p>
+
+                    {/* Timestamp */}
+                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      Updated just now
+                    </p>
+                  </div>
+                );
+              })()}
+
+              {/* Pagination dots */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {BUYER_SIGNALS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goTo(i)}
+                    aria-label={`Signal ${i + 1}`}
+                    className="h-[5px] rounded-full transition-all duration-300"
+                    style={{
+                      width: i === cardIdx ? 20 : 5,
+                      background: i === cardIdx ? "#4ade80" : "rgba(255,255,255,0.22)",
+                    }}
+                  />
+                ))}
+              </div>
+
             </div>
           </div>
-          <span className="text-white/70 text-sm font-medium text-center">Profile completed</span>
+
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
 

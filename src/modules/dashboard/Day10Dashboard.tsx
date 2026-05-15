@@ -9,9 +9,17 @@
  */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { ArrowRight, TrendingUp, Settings2, FileText, Tag, ShieldCheck, UserCheck, FlaskConical, BookOpen, Microscope, Users, Globe } from "lucide-react";
+import { ArrowRight, TrendingUp, CheckCircle, ChevronRight, ArrowUpRight, Settings2, FileText, Tag, ShieldCheck, UserCheck, FlaskConical, BookOpen, Microscope, Users, Globe } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Testimonials  as ResearcherTestimonials,
+  TalkToExpert  as ResearcherTalkToExpert,
+} from "@/modules/dashboard/ResearcherDashboard";
+import {
+  Testimonials  as CROTestimonials,
+  TalkToExpert  as CROTalkToExpert,
+} from "@/modules/dashboard/CRODashboard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1898,7 +1906,60 @@ function DemandDiscoverySection({ profileType }: { profileType: ProfileType }) {
   );
 }
 
-// ─── Day 10 Optimise Section ──────────────────────────────────────────────────
+// ─── Platform Stats ───────────────────────────────────────────────────────────
+
+const D10_PLATFORM_STATS = [
+  { num: 20,   suffix: "+", label: "REQUESTING\nCOUNTRIES" },
+  { num: 350,  suffix: "+", label: "R&D ENQUIRIES\nPER WEEK" },
+  { num: 1000, suffix: "+", label: "RESEARCHERS & LABS\nONBOARDED" },
+  { num: 90,   suffix: "%", label: "PROJECTS\nSUCCESSFULLY MATCHED" },
+  { num: 98,   suffix: "%", label: "PARTNER\nSATISFACTION" },
+];
+
+function D10PlatformStats() {
+  const [counts, setCounts] = useState(D10_PLATFORM_STATS.map(() => 0));
+  const animatingRef = useRef(false);
+
+  const startAnimation = useCallback(() => {
+    if (animatingRef.current) return;
+    animatingRef.current = true;
+    const duration = 1400;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCounts(D10_PLATFORM_STATS.map((s) => Math.floor(s.num * eased)));
+      if (progress < 1) requestAnimationFrame(tick);
+      else animatingRef.current = false;
+    };
+    requestAnimationFrame(tick);
+  }, []);
+
+  const fmt = (count: number, s: typeof D10_PLATFORM_STATS[0]) => String(count) + s.suffix;
+
+  return (
+    <section className="bg-[#0d1117] rounded-2xl px-4 py-6 sm:px-8 sm:py-8" onMouseEnter={startAnimation}>
+      <p className="text-center text-slate-500 text-[11px] font-bold uppercase tracking-[0.25em] mb-8">
+        What&apos;s Happening on IONS
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+        {D10_PLATFORM_STATS.map((s, i) => (
+          <div key={i} className="flex flex-col items-center gap-3">
+            <span className="text-3xl sm:text-5xl md:text-6xl font-black text-white tabular-nums leading-none">
+              {fmt(counts[i], s)}
+            </span>
+            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider leading-[1.6] whitespace-pre-line">
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── Day 10 Optimise Section (cards + infinite scroll) ───────────────────────
 
 type ImpactLevel = "high" | "recommended" | "optimization";
 
@@ -1913,189 +1974,102 @@ interface OptimizeCard {
   ctaLabel:    string;
 }
 
-const IMPACT_STYLES: Record<ImpactLevel, { bg: string; text: string; dot: string; priority: string }> = {
-  high:         { bg: "rgba(26,107,79,0.10)",  text: "#1a6b4f", dot: "#1a6b4f", priority: "High Impact"    },
-  recommended:  { bg: "rgba(217,119,6,0.10)",  text: "#b45309", dot: "#d97706", priority: "Recommended"    },
-  optimization: { bg: "rgba(47,102,208,0.10)", text: "#2F66D0", dot: "#2F66D0", priority: "Optimisation"   },
+const IMPACT_STYLES: Record<ImpactLevel, { bg: string; text: string; dot: string }> = {
+  high:         { bg: "rgba(26,107,79,0.10)",  text: "#1a6b4f", dot: "#1a6b4f" },
+  recommended:  { bg: "rgba(217,119,6,0.10)",  text: "#b45309", dot: "#d97706" },
+  optimization: { bg: "rgba(47,102,208,0.10)", text: "#2F66D0", dot: "#2F66D0" },
 };
 
 const CRO_OPTIMIZE_CARDS: OptimizeCard[] = [
-  {
-    title:       "Refine Service Positioning",
-    benefit:     "Improve how buyers discover your technical capabilities across active searches.",
-    Icon:        Settings2,
-    iconBg:      "#f0faf5",
-    iconColor:   "#1a6b4f",
-    impactLabel: "+12% visibility",
-    impactLevel: "high",
-    ctaLabel:    "Optimise",
-  },
-  {
-    title:       "Add Commercial Product Specs",
-    benefit:     "Detailed specifications improve enquiry quality and reduce back-and-forth.",
-    Icon:        FileText,
-    iconBg:      "#eff6ff",
-    iconColor:   "#2F66D0",
-    impactLabel: "Better-fit buyers",
-    impactLevel: "recommended",
-    ctaLabel:    "Add Specs",
-  },
-  {
-    title:       "Strengthen Capability Keywords",
-    benefit:     "Improve matching accuracy across buyer requirement searches.",
-    Icon:        Tag,
-    iconBg:      "#f3f0ff",
-    iconColor:   "#5B3BA8",
-    impactLabel: "+18% match precision",
-    impactLevel: "high",
-    ctaLabel:    "Refine",
-  },
-  {
-    title:       "Update Compliance Certifications",
-    benefit:     "Required for regulated procurement opportunities in pharma and biotech.",
-    Icon:        ShieldCheck,
-    iconBg:      "#fffbeb",
-    iconColor:   "#d97706",
-    impactLabel: "Access regulated demand",
-    impactLevel: "recommended",
-    ctaLabel:    "Update",
-  },
-  {
-    title:       "Complete Buyer-Facing Profile",
-    benefit:     "A stronger company profile increases trust signals and shortlist rate.",
-    Icon:        UserCheck,
-    iconBg:      "#f0fdf4",
-    iconColor:   "#16a34a",
-    impactLabel: "Higher shortlist rate",
-    impactLevel: "optimization",
-    ctaLabel:    "Complete",
-  },
+  { title: "Refine Service Positioning",    benefit: "Improve how buyers discover your technical capabilities across active searches.", Icon: Settings2,  iconBg: "#f0faf5", iconColor: "#1a6b4f", impactLabel: "+12% visibility",       impactLevel: "high",         ctaLabel: "Optimise" },
+  { title: "Add Commercial Product Specs",  benefit: "Detailed specifications improve enquiry quality and reduce back-and-forth.",      Icon: FileText,   iconBg: "#eff6ff", iconColor: "#2F66D0", impactLabel: "Better-fit buyers",     impactLevel: "recommended",  ctaLabel: "Add Specs" },
+  { title: "Strengthen Capability Keywords",benefit: "Improve matching accuracy across buyer requirement searches.",                    Icon: Tag,        iconBg: "#f3f0ff", iconColor: "#5B3BA8", impactLabel: "+18% match precision",  impactLevel: "high",         ctaLabel: "Refine" },
+  { title: "Update Compliance Certifications",benefit:"Required for regulated procurement opportunities in pharma and biotech.",       Icon: ShieldCheck, iconBg: "#fffbeb", iconColor: "#d97706", impactLabel: "Access regulated demand",impactLevel: "recommended",  ctaLabel: "Update" },
+  { title: "Complete Buyer-Facing Profile", benefit: "A stronger company profile increases trust signals and shortlist rate.",          Icon: UserCheck,  iconBg: "#f0fdf4", iconColor: "#16a34a", impactLabel: "Higher shortlist rate", impactLevel: "optimization", ctaLabel: "Complete" },
 ];
 
 const RESEARCHER_OPTIMIZE_CARDS: OptimizeCard[] = [
-  {
-    title:       "Add Experimental Validation Data",
-    benefit:     "Increase proposal credibility for active industry opportunities.",
-    Icon:        FlaskConical,
-    iconBg:      "#f0faf5",
-    iconColor:   "#1a6b4f",
-    impactLabel: "+14% proposal strength",
-    impactLevel: "high",
-    ctaLabel:    "Add",
-  },
-  {
-    title:       "Update Publication Record",
-    benefit:     "Recent publications improve expertise relevance in discovery searches.",
-    Icon:        BookOpen,
-    iconBg:      "#eff6ff",
-    iconColor:   "#2F66D0",
-    impactLabel: "Unlock hidden matches",
-    impactLevel: "recommended",
-    ctaLabel:    "Update",
-  },
-  {
-    title:       "Refine Research Keywords",
-    benefit:     "Improve alignment with scientific problem statements from industry partners.",
-    Icon:        Microscope,
-    iconBg:      "#f3f0ff",
-    iconColor:   "#5B3BA8",
-    impactLabel: "+18% match accuracy",
-    impactLevel: "high",
-    ctaLabel:    "Refine",
-  },
-  {
-    title:       "Add Collaboration Outcomes",
-    benefit:     "Past project results strengthen trust and improve shortlist potential.",
-    Icon:        Users,
-    iconBg:      "#fffbeb",
-    iconColor:   "#d97706",
-    impactLabel: "Higher shortlist potential",
-    impactLevel: "recommended",
-    ctaLabel:    "Add",
-  },
-  {
-    title:       "Complete Research Identity",
-    benefit:     "Strengthen scientific visibility across global industry discovery programs.",
-    Icon:        Globe,
-    iconBg:      "#f0fdf4",
-    iconColor:   "#16a34a",
-    impactLabel: "Expanded discovery reach",
-    impactLevel: "optimization",
-    ctaLabel:    "Complete",
-  },
+  { title: "Add Experimental Validation Data", benefit: "Increase proposal credibility for active industry opportunities.",                    Icon: FlaskConical, iconBg: "#f0faf5", iconColor: "#1a6b4f", impactLabel: "+14% proposal strength", impactLevel: "high",         ctaLabel: "Add" },
+  { title: "Update Publication Record",        benefit: "Recent publications improve expertise relevance in discovery searches.",              Icon: BookOpen,     iconBg: "#eff6ff", iconColor: "#2F66D0", impactLabel: "Unlock hidden matches",  impactLevel: "recommended",  ctaLabel: "Update" },
+  { title: "Refine Research Keywords",         benefit: "Improve alignment with scientific problem statements from industry partners.",        Icon: Microscope,   iconBg: "#f3f0ff", iconColor: "#5B3BA8", impactLabel: "+18% match accuracy",   impactLevel: "high",         ctaLabel: "Refine" },
+  { title: "Add Collaboration Outcomes",       benefit: "Past project results strengthen trust and improve shortlist potential.",              Icon: Users,        iconBg: "#fffbeb", iconColor: "#d97706", impactLabel: "Higher shortlist potential",impactLevel: "recommended",ctaLabel: "Add" },
+  { title: "Complete Research Identity",       benefit: "Strengthen scientific visibility across global industry discovery programs.",         Icon: Globe,        iconBg: "#f0fdf4", iconColor: "#16a34a", impactLabel: "Expanded discovery reach",impactLevel: "optimization", ctaLabel: "Complete" },
 ];
 
 function Day10OptimizeSection({ profileType }: { profileType: ProfileType }) {
   const isCRO  = profileType === "cro";
   const cards  = isCRO ? CRO_OPTIMIZE_CARDS : RESEARCHER_OPTIMIZE_CARDS;
-  const title  = isCRO
-    ? "Optimise Your Match Performance"
-    : "Increase Research Match Quality";
+  const title  = isCRO ? "Optimise Your Match Performance" : "Increase Research Match Quality";
   const subtext = isCRO
     ? "Small improvements can increase buyer visibility and improve project conversion."
     : "Fine-tune your profile to improve proposal success and collaboration fit.";
 
+  const [paused, setPaused] = useState(false);
+  const doubled = [...cards, ...cards];
+
   return (
-    <section className="flex flex-col gap-3.5">
+    <section className="bg-white rounded-2xl border border-[#e8edf2] shadow-sm p-5 sm:p-6 flex flex-col gap-4">
+      <style>{`
+        @keyframes d10-optimize-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
 
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-[16px] font-bold text-[#171717]" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h2 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins, sans-serif" }}>
             {title}
           </h2>
           <p className="text-[12px] text-[#68747a] mt-0.5">{subtext}</p>
         </div>
-        {/* Profile optimisation % */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[11px] text-slate-400 font-medium">Profile optimisation</span>
           <div className="flex items-center gap-1.5">
             <div className="w-24 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-              <div className="h-full rounded-full bg-[#1a6b4f]" style={{ width: "72%" }}/>
+              <div className="h-full rounded-full bg-[#1a6b4f]" style={{ width: "72%" }} />
             </div>
             <span className="text-[11px] font-bold text-[#1a6b4f]">72%</span>
           </div>
         </div>
       </div>
 
-      {/* Cards strip */}
-      <div className="overflow-x-auto pb-1 -mx-1 px-1">
-        <div className="flex gap-3 lg:grid lg:grid-cols-5 min-w-max lg:min-w-0">
-          {cards.map((c) => {
-            const imp = IMPACT_STYLES[c.impactLevel];
+      {/* Infinite scroll card strip */}
+      <div className="overflow-hidden relative">
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-10 z-10"
+          style={{ background: "linear-gradient(to right, #ffffff, transparent)" }} />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10"
+          style={{ background: "linear-gradient(to left, #ffffff, transparent)" }} />
+        <div
+          className="flex gap-3"
+          style={{ width: "max-content", animation: paused ? "none" : "d10-optimize-scroll 30s linear infinite" }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {doubled.map((c, idx) => {
+            const imp  = IMPACT_STYLES[c.impactLevel];
             const Icon = c.Icon;
             return (
               <div
-                key={c.title}
-                className="bg-white rounded-xl border border-[#e8edf2] shadow-sm hover:shadow-md hover:border-[#1f6f54]/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-2.5 p-4 w-[210px] lg:w-auto relative"
+                key={`${c.title}-${idx}`}
+                className="bg-white rounded-xl border border-[#e8edf2] shadow-sm hover:shadow-md hover:border-[#1f6f54]/30 hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-2.5 p-4 w-[210px] shrink-0 relative cursor-pointer"
               >
-                {/* Top row: icon + impact badge */}
                 <div className="flex items-start justify-between gap-1">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: c.iconBg }}
-                  >
-                    <Icon style={{ color: c.iconColor, width: 18, height: 18 }}/>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: c.iconBg }}>
+                    <Icon style={{ color: c.iconColor, width: 18, height: 18 }} />
                   </div>
-                  {/* Impact badge */}
-                  <span
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[8.5px] font-bold leading-none shrink-0"
-                    style={{ background: imp.bg, color: imp.text }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: imp.dot }}/>
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[8.5px] font-bold leading-none shrink-0" style={{ background: imp.bg, color: imp.text }}>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: imp.dot }} />
                     {c.impactLabel}
                   </span>
                 </div>
-
-                {/* Text */}
                 <div className="flex flex-col gap-1 flex-1">
                   <p className="text-[13px] font-bold text-[#171717] leading-snug">{c.title}</p>
                   <p className="text-[11px] text-[#68747a] leading-relaxed">{c.benefit}</p>
                 </div>
-
-                {/* CTA */}
                 <button className="mt-auto flex items-center gap-1 text-[11.5px] font-semibold hover:gap-2 transition-all duration-150 w-fit" style={{ color: imp.text }}>
-                  {c.ctaLabel} <ArrowRight size={11} strokeWidth={2.5}/>
+                  {c.ctaLabel} <ArrowRight size={11} strokeWidth={2.5} />
                 </button>
               </div>
             );
@@ -2103,6 +2077,308 @@ function Day10OptimizeSection({ profileType }: { profileType: ProfileType }) {
         </div>
       </div>
     </section>
+  );
+}
+
+// ─── Day 10 Active Collaborations + Visibility Section (70/30) ────────────────
+
+interface CollabRow {
+  initials:   string;
+  lab:        string;
+  group:      string;
+  project:    string;
+  teamColors: string[];
+  progress:   number;
+  health:     "on-track" | "attention";
+}
+
+const RESEARCHER_COLLABS: CollabRow[] = [
+  {
+    initials: "ET", lab: "ETH Zürich", group: "Tavernelli Group",
+    project: "Photocatalytic CO₂ reduction",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8", "#7c3aed", "#a78bfa"],
+    progress: 78, health: "on-track",
+  },
+  {
+    initials: "MI", lab: "MIT", group: "Buchwald Lab",
+    project: "Cross-coupling kinetics study",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8"],
+    progress: 54, health: "on-track",
+  },
+  {
+    initials: "Im", lab: "Imperial", group: "Catalysis Hub",
+    project: "Heterogeneous catalyst screening",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8", "#7c3aed"],
+    progress: 32, health: "attention",
+  },
+];
+
+const CRO_COLLABS: CollabRow[] = [
+  {
+    initials: "NV", lab: "Novartis", group: "External R&D",
+    project: "PROTAC degrader optimisation",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8", "#7c3aed", "#a78bfa"],
+    progress: 71, health: "on-track",
+  },
+  {
+    initials: "PF", lab: "Pfizer", group: "Early Discovery",
+    project: "KRAS allosteric inhibitor screen",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8"],
+    progress: 49, health: "on-track",
+  },
+  {
+    initials: "AZ", lab: "AstraZeneca", group: "Oncology R&D",
+    project: "ADC linker stability assay",
+    teamColors: ["#1a6b4f", "#2563eb", "#38bdf8", "#7c3aed"],
+    progress: 28, health: "attention",
+  },
+];
+
+const CHART_DAYS      = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const CHART_VIEWS     = [13, 16, 22, 28, 34, 30, 42];
+const CHART_SHORTLIST = [ 0,  0,  1,  2,  3,  2,  4];
+const CHART_Y_MAX     = 60;
+const CHART_Y_TICKS   = [0, 15, 30, 45, 60];
+
+function buildSmoothPath(pts: [number, number][]): string {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const [px, py] = pts[i - 1];
+    const [cx, cy] = pts[i];
+    const T = 0.38;
+    d += ` C ${(px + (cx - px) * T).toFixed(1)},${py.toFixed(1)} ${(cx - (cx - px) * T).toFixed(1)},${cy.toFixed(1)} ${cx.toFixed(1)},${cy.toFixed(1)}`;
+  }
+  return d;
+}
+
+function ActiveCollabsPanel({ collabs, tableLabel, tableTitle }: {
+  collabs:    CollabRow[];
+  tableLabel: string;
+  tableTitle: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#e8edf2] bg-[#f8fafa] p-5 flex flex-col gap-4">
+      {/* Panel header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#94a3b8] mb-1">{tableLabel}</p>
+          <h3 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins, sans-serif" }}>{tableTitle}</h3>
+        </div>
+        <button className="flex items-center gap-0.5 text-[12px] font-semibold text-[#1a6b4f] hover:opacity-75 transition-opacity mt-1 shrink-0">
+          All projects <ChevronRight size={13} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* Column headers */}
+      <div
+        className="grid items-center gap-x-3 pb-2 border-b border-[#e8edf2]"
+        style={{ gridTemplateColumns: "2.2fr 2fr 90px 1.6fr 104px 28px" }}
+      >
+        {["LAB", "PROJECT", "TEAM", "PROGRESS", "HEALTH", ""].map((h, i) => (
+          <span key={i} className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#94a3b8]">{h}</span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      <div className="flex flex-col divide-y divide-[#f1f5f9]">
+        {collabs.map((row, i) => (
+          <div
+            key={i}
+            className="grid items-center gap-x-3 py-3.5"
+            style={{ gridTemplateColumns: "2.2fr 2fr 90px 1.6fr 104px 28px" }}
+          >
+            {/* Lab avatar + name */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-10 rounded-[10px] bg-[#1e3a2f] flex items-center justify-center shrink-0">
+                <span className="text-[11px] font-bold text-white leading-none">{row.initials}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-bold text-[#1e293b] leading-tight">{row.lab}</p>
+                <p className="text-[10.5px] text-[#64748b] leading-tight mt-0.5">{row.group}</p>
+              </div>
+            </div>
+
+            {/* Project */}
+            <p className="text-[11.5px] text-[#64748b] leading-snug">{row.project}</p>
+
+            {/* Team avatars */}
+            <div className="flex -space-x-1.5">
+              {row.teamColors.map((bg, j) => (
+                <div
+                  key={j}
+                  className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[8.5px] font-bold text-white shrink-0"
+                  style={{ background: bg, zIndex: row.teamColors.length - j }}
+                >
+                  {String.fromCharCode(65 + j)}
+                </div>
+              ))}
+            </div>
+
+            {/* Progress bar */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-[#e2e8f0] overflow-hidden">
+                <div className="h-full rounded-full bg-[#1a2332]" style={{ width: `${row.progress}%` }} />
+              </div>
+              <span className="text-[11px] font-bold text-[#1e293b] tabular-nums w-8 shrink-0 text-right">{row.progress}%</span>
+            </div>
+
+            {/* Health badge */}
+            <div className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold w-fit whitespace-nowrap",
+              row.health === "on-track" ? "bg-[#dcfce7] text-[#16a34a]" : "bg-[#fef3c7] text-[#b45309]"
+            )}>
+              <CheckCircle size={11} strokeWidth={2} />
+              {row.health === "on-track" ? "On track" : "Attention"}
+            </div>
+
+            {/* Link arrow */}
+            <button className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors shrink-0">
+              <ArrowUpRight size={13} className="text-[#94a3b8]" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VisibilityChartPanel() {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const W = 300, H = 190;
+  const pL = 30, pR = 8, pT = 14, pB = 28;
+  const cW = W - pL - pR;
+  const cH = H - pT - pB;
+
+  const xOf = (i: number) => pL + (i / (CHART_DAYS.length - 1)) * cW;
+  const yOf = (v: number) => pT + (1 - v / CHART_Y_MAX) * cH;
+
+  const vPts: [number, number][] = CHART_VIEWS.map((v, i) => [xOf(i), yOf(v)]);
+  const sPts: [number, number][] = CHART_SHORTLIST.map((v, i) => [xOf(i), yOf(v)]);
+
+  const viewPath  = buildSmoothPath(vPts);
+  const shortPath = buildSmoothPath(sPts);
+  const areaPath  = `${viewPath} L ${xOf(CHART_DAYS.length - 1).toFixed(1)},${yOf(0).toFixed(1)} L ${xOf(0).toFixed(1)},${yOf(0).toFixed(1)} Z`;
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const x    = ((e.clientX - rect.left) / rect.width) * W;
+    const raw  = ((x - pL) / cW) * (CHART_DAYS.length - 1);
+    setHoverIdx(Math.max(0, Math.min(CHART_DAYS.length - 1, Math.round(raw))));
+  };
+
+  const ttFlip = hoverIdx !== null && hoverIdx >= 5;
+  const ttX    = hoverIdx !== null ? xOf(hoverIdx) : 0;
+  const ttY    = hoverIdx !== null ? Math.max(pT + 4, vPts[hoverIdx][1] - 62) : 0;
+
+  return (
+    <div className="rounded-2xl border border-[#e8edf2] bg-white p-4 flex flex-col gap-3">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#94a3b8] mb-1">VISIBILITY</p>
+          <h3 className="text-[17px] sm:text-[19px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins, sans-serif" }}>
+            Profile views &amp; shortlists
+          </h3>
+        </div>
+        <div className="flex flex-col gap-1 items-end shrink-0 mt-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "#1a6b4f" }} />
+            <span className="text-[10px] text-[#64748b]">Views</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "#2563eb" }} />
+            <span className="text-[10px] text-[#64748b]">Shortlists</span>
+          </div>
+        </div>
+      </div>
+
+      {/* SVG chart */}
+      <div onMouseLeave={() => setHoverIdx(null)} className="flex-1">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full"
+          onMouseMove={handleMouseMove}
+          style={{ display: "block", overflow: "visible" }}
+        >
+          <defs>
+            <linearGradient id="d10vc-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#1a6b4f" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="#1a6b4f" stopOpacity="0.01" />
+            </linearGradient>
+          </defs>
+
+          {/* Dashed grid + Y labels */}
+          {CHART_Y_TICKS.map(t => (
+            <g key={t}>
+              <line x1={pL} y1={yOf(t)} x2={W - pR} y2={yOf(t)}
+                stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4 3" />
+              <text x={pL - 5} y={yOf(t) + 3.5} textAnchor="end"
+                fontSize="8.5" fill="#94a3b8" fontFamily="system-ui,sans-serif">{t}</text>
+            </g>
+          ))}
+
+          {/* X labels */}
+          {CHART_DAYS.map((d, i) => (
+            <text key={d} x={xOf(i)} y={H - 4} textAnchor="middle"
+              fontSize="8.5" fill="#94a3b8" fontFamily="system-ui,sans-serif">{d}</text>
+          ))}
+
+          {/* Views area fill */}
+          <path d={areaPath} fill="url(#d10vc-grad)" />
+          {/* Views line */}
+          <path d={viewPath} fill="none" stroke="#1a6b4f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Shortlists line */}
+          <path d={shortPath} fill="none" stroke="#2563eb" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* Hover crosshair, dots, tooltip */}
+          {hoverIdx !== null && (
+            <g>
+              <line x1={ttX} y1={pT} x2={ttX} y2={pT + cH} stroke="#cbd5e1" strokeWidth="1" />
+              <circle cx={ttX} cy={vPts[hoverIdx][1]} r="4" fill="#1a6b4f" stroke="white" strokeWidth="2" />
+              <circle cx={ttX} cy={sPts[hoverIdx][1]} r="4" fill="#2563eb" stroke="white" strokeWidth="2" />
+              {/* Tooltip card */}
+              <g transform={`translate(${(ttFlip ? ttX - 88 : ttX + 10).toFixed(1)},${ttY.toFixed(1)})`}>
+                <rect width="80" height="56" rx="7" ry="7"
+                  fill="white"
+                  style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.10))" }}
+                  stroke="#e2e8f0" strokeWidth="0.5" />
+                <text x="10" y="18" fontSize="10" fontWeight="700"
+                  fill="#1e293b" fontFamily="system-ui,sans-serif">
+                  {CHART_DAYS[hoverIdx]}
+                </text>
+                <text x="10" y="34" fontSize="9.5" fill="#1a6b4f"
+                  fontFamily="system-ui,sans-serif">
+                  views : {CHART_VIEWS[hoverIdx]}
+                </text>
+                <text x="10" y="48" fontSize="9.5" fill="#2563eb"
+                  fontFamily="system-ui,sans-serif">
+                  shortlist : {CHART_SHORTLIST[hoverIdx]}
+                </text>
+              </g>
+            </g>
+          )}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function Day10CollaborationsSection({ profileType }: { profileType: ProfileType }) {
+  const isCRO      = profileType === "cro";
+  const collabs    = isCRO ? CRO_COLLABS : RESEARCHER_COLLABS;
+  const tableLabel = isCRO ? "ACTIVE PARTNERSHIPS"            : "ACTIVE COLLABORATIONS";
+  const tableTitle = isCRO ? "Your live industry partnerships" : "Your live research projects";
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[7fr_3fr] gap-4">
+      <ActiveCollabsPanel collabs={collabs} tableLabel={tableLabel} tableTitle={tableTitle} />
+      <VisibilityChartPanel />
+    </div>
   );
 }
 
@@ -2115,7 +2391,11 @@ export function Day10ResearcherDashboard() {
       <OpportunityPipelineSection profileType="researcher" />
       <TrendingOpportunitiesSection profileType="researcher" />
       <DemandDiscoverySection profileType="researcher" />
+      <Day10CollaborationsSection profileType="researcher" />
+      <D10PlatformStats />
       <Day10OptimizeSection profileType="researcher" />
+      <ResearcherTestimonials />
+      <ResearcherTalkToExpert />
     </div>
   );
 }
@@ -2127,7 +2407,11 @@ export function Day10CRODashboard() {
       <OpportunityPipelineSection profileType="cro" />
       <TrendingOpportunitiesSection profileType="cro" />
       <DemandDiscoverySection profileType="cro" />
+      <Day10CollaborationsSection profileType="cro" />
+      <D10PlatformStats />
       <Day10OptimizeSection profileType="cro" />
+      <CROTestimonials />
+      <CROTalkToExpert />
     </div>
   );
 }

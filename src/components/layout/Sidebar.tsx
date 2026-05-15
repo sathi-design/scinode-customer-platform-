@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,12 @@ import {
   TrendingUp,
   CircleUser,
   ArrowRight,
+  Mail,
+  Phone,
+  ChevronRight,
+  X,
+  Crown,
+  Check,
 } from "lucide-react";
 import { useAuth, RESEARCHER_ROLES } from "@/hooks/useAuth";
 
@@ -37,6 +44,104 @@ const NAV_ITEMS = [
 const W_COLLAPSED = 56;
 const W_EXPANDED  = 259;
 
+// ─── Upgrade modal data ───────────────────────────────────────────────────────
+const UPGRADE_BENEFITS = [
+  "Send unlimited proposals, including exclusive, capability-matched projects",
+  "Get global leads across your entire product catalogue",
+  "Access projects curated specifically for your plant",
+  "Track every proposal through to conversion and delivery",
+  "Expert support on compliance and quality requirements",
+  "Work closely with the SciNode team to win the right projects",
+  "On-demand R&D and process optimization support from domain experts",
+  "Guidance for certifications, audits, and global regulatory readiness",
+];
+
+function UpgradeModal({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[520px] rounded-2xl overflow-hidden shadow-2xl"
+        style={{ background: "#fff" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Green header ── */}
+        <div
+          className="relative px-6 pt-6 pb-7"
+          style={{ background: "linear-gradient(135deg, #1a5c3a 0%, #0d3d26 100%)" }}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center border border-white/30 text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X size={15} strokeWidth={2.5} />
+          </button>
+
+          {/* Premium badge */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.12)" }}>
+              <Crown size={18} className="text-white" />
+            </div>
+            <span className="text-white text-[12px] font-bold tracking-[0.14em]">PREMIUM</span>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-white text-[26px] font-bold leading-tight mb-2">
+            Unlock Full Project Access
+          </h2>
+          <p className="text-white/75 text-[14px] leading-relaxed">
+            You&apos;ve reached your limit. Upgrade to unlock exclusive projects,
+            unlimited proposals, demand, and execution support built around your plant.
+          </p>
+        </div>
+
+        {/* ── Benefits list ── */}
+        <div className="px-6 py-5 max-h-[340px] overflow-y-auto [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <p className="text-[11px] font-bold text-slate-400 tracking-[0.14em] mb-4">
+            WHAT YOU UNLOCK
+          </p>
+          <ul className="space-y-3.5">
+            {UPGRADE_BENEFITS.map((item, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#e3f5ec" }}>
+                  <Check size={11} strokeWidth={3} style={{ color: "#1a5c3a" }} />
+                </div>
+                <span className="text-[14px] text-slate-700 leading-snug">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Footer CTA ── */}
+        <div className="px-6 pb-5 pt-2 flex items-center gap-3 border-t border-slate-100">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 text-[14px] font-semibold hover:bg-slate-50 active:scale-[0.98] transition-all"
+          >
+            Maybe later
+          </button>
+          <button
+            className="flex-1 py-3 rounded-xl text-white text-[14px] font-bold flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-sm"
+            style={{ background: "linear-gradient(135deg, #1a5c3a 0%, #0d3d26 100%)" }}
+          >
+            <Crown size={15} />
+            Get Full Access
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 interface SidebarProps {
   isOpen: boolean;
   onClose?: () => void;
@@ -52,6 +157,7 @@ function SidebarContent({
 }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
@@ -161,78 +267,122 @@ function SidebarContent({
       <div
         className="flex-shrink-0 overflow-hidden relative"
         style={{
-          padding: open ? 16 : 8,
-          height: open ? 282 : 90,
-          transition: "height 280ms ease-in-out, padding 280ms ease-in-out",
+          height: open ? 316 : 76,
+          transition: "height 280ms ease-in-out",
         }}
       >
-        {/* Collapsed badge */}
+
+        {/* ── COLLAPSED STATE ── */}
         <div
-          className="absolute"
+          className="absolute inset-x-0 top-0 flex flex-col items-center justify-center gap-1 py-3"
           style={{
             opacity: open ? 0 : 1,
-            transform: `scale(${open ? 0.92 : 1})`,
+            transform: `scale(${open ? 0.88 : 1})`,
             transition: "opacity 180ms ease-in-out, transform 280ms ease-in-out",
             pointerEvents: open ? "none" : "auto",
           }}
         >
+          {/* Mint pill */}
           <div
-            className="relative rounded-[8px] overflow-hidden flex flex-col items-center gap-[4px] pb-[4px]"
-            style={{ width: W_COLLAPSED - 16 }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: "#e2f5ee" }}
           >
-            <div className="absolute pointer-events-none" style={{ width: 312, height: 412, left: -101, top: -59 }}>
-              <div className="w-full h-full flex items-center justify-center">
-                <div style={{ transform: "rotate(90.62deg)", flexShrink: 0 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={BANNER_BG_IMG} alt="" className="block object-cover" style={{ width: 409, height: 307 }} />
-                </div>
-              </div>
-            </div>
-            <div className="relative flex items-center justify-center pt-[5px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={BADGE_ICON_SRC} alt="Scinode" className="block" style={{ width: 32, height: 32 }} />
-            </div>
-            <p className="relative text-white font-semibold text-[10px] text-center leading-tight tracking-[-0.3px]">
-              SCINODE<br />Connect
-            </p>
+            <span className="text-[20px] leading-none select-none">🚀</span>
           </div>
+          <p className="text-[9px] font-bold text-[#1F6F54] tracking-[0.06em] text-center leading-tight">
+            HELP
+          </p>
         </div>
 
-        {/* Expanded "Need Help?" card */}
+        {/* ── EXPANDED STATE ── */}
         <div
+          className="absolute inset-x-0 top-0 px-3 pt-3 pb-3 flex flex-col gap-0"
           style={{
             opacity: open ? 1 : 0,
-            transform: `translateY(${open ? 0 : 8}px)`,
+            transform: `translateY(${open ? 0 : 10}px)`,
             transition: `opacity 220ms ease-in-out ${open ? "100ms" : "0ms"}, transform 280ms ease-in-out ${open ? "80ms" : "0ms"}`,
             pointerEvents: open ? "auto" : "none",
           }}
         >
-          <div className="relative rounded-[16px] overflow-hidden">
-            <div className="absolute pointer-events-none" style={{ width: 312, height: 412, left: -56, top: -107 }}>
-              <div className="w-full h-full flex items-center justify-center">
-                <div style={{ transform: "rotate(90.62deg)", flexShrink: 0 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={BANNER_BG_IMG} alt="" className="block object-cover" style={{ width: 409, height: 307 }} />
-                </div>
-              </div>
+          {/* Card */}
+          <div
+            className="rounded-2xl px-4 pt-4 pb-3 flex flex-col"
+            style={{ background: "#e8f5f0" }}
+          >
+            {/* Rocket */}
+            <div className="flex justify-center mb-2.5">
+              <span className="text-[42px] leading-none select-none drop-shadow-sm">🚀</span>
             </div>
-            <div className="absolute inset-0 rounded-[16px]" style={{ background: "rgba(0,0,0,0.65)" }} />
-            <div className="absolute inset-0 mix-blend-overlay rounded-[16px]" style={{ background: "rgba(255,255,255,0.2)" }} />
-            <div className="absolute inset-0 rounded-[16px]" style={{ background: "rgba(255,255,255,0.1)" }} />
-            <div className="relative p-[16px] flex flex-col items-center gap-[16px] text-white text-center">
-              <div className="flex flex-col gap-[11px]">
-                <p className="text-[18px] font-semibold leading-[28px]">Need Help?</p>
-                <p className="text-sm leading-[24px]">
-                  Have questions about posting an R&amp;D brief or submitting a proposal? Our scientific support team is here to guide you.
-                </p>
-              </div>
-              <button className="flex items-center justify-center gap-2 w-full bg-[#1F6F54] hover:bg-[#185C45] text-white text-sm font-medium px-4 py-2 rounded-[6px] transition-colors">
-                Schedule Call <ArrowRight className="w-4 h-4" />
+
+            {/* Heading */}
+            <p className="text-[14px] font-bold text-[#0d1f1a] leading-snug text-center mb-1.5">
+              We are here if you need us!
+            </p>
+
+            {/* Subtext */}
+            <p className="text-[11px] text-[#4b6b62] leading-relaxed text-center mb-3">
+              Get a quick product walkthrough, ask questions, or connect with our experts anytime.
+            </p>
+
+            {/* Button row — visual hierarchy fix:
+                Mail = ghost/outline (tertiary)
+                Schedule a call = outline teal (secondary)
+                Upgrade plan = filled dark (primary conversion) */}
+            <div className="flex items-center gap-2 mb-3">
+              {/* Mail — ghost icon button */}
+              <button
+                className="flex items-center justify-center rounded-xl border border-[#b8ddd0] bg-white hover:bg-[#f0faf5] active:scale-95 transition-all duration-150 shrink-0"
+                style={{ width: 42, height: 42 }}
+                aria-label="Email us"
+              >
+                <Mail size={15} style={{ color: "#1F6F54" }} />
+              </button>
+
+              {/* Schedule a call — outline (secondary, not filled) */}
+              <button
+                className="flex-1 flex items-center justify-center gap-1.5 py-[9px] rounded-xl text-[12px] font-semibold border hover:bg-[#0d2b22] hover:text-white active:scale-[0.98] transition-all duration-150"
+                style={{
+                  border: "1.5px solid #0d2b22",
+                  color: "#0d2b22",
+                  background: "transparent",
+                }}
+              >
+                <Phone size={12} strokeWidth={2.5} />
+                Schedule a call
               </button>
             </div>
+
+            {/* Divider */}
+            <div className="h-px mb-3" style={{ background: "#cde8df" }} />
+
+            {/* Upgrade plan — primary conversion CTA, visually dominant */}
+            <button
+              onClick={() => setUpgradeOpen(true)}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-white hover:brightness-110 active:scale-[0.98] transition-all duration-150"
+              style={{
+                background: "#111111",
+                boxShadow: "0 0 0 2px #3b5bdb, 0 2px 8px rgba(59,91,219,0.25)",
+              }}
+            >
+              <span className="text-[15px] leading-none shrink-0">💎</span>
+              <span className="flex-1 text-left text-[12px] font-semibold tracking-[-0.01em]">
+                Upgrade plan
+              </span>
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.14)" }}
+              >
+                <ChevronRight size={12} strokeWidth={2.5} />
+              </div>
+            </button>
           </div>
         </div>
+
       </div>
+
+      {/* ── Upgrade modal ── */}
+      {upgradeOpen && <UpgradeModal onClose={() => setUpgradeOpen(false)} />}
+
     </div>
   );
 }

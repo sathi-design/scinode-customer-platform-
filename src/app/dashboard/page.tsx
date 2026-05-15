@@ -14,6 +14,7 @@ import { IndependentCRODashboard } from "@/modules/dashboard/IndependentCRODashb
 
 // Day 1 dashboards
 import { Day1ResearcherDashboard, Day1CRODashboard } from "@/modules/dashboard/Day1Dashboard";
+import { ManufacturingDay1Dashboard } from "@/modules/dashboard/ManufacturingDay1Dashboard";
 
 // Day 10 dashboards
 import { Day10ResearcherDashboard, Day10CRODashboard } from "@/modules/dashboard/Day10Dashboard";
@@ -61,9 +62,10 @@ export default function DashboardPage() {
     if (subtype === "researcher") return <Day1ResearcherDashboard />;
     if (subtype === "others")     return <Day1ResearcherDashboard />;
     switch (user.role) {
+      case "manufacturing": return <ManufacturingDay1Dashboard />;
       case "pi":
-      case "cro":  return <Day1CRODashboard />;
-      default:     return <Day1ResearcherDashboard />;
+      case "cro":           return <Day1CRODashboard />;
+      default:              return <Day1ResearcherDashboard />;
     }
   })();
 
