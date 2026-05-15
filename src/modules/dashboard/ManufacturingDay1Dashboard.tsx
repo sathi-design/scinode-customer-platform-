@@ -49,11 +49,11 @@ const RFQ_CARDS = [
 
 // Unified pipeline data — used for both stat cards and funnel bars
 const PIPELINE_STAGES = [
-  { shortLabel: "IDENTIFIED",  label: "Projects Available",  monthVal: 186, weekVal: 26 },
-  { shortLabel: "SHORTLISTED", label: "Shortlisted",         monthVal: 62,  weekVal: 9  },
-  { shortLabel: "PROPOSALS",   label: "Proposals Sent",      monthVal: 31,  weekVal: 5  },
-  { shortLabel: "TECH. EVAL.", label: "Under Evaluation",    monthVal: 14,  weekVal: 2  },
-  { shortLabel: "COMMERCIAL",  label: "Commercial Stage",    monthVal: 6,   weekVal: 1  },
+  { shortLabel: "MATCHED",    label: "Projects Matched",  monthVal: 186, weekVal: 26 },
+  { shortLabel: "SAVED",      label: "Saved",             monthVal: 62,  weekVal: 9  },
+  { shortLabel: "SENT",       label: "Proposals Sent",    monthVal: 31,  weekVal: 5  },
+  { shortLabel: "EVALUATING", label: "Under Evaluation",  monthVal: 14,  weekVal: 2  },
+  { shortLabel: "ACTIVATED",  label: "Commercial Stage",  monthVal: 6,   weekVal: 1  },
 ];
 
 // Profile progress bars — brand green→teal→purple palette
@@ -702,45 +702,68 @@ function OpportunitySection() {
   );
 }
 
+// ─── Location pin SVG ─────────────────────────────────────────────────────────
+function LocationPin({ color, scale = 1 }: { color: string; scale?: number }) {
+  return (
+    <svg
+      width={16 * scale} height={22 * scale}
+      viewBox="0 0 16 22" fill="none"
+      style={{ filter: `drop-shadow(0 2px 4px ${color}80)` }}
+    >
+      <path
+        d="M8 0.5C4.41 0.5 1.5 3.41 1.5 7c0 5.46 6.5 14.5 6.5 14.5S14.5 12.46 14.5 7C14.5 3.41 11.59 0.5 8 0.5z"
+        fill={color}
+        stroke="rgba(255,255,255,0.30)"
+        strokeWidth="0.6"
+      />
+      <circle cx="8" cy="7" r="2.6" fill="white" opacity="0.90" />
+    </svg>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — WORLD RFQ MAP (unchanged)
+// SECTION 3 — WORLD RFQ MAP
 // ═══════════════════════════════════════════════════════════════════════════════
 function WorldRFQMap() {
   const [hovered,   setHovered]   = useState<string | null>(null);
   const [selected,  setSelected]  = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<"monthly" | "quarterly">("monthly");
-  const mounted  = useMounted(200);
-  const maxRFQ   = Math.max(...COUNTRY_BARS.map(c => c.rfqs));
-
-  const hoveredPin = MAP_PINS.find(p => p.id === hovered);
+  const mounted = useMounted(200);
+  const maxRFQ  = Math.max(...COUNTRY_BARS.map(c => c.rfqs));
 
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <style>{`
-        @keyframes pinPulse    { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.8);opacity:0.3} }
-        @keyframes tooltipFade { from{opacity:0;transform:translateY(4px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes rfqPinGlow {
+          0%,100% { opacity: 0.35; transform: scale(0.85); }
+          50%      { opacity: 0.75; transform: scale(1.30); }
+        }
+        @keyframes tooltipFade {
+          from { opacity:0; transform:translateY(5px) scale(0.96); }
+          to   { opacity:1; transform:translateY(0)   scale(1);    }
+        }
       `}</style>
 
-      {/* Header */}
-      <div className="px-6 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="px-5 pt-3 pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400 mb-0.5">GLOBAL INTELLIGENCE</p>
-          <h3 className="text-[18px] font-bold text-slate-900">Global RFQ Intelligence</h3>
-          <p className="text-[12px] text-slate-400 mt-0.5">Track where verified buyer demand is emerging.</p>
+          <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400 mb-0.5">GLOBAL INTELLIGENCE</p>
+          <h3 className="text-[16px] font-bold text-slate-900 leading-snug">Global RFQ Intelligence</h3>
+          <p className="text-[11px] text-slate-400">Track where verified buyer demand is emerging.</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50">
-            <Search size={13} className="text-slate-400" />
-            <input className="text-[12px] bg-transparent outline-none w-28 placeholder:text-slate-400"
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50">
+            <Search size={12} className="text-slate-400" />
+            <input className="text-[11px] bg-transparent outline-none w-24 placeholder:text-slate-400"
               placeholder="Search market…" />
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-[12px] text-slate-600 hover:bg-slate-50">
-            <Filter size={12} /> Category
+          <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 hover:bg-slate-50">
+            <Filter size={11} /> Category
           </button>
-          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+          <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
             {(["monthly", "quarterly"] as const).map(t => (
               <button key={t} onClick={() => setTimeframe(t)}
-                className={cn("px-3 py-1 rounded-md text-[11px] font-semibold capitalize transition-all",
+                className={cn("px-2.5 py-1 rounded-md text-[10px] font-semibold capitalize transition-all",
                   timeframe === t ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-700")}>
                 {t}
               </button>
@@ -749,67 +772,95 @@ function WorldRFQMap() {
         </div>
       </div>
 
-      {/* Map + Sidebar */}
+      {/* ── Map + Sidebar ───────────────────────────────────────────────────── */}
       <div className="flex">
+
         {/* MAP */}
-        <div className="flex-1 relative" style={{ minHeight: 360 }}>
+        <div className="flex-1 relative" style={{ minHeight: 270 }}>
+
+          {/* Dark ocean base */}
           <div className="absolute inset-0" style={{
-            background: "linear-gradient(135deg, #0d1117 0%, #0f1923 50%, #0d1117 100%)",
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
+            background: "linear-gradient(135deg,#0d1117 0%,#0f1923 55%,#0d1117 100%)",
+          }} />
+
+          {/* Real world map SVG — land silhouette */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/world-map.svg"
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+            style={{
+              opacity: 0.22,
+              filter: "brightness(2.4) saturate(0)",
+              objectPosition: "center 40%",
+            }}
+          />
+
+          {/* Subtle grid overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)",
             backgroundSize: "40px 40px",
           }} />
 
-          {/* Continent blobs */}
-          <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.12 }}>
-            <div className="absolute rounded-[40%]" style={{ width:"22%", height:"35%", left:"8%",  top:"22%", background:"#2d4a6e" }} />
-            <div className="absolute rounded-[40%]" style={{ width:"14%", height:"28%", left:"20%", top:"52%", background:"#2d4a6e" }} />
-            <div className="absolute rounded-[40%]" style={{ width:"12%", height:"20%", left:"44%", top:"18%", background:"#2d4a6e" }} />
-            <div className="absolute rounded-[40%]" style={{ width:"14%", height:"30%", left:"46%", top:"40%", background:"#2d4a6e" }} />
-            <div className="absolute rounded-[30%]" style={{ width:"28%", height:"32%", left:"58%", top:"20%", background:"#2d4a6e" }} />
-            <div className="absolute rounded-[40%]" style={{ width:"12%", height:"14%", left:"74%", top:"58%", background:"#2d4a6e" }} />
-          </div>
-
-          {/* Country pins */}
-          {MAP_PINS.map(pin => {
-            const color = PIN_COLORS[pin.tier];
-            const isHov = hovered === pin.id;
-            const isSel = selected === pin.id;
+          {/* RFQ Pins */}
+          {MAP_PINS.map((pin, idx) => {
+            const color  = PIN_COLORS[pin.tier];
+            const isHov  = hovered  === pin.id;
+            const isSel  = selected === pin.id;
+            const active = isHov || isSel;
             return (
               <div
                 key={pin.id}
                 className="absolute cursor-pointer"
-                style={{ left: pin.left, top: pin.top, transform: "translate(-50%,-50%)", zIndex: isHov ? 20 : 10 }}
+                style={{
+                  left: pin.left, top: pin.top,
+                  transform: "translate(-50%,-100%)",   /* pin tip anchors to geo point */
+                  zIndex: active ? 30 : 10,
+                }}
                 onMouseEnter={() => setHovered(pin.id)}
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => setSelected(s => s === pin.id ? null : pin.id)}
               >
-                <div className="absolute rounded-full" style={{
-                  width: 28, height: 28, top: -6, left: -6,
-                  border: `2px solid ${color}`,
-                  animation: "pinPulse 3s ease infinite",
-                }} />
-                <div className="w-4 h-4 rounded-full transition-transform duration-200"
+                {/* Soft radial glow ring — slow, gentle */}
+                <div
+                  className="absolute rounded-full pointer-events-none"
                   style={{
-                    background:  color,
-                    transform:   isHov || isSel ? "scale(1.4)" : "scale(1)",
-                    boxShadow:   isHov ? `0 0 12px ${color}` : `0 0 6px ${color}60`,
-                  }} />
+                    width: 32, height: 32,
+                    top: "50%", left: "50%",
+                    transform: "translate(-50%,-50%)",
+                    background: `radial-gradient(circle,${color}55 0%,transparent 70%)`,
+                    animation: `rfqPinGlow ${3.5 + idx * 0.4}s ease-in-out infinite`,
+                    animationDelay: `${idx * 0.25}s`,
+                  }}
+                />
+
+                {/* Pin icon */}
+                <div style={{ transform: active ? "scale(1.25) translateY(-2px)" : "scale(1)", transition: "transform 200ms ease" }}>
+                  <LocationPin color={color} />
+                </div>
+
+                {/* Hover tooltip */}
                 {isHov && (
-                  <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 rounded-xl shadow-2xl overflow-hidden"
-                    style={{ animation: "tooltipFade 0.18s ease both", zIndex: 30 }}>
-                    <div className="bg-[#1e293b] text-white p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">{pin.flag}</span>
-                        <div>
-                          <p className="text-[13px] font-bold leading-tight">{pin.country}</p>
-                          <p className="text-[10px] text-slate-400">{pin.rfqs} active RFQs</p>
+                  <div
+                    className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-44 rounded-xl shadow-2xl overflow-hidden"
+                    style={{ animation: "tooltipFade 0.18s ease both", zIndex: 40 }}
+                  >
+                    <div className="bg-[#1e293b] text-white p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="text-base">{pin.flag}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-bold leading-tight truncate">{pin.country}</p>
+                          <p className="text-[9px] text-slate-400">{pin.rfqs} active RFQs</p>
                         </div>
-                        <span className="ml-auto text-[10px] font-bold text-emerald-400">{pin.growth}</span>
+                        <span className="text-[9px] font-bold text-emerald-400 shrink-0">{pin.growth}</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 mb-2 leading-snug">{pin.products}</p>
-                      <button className="w-full py-1.5 rounded-lg text-[10px] font-bold text-white"
-                        style={{ background: "#1F6F54" }}>
-                        View Requests →
+                      <p className="text-[9px] text-slate-400 mb-2 leading-snug">{pin.products}</p>
+                      <button
+                        className="w-full py-1 rounded-lg text-[9px] font-bold text-white"
+                        style={{ background: "#1F6F54" }}
+                      >
+                        View RFQs →
                       </button>
                     </div>
                   </div>
@@ -819,49 +870,58 @@ function WorldRFQMap() {
           })}
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 flex gap-3 flex-wrap">
-            {Object.entries({ "Critical hotspot": "critical", "High volume": "high", "Medium": "medium", "Low": "low" }).map(([label, tier]) => (
-              <div key={tier} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: PIN_COLORS[tier] }} />
-                <span className="text-[9px] text-white/50">{label}</span>
-              </div>
-            ))}
+          <div className="absolute bottom-3 left-3 flex gap-2.5 flex-wrap">
+            {(["Critical hotspot","High volume","Medium","Low"] as const).map((label, i) => {
+              const tier = (["critical","high","medium","low"] as const)[i];
+              return (
+                <div key={tier} className="flex items-center gap-1">
+                  <svg width="10" height="14" viewBox="0 0 16 22" fill="none">
+                    <path d="M8 0.5C4.41 0.5 1.5 3.41 1.5 7c0 5.46 6.5 14.5 6.5 14.5S14.5 12.46 14.5 7C14.5 3.41 11.59 0.5 8 0.5z"
+                      fill={PIN_COLORS[tier]} />
+                  </svg>
+                  <span className="text-[8.5px] text-white/45">{label}</span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Zoom controls */}
-          <div className="absolute top-4 right-4 flex flex-col gap-1">
+          <div className="absolute top-3 right-3 flex flex-col gap-1">
             {[ZoomIn, ZoomOut, RotateCcw].map((Icon, i) => (
               <button key={i}
-                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
+                className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.50)" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.16)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
-                <Icon size={13} />
+                <Icon size={11} />
               </button>
             ))}
           </div>
         </div>
 
         {/* SIDEBAR */}
-        <div className="w-64 shrink-0 border-l border-slate-100 bg-slate-50/50">
-          <div className="px-4 pt-4 pb-2">
-            <p className="text-[10px] font-bold tracking-[0.12em] text-slate-400 mb-3">TOP RFQ MARKETS</p>
-            <div className="flex flex-col gap-2.5">
+        <div className="w-52 shrink-0 border-l border-slate-100 bg-slate-50/50 flex flex-col">
+          <div className="px-3 pt-3 pb-2 flex-1">
+            <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400 mb-2">TOP RFQ MARKETS</p>
+            <div className="flex flex-col gap-1">
               {COUNTRY_BARS.sort((a, b) => b.rfqs - a.rfqs).map((c, i) => {
-                const isHov = hovered === MAP_PINS.find(p => p.country === c.country)?.id;
+                const pinId = MAP_PINS.find(p => p.country === c.country)?.id;
+                const isHov = hovered === pinId;
                 return (
-                  <div key={i}
-                    className={cn("cursor-pointer rounded-lg px-3 py-2 transition-all", isHov ? "bg-white shadow-sm" : "hover:bg-white/70")}
-                    onMouseEnter={() => setHovered(MAP_PINS.find(p => p.country === c.country)?.id ?? null)}
-                    onMouseLeave={() => setHovered(null)}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[14px]">{c.flag}</span>
-                        <span className="text-[12px] font-semibold text-slate-700">{c.country}</span>
+                  <div
+                    key={i}
+                    className={cn("cursor-pointer rounded-lg px-2 py-1.5 transition-all", isHov ? "bg-white shadow-sm" : "hover:bg-white/70")}
+                    onMouseEnter={() => setHovered(pinId ?? null)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[12px]">{c.flag}</span>
+                        <span className="text-[11px] font-semibold text-slate-700">{c.country}</span>
                       </div>
-                      <span className="text-[11px] font-bold text-slate-500">{c.rfqs}</span>
+                      <span className="text-[10px] font-bold text-slate-500">{c.rfqs}</span>
                     </div>
-                    <div className="w-full h-[5px] bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-full h-[4px] bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all duration-700"
                         style={{
                           width:           mounted ? `${(c.rfqs / maxRFQ) * 100}%` : "0%",
@@ -874,9 +934,9 @@ function WorldRFQMap() {
               })}
             </div>
           </div>
-          <div className="px-4 pb-4 mt-2">
-            <button className="w-full py-2 rounded-xl border border-[#1F6F54] text-[#1F6F54] text-[12px] font-semibold hover:bg-[#1F6F54] hover:text-white transition-all">
-              <Globe size={12} className="inline mr-1" /> Explore All Markets
+          <div className="px-3 pb-3">
+            <button className="w-full py-1.5 rounded-xl border border-[#1F6F54] text-[#1F6F54] text-[11px] font-semibold hover:bg-[#1F6F54] hover:text-white transition-all">
+              <Globe size={11} className="inline mr-1" /> Explore All Markets
             </button>
           </div>
         </div>
