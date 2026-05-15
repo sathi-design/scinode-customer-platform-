@@ -93,14 +93,14 @@ const COUNTRY_BARS = [
   { country: "Australia", flag: "🇦🇺", rfqs: 11 },
 ];
 
-// ─── Brand-gradient gauge (green → teal → purple) ────────────────────────────
+// ─── Brand-gradient gauge — larger semicircle (green → teal → purple) ────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
-  const r  = 62, cx = 80, cy = 78;
+  const r  = 82, cx = 105, cy = 100;
   const circumference = Math.PI * r;
   const dash = mounted ? (pct / 100) * circumference : 0;
 
   return (
-    <svg width={160} height={95} viewBox="0 0 160 95">
+    <svg width="100%" viewBox="0 0 210 118" style={{ maxWidth: 260 }}>
       <defs>
         <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%"   stopColor="#B7D77A" />
@@ -115,12 +115,12 @@ function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
       {/* Track */}
       <path
         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="#e2e8f0" strokeWidth={12} strokeLinecap="round"
+        fill="none" stroke="#e2e8f0" strokeWidth={14} strokeLinecap="round"
       />
       {/* Fill */}
       <path
         d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="url(#gaugeGrad)" strokeWidth={12} strokeLinecap="round"
+        fill="none" stroke="url(#gaugeGrad)" strokeWidth={14} strokeLinecap="round"
         strokeDasharray={`${dash} ${circumference}`}
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s" }}
       />
@@ -130,11 +130,11 @@ function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
         const rad   = (angle * Math.PI) / 180;
         const dx    = cx + r * Math.cos(rad);
         const dy    = cy + r * Math.sin(rad);
-        return <circle cx={dx} cy={dy} r={5} fill="#5B3BA8" />;
+        return <circle cx={dx} cy={dy} r={6} fill="#5B3BA8" />;
       })()}
       {/* Labels */}
-      <text x={cx} y={cy - 6}  textAnchor="middle" fontSize={22} fontWeight={800} fill="url(#gaugeTextGrad)">{pct}%</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fontSize={9}  fill="#94a3b8" letterSpacing={1}>BUYER READINESS</text>
+      <text x={cx} y={cy - 8}  textAnchor="middle" fontSize={30} fontWeight={800} fill="url(#gaugeTextGrad)">{pct}%</text>
+      <text x={cx} y={cy + 12} textAnchor="middle" fontSize={10} fill="#94a3b8" letterSpacing={1}>BUYER READINESS</text>
     </svg>
   );
 }
@@ -550,16 +550,16 @@ function OpportunitySection() {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            {/* Proposal 1 */}
-            <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
+            {/* Proposal 1 — Draft (incomplete, needs action) */}
+            <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-2.5 flex flex-col gap-1 hover:border-amber-300 hover:shadow-sm transition-all duration-200">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">Proposal</span>
+                  <span className="text-[8px] border border-amber-300 rounded-full px-1.5 py-[2px] text-amber-700 font-medium leading-none">Draft</span>
                   <span className="text-[8px] rounded-full px-1.5 py-[2px] text-white font-bold leading-none" style={{ background: "#0E6F5C" }}>CMO</span>
                 </div>
-                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none" style={{ color: "#1a6b4f" }}>
-                  <span className="w-1 h-1 rounded-full inline-block shrink-0" style={{ background: "#1a6b4f" }} />
-                  PO Issued
+                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none text-amber-600">
+                  <span className="w-1.5 h-1.5 rounded-full inline-block shrink-0 bg-amber-400 animate-pulse" />
+                  Incomplete · Buyer window closes in 18 hrs
                 </span>
               </div>
               <p className="text-[10.5px] font-semibold text-[#1e293b] leading-snug truncate">
@@ -567,28 +567,31 @@ function OpportunitySection() {
               </p>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[8.5px] text-slate-400 truncate">PRJ-2026-0603 · Vitamin D3 Intermediate VD-07 · Nutraceuticals</p>
-                <button className="shrink-0 text-[9px] font-semibold text-[#1F6F54] hover:opacity-75">Track →</button>
+                <button className="shrink-0 px-2 py-[3px] rounded-md text-[9px] font-bold text-white transition-colors"
+                  style={{ background: "#d97706" }}>
+                  Complete Now →
+                </button>
               </div>
             </div>
 
-            {/* Proposal 2 */}
-            <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
+            {/* Proposal 2 — Evaluation ended */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-2.5 flex flex-col gap-1 hover:border-slate-300 hover:shadow-sm transition-all duration-200">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
                   <span className="text-[8px] border border-slate-200 rounded-full px-1.5 py-[2px] text-slate-400 font-medium leading-none">Proposal</span>
                   <span className="text-[8px] rounded-full px-1.5 py-[2px] text-white font-bold leading-none" style={{ background: "#2F66D0" }}>RFQ</span>
                 </div>
-                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none" style={{ color: "#d97706" }}>
-                  <span className="w-1 h-1 rounded-full inline-block shrink-0 bg-amber-500" />
-                  Under Review
+                <span className="text-[8.5px] font-semibold flex items-center gap-1 leading-none text-slate-400">
+                  <span className="w-1 h-1 rounded-full inline-block shrink-0 bg-slate-400" />
+                  Evaluation Ended
                 </span>
               </div>
-              <p className="text-[10.5px] font-semibold text-[#1e293b] leading-snug truncate">
+              <p className="text-[10.5px] font-semibold text-slate-400 leading-snug truncate">
                 Custom bromine derivative for flame retardant application
               </p>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[8.5px] text-slate-400 truncate">PRJ-2026-0054 · Tetrabromobisphenol A (TBBPA) · Elemental Derivatives</p>
-                <button className="shrink-0 text-[9px] font-semibold text-[#2F66D0] hover:opacity-75">Track →</button>
+                <button className="shrink-0 text-[9px] font-semibold text-slate-400 hover:text-slate-600 transition-colors">View →</button>
               </div>
             </div>
           </div>
@@ -600,7 +603,7 @@ function OpportunitySection() {
 
         <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-1">MANUFACTURING PROFILE SIGNAL</p>
         <h3 className="text-[17px] font-bold text-[#1e293b] mb-5" style={{ fontFamily: "Poppins,sans-serif" }}>
-          Profile Readiness Score
+          Profile Performance
         </h3>
 
         {/* Gauge */}
@@ -635,8 +638,8 @@ function OpportunitySection() {
         <div className="mt-6 rounded-xl p-4" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
           <p className="text-[10px] font-bold tracking-[0.10em] text-slate-400 mb-2">OPPORTUNITY VALUE</p>
           <p className="text-[12px] text-slate-300 leading-snug mb-1">Incomplete profile may be costing an estimated</p>
-          <p className="text-[28px] font-black text-white leading-none mb-0.5">
-            $50,000<span className="text-[13px] font-semibold text-slate-400">/mo</span>
+          <p className="text-[38px] font-black text-white leading-none mb-0.5">
+            $50,000<span className="text-[16px] font-semibold text-slate-400">/mo</span>
           </p>
           <p className="text-[11px] text-slate-500 mb-3">in missed buyer opportunities.</p>
           <button
