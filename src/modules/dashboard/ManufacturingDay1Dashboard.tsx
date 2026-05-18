@@ -85,6 +85,48 @@ const TIER_CONFIG: Record<string, { label: string; color: string }> = {
 
 // Sidebar data derived from MAP_PINS — no separate array needed
 
+// ─── Section 4 data ───────────────────────────────────────────────────────────
+const BUYER_CARDS_DATA = [
+  {
+    id: "b1",
+    flag: "🇩🇪", country: "Germany",
+    industry: "Pharma", industryBg: "#EDE8FB", industryColor: "#6237C7",
+    title: "High-Purity Solvent Manufacturing Partner",
+    demand: "Looking for a reliable high-purity solvent manufacturing partner for 2-tonne monthly supply with consistent batch quality and on-time delivery.",
+    spec: ["ISO 9001", "COA Required", "EXW Terms"],
+    volume: "2 T / month",
+  },
+  {
+    id: "b2",
+    flag: "🇯🇵", country: "Japan",
+    industry: "Aroma Chemicals", industryBg: "#FCE8F0", industryColor: "#E36389",
+    title: "Aroma Intermediate Supplier — Export Ready",
+    demand: "Seeking ISO-certified aroma intermediate supplier with export-ready documentation and air freight capability for a sample-to-scale supply model.",
+    spec: ["GMP Certified", "MSDS + TDS", "Air Freight"],
+    volume: "50 kg → scale",
+  },
+  {
+    id: "b3",
+    flag: "🇧🇷", country: "Brazil",
+    industry: "Specialty Chemicals", industryBg: "#E6F3FB", industryColor: "#0077CC",
+    title: "Halogenation Chemistry Manufacturing Partner",
+    demand: "Need halogenation chemistry manufacturing capability with REACH compliance for B2B surfactant supply chain supporting monthly container volumes.",
+    spec: ["REACH Compliant", "Monthly Container", "FOB Terms"],
+    volume: "1 container / mo",
+  },
+] as const;
+
+const TRENDING_CATS = [
+  { name: "Pyridine Derivatives",  change: "+18%", rfqs: 24 },
+  { name: "Aroma Chemicals",        change: "+14%", rfqs: 31 },
+  { name: "Agro Intermediates",     change: "+11%", rfqs: 18 },
+  { name: "Halogenation Chemistry", change: "+9%",  rfqs: 12 },
+] as const;
+
+const MARKET_OPTIONS = ["Europe", "India", "APAC", "North America"] as const;
+type MarketOption = typeof MARKET_OPTIONS[number];
+type InterestState = "idle" | "animating" | "submitted";
+
 // ─── Brand-gradient gauge — larger semicircle (green → teal → purple) ────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
   const r  = 68, cx = 105, cy = 100;
@@ -1014,6 +1056,353 @@ function WorldRFQMap() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 4 — BUYER DISCOVERY + MARKET PULSE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Single buyer card ────────────────────────────────────────────────────────
+function BuyerCard({ buyer }: { buyer: typeof BUYER_CARDS_DATA[number] }) {
+  const [hovered,  setHovered]  = useState(false);
+  const [interest, setInterest] = useState<InterestState>("idle");
+  const [showThumb, setShowThumb] = useState(false);
+
+  const handleInterest = () => {
+    if (interest !== "idle") return;
+    setInterest("animating");
+    setShowThumb(true);
+    setTimeout(() => { setShowThumb(false); setInterest("submitted"); }, 900);
+  };
+
+  const submitted = interest === "submitted";
+
+  return (
+    <div
+      className="relative flex flex-col bg-white rounded-2xl overflow-hidden min-h-[420px]"
+      style={{
+        border:     submitted ? "1px solid rgba(14,111,92,0.40)" : hovered ? "1px solid #0E6F5C" : "1px solid #E8EDF2",
+        boxShadow:  hovered
+          ? "0 8px 28px rgba(14,111,92,0.12), 0 2px 8px rgba(0,0,0,0.06)"
+          : submitted ? "0 2px 12px rgba(14,111,92,0.07)" : "0 1px 4px rgba(0,0,0,0.04)",
+        transform:  hovered ? "translateY(-6px)" : "translateY(0)",
+        transition: "all 220ms ease",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Success accent bar */}
+      {submitted && (
+        <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
+          style={{ background: "linear-gradient(90deg,#2ACB83,#0E6F5C)" }} />
+      )}
+
+      {/* Floating thumbs-up */}
+      {showThumb && (
+        <div
+          className="absolute bottom-16 left-1/2 -translate-x-1/2 text-[28px] z-20 pointer-events-none select-none"
+          style={{ animation: "d1-thumbUp 900ms cubic-bezier(0.22,1,0.36,1) forwards" }}
+        >
+          👍
+        </div>
+      )}
+
+      <div className="p-5 flex flex-col flex-1">
+
+        {/* ── Country + Industry ── */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[26px] leading-none">{buyer.flag}</span>
+            <div>
+              <p className="text-[14px] font-bold text-[#1e293b] leading-tight">{buyer.country}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-400 mt-0.5">Procurement Request</p>
+            </div>
+          </div>
+          <span
+            className="text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0"
+            style={{ background: buyer.industryBg, color: buyer.industryColor }}
+          >
+            {buyer.industry}
+          </span>
+        </div>
+
+        {/* ── Demand statement ── */}
+        <div className="flex-1">
+          <h4 className="text-[12.5px] font-bold text-[#1e293b] leading-snug mb-2">{buyer.title}</h4>
+          <p
+            className="text-[11.5px] leading-relaxed text-slate-500"
+            style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
+            &ldquo;{buyer.demand}&rdquo;
+          </p>
+        </div>
+
+        {/* ── Spec pills ── */}
+        <div className="flex flex-wrap gap-1 mt-4 mb-3">
+          {buyer.spec.map((s, i) => (
+            <span key={i} className="text-[9px] font-medium px-2 py-[3px] rounded-md"
+              style={{ background: "#f1f5f9", color: "#64748b" }}>
+              {s}
+            </span>
+          ))}
+        </div>
+
+        {/* ── Volume row ── */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-slate-400">Volume Needed</p>
+            <p className="text-[13px] font-bold text-[#1e293b] mt-0.5">{buyer.volume}</p>
+          </div>
+          {submitted && (
+            <div
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold"
+              style={{ background: "#E8FBF2", color: "#0E6F5C" }}
+            >
+              ✓ Buyer notified
+            </div>
+          )}
+        </div>
+
+        {/* ── CTA ── */}
+        <button
+          onClick={handleInterest}
+          disabled={submitted}
+          className="w-full py-2.5 rounded-xl text-[12px] font-bold transition-all duration-200"
+          style={{
+            background: submitted ? "linear-gradient(90deg,#2ACB83,#0E6F5C)" : hovered ? "#0d5c45" : "#0E6F5C",
+            color: "#fff",
+            cursor: submitted ? "default" : "pointer",
+          }}
+        >
+          {submitted ? "Interest Submitted ✓" : "Show Interest"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Market Pulse right panel ─────────────────────────────────────────────────
+function MarketPulsePanel() {
+  const [pulsing,         setPulsing]         = useState<number | null>(null);
+  const [hovTrend,        setHovTrend]        = useState<number | null>(null);
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketOption[]>([]);
+  const [marketsSaved,    setMarketsSaved]    = useState(false);
+  const mounted = useMounted(300);
+
+  useEffect(() => {
+    let i = 0;
+    let tid: ReturnType<typeof setTimeout>;
+    const iid = setInterval(() => {
+      setPulsing(i % TRENDING_CATS.length);
+      i++;
+      tid = setTimeout(() => setPulsing(null), 850);
+    }, 6000);
+    return () => { clearInterval(iid); clearTimeout(tid); };
+  }, []);
+
+  const toggleMarket = (m: MarketOption) => {
+    setMarketsSaved(false);
+    setSelectedMarkets(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-slate-100">
+        <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-0.5">LIVE INTELLIGENCE</p>
+        <h3 className="text-[15px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+          Market Pulse
+        </h3>
+        <p className="text-[11px] text-slate-400 mt-0.5">Live sourcing demand across active buyer markets</p>
+      </div>
+
+      {/* ── A: Trending Now ── */}
+      <div className="px-4 py-3 border-b border-slate-100">
+        <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">TRENDING NOW</p>
+        <div className="flex flex-col gap-0.5">
+          {TRENDING_CATS.map((cat, i) => {
+            const isPulsing = pulsing === i;
+            const isHov     = hovTrend === i;
+            return (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg cursor-pointer"
+                style={{
+                  background: isPulsing ? "#E8FBF2" : isHov ? "#f8fafc" : "transparent",
+                  transform:  isPulsing ? "scale(1.015)" : "scale(1)",
+                  transition: "all 200ms ease",
+                }}
+                onMouseEnter={() => setHovTrend(i)}
+                onMouseLeave={() => setHovTrend(null)}
+              >
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[14px] font-bold shrink-0"
+                    style={{ color: isPulsing ? "#2ACB83" : "#0E6F5C" }}>↗</span>
+                  <span className="text-[11px] font-semibold text-[#1e293b] truncate">{cat.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] font-bold" style={{ color: "#0E6F5C" }}>{cat.change}</span>
+                  <span className="text-[8px] px-1.5 py-0.5 rounded-full text-slate-400"
+                    style={{ background: "#f1f5f9" }}>
+                    {cat.rfqs}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── B: Hottest Demand Today ── */}
+      <div className="px-4 py-3 border-b border-slate-100">
+        <div
+          className="rounded-xl p-3"
+          style={{
+            background:  "#0d1117",
+            border:      "1px solid rgba(245,200,66,0.22)",
+            animation:   mounted ? "d1-hotGlow 4.5s ease-in-out infinite" : "none",
+          }}
+        >
+          <p className="text-[8px] font-bold tracking-[0.16em] text-slate-500 mb-1.5">🔥 HOTTEST DEMAND TODAY</p>
+          <p className="text-[15px] font-black text-white leading-tight mb-1">Triethyl Orthoformate</p>
+          <p className="text-[10px] text-slate-400 leading-relaxed mb-2.5">
+            12 active buyer requests<br />
+            <span style={{ color: "rgba(255,255,255,0.40)" }}>Across Germany, India, Japan</span>
+          </p>
+          <div className="flex items-center justify-between gap-2">
+            <span
+              className="text-[8.5px] font-bold px-2 py-[3px] rounded-full"
+              style={{ background: "rgba(42,203,131,0.15)", color: "#2ACB83" }}
+            >
+              ✦ High Match Potential
+            </span>
+            <button
+              className="text-[9px] font-bold flex items-center gap-0.5 transition-opacity hover:opacity-75"
+              style={{ color: "#f5c842" }}
+            >
+              Explore Demand →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── C: Market Insight Nudge ── */}
+      <div className="px-4 py-3 border-b border-slate-100">
+        <div
+          className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl"
+          style={{ background: "#E6F3FB", borderLeft: "3px solid #0077CC" }}
+        >
+          <span className="text-[15px] mt-0.5 shrink-0">💡</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10.5px] text-[#1e293b] font-medium leading-snug mb-2">
+              Manufacturers listing this category receive{" "}
+              <strong className="text-[#0077CC]">31% more</strong> qualified enquiries.
+            </p>
+            <button
+              className="text-[9.5px] font-bold px-2.5 py-1 rounded-lg border transition-all hover:bg-[#0077CC] hover:text-white"
+              style={{ borderColor: "#0077CC", color: "#0077CC" }}
+            >
+              Add Matching Product
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── D: Market Personalisation ── */}
+      <div className="px-4 py-3">
+        <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-0.5">MARKETS THAT MATTER TO YOU</p>
+        <p className="text-[10.5px] text-slate-500 mb-3">Select to personalise your buyer feed.</p>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {MARKET_OPTIONS.map(m => {
+            const sel = selectedMarkets.includes(m);
+            return (
+              <button
+                key={m}
+                onClick={() => toggleMarket(m)}
+                className="px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-all duration-200"
+                style={{
+                  background:  sel ? "linear-gradient(90deg,#2ACB83,#0E6F5C)" : "#fff",
+                  color:       sel ? "#fff" : "#64748b",
+                  borderColor: sel ? "transparent" : "#e2e8f0",
+                  transform:   sel ? "scale(1.05)" : "scale(1)",
+                  boxShadow:   sel ? "0 2px 8px rgba(14,111,92,0.20)" : "none",
+                }}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
+        {selectedMarkets.length > 0 && (
+          <button
+            onClick={() => setMarketsSaved(true)}
+            className="w-full py-1.5 rounded-xl text-[10px] font-bold transition-all duration-300"
+            style={{
+              background: marketsSaved ? "#E8FBF2" : "#0E6F5C",
+              color:      marketsSaved ? "#0E6F5C" : "#fff",
+            }}
+          >
+            {marketsSaved ? "✓ Preferences Saved" : "Save Preferences"}
+          </button>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+function BuyerDiscoverySection() {
+  return (
+    <div>
+      <style>{`
+        @keyframes d1-thumbUp {
+          0%   { transform: translate(-50%, 0)   scale(0.7); opacity: 1;   }
+          55%  { transform: translate(-50%, -55px) scale(1.4); opacity: 1;  }
+          100% { transform: translate(-50%, -90px) scale(1);   opacity: 0;  }
+        }
+        @keyframes d1-hotGlow {
+          0%,100% { box-shadow: 0 0 0px  rgba(245,200,66,0.00); }
+          50%     { box-shadow: 0 0 22px rgba(245,200,66,0.22); }
+        }
+      `}</style>
+
+      {/* ── Section header ── */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-0.5">TIER 4 · BUYER DISCOVERY</p>
+          <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+            Buyers already looking for manufacturers like you
+          </h2>
+          <p className="text-[12px] text-slate-400 mt-0.5">
+            Verified procurement requests matched to your manufacturing capabilities.
+          </p>
+        </div>
+        <button className="shrink-0 mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#0E6F5C] hover:opacity-70 transition-opacity whitespace-nowrap">
+          See all buyer opportunities <ArrowRight size={11} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* ── 70/30 grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-start">
+
+        {/* LEFT 70% — 3 buyer cards */}
+        <div className="lg:col-span-7">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {BUYER_CARDS_DATA.map(buyer => (
+              <BuyerCard key={buyer.id} buyer={buyer} />
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT 30% — Market Pulse */}
+        <div className="lg:col-span-3">
+          <MarketPulsePanel />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
 export function ManufacturingDay1Dashboard() {
@@ -1022,6 +1411,7 @@ export function ManufacturingDay1Dashboard() {
       <HeroSection />
       <OpportunitySection />
       <WorldRFQMap />
+      <BuyerDiscoverySection />
     </div>
   );
 }
