@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  ArrowRight,
+  ArrowRight, ChevronLeft, ChevronRight,
   Globe, Search, Filter, ZoomIn, ZoomOut, RotateCcw,
+  Package, Activity, FileText, X,
+  MessageSquare, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -114,18 +116,106 @@ const BUYER_CARDS_DATA = [
     spec: ["REACH Compliant", "Monthly Container", "FOB Terms"],
     volume: "1 container / mo",
   },
-] as const;
+  {
+    id: "b4",
+    flag: "🇺🇸", country: "USA",
+    industry: "Battery Materials", industryBg: "#FEF0EB", industryColor: "#FD4923",
+    title: "Battery-Grade Lithium Salt Manufacturing Partner",
+    demand: "Sourcing a reliable lithium salt manufacturer with battery-grade purity and validated quality systems for EV and energy storage supply chains.",
+    spec: ["Battery Grade", "IATF 16949", "DDP Terms"],
+    volume: "5 T / quarter",
+  },
+  {
+    id: "b5",
+    flag: "🇮🇳", country: "India",
+    industry: "Agrochemicals", industryBg: "#E8FBF2", industryColor: "#0E6F5C",
+    title: "Agrochemical Intermediate Supplier — Domestic & Export",
+    demand: "Seeking manufacturer of agrochemical intermediates with local regulatory clearances and capacity for both domestic distribution and export documentation.",
+    spec: ["CIBRC Approved", "SDS Supplied", "DAP Terms"],
+    volume: "10 T / month",
+  },
+  {
+    id: "b6",
+    flag: "🇬🇧", country: "United Kingdom",
+    industry: "Industrial Chemicals", industryBg: "#F3F4F6", industryColor: "#4B5563",
+    title: "Custom Industrial Chemical Blending Partner",
+    demand: "Looking for a manufacturing partner for custom-blending of industrial cleaning chemicals with COSHH-compliant formulation, labelling and UN packaging.",
+    spec: ["COSHH Compliant", "UN Packaging", "FCA Terms"],
+    volume: "500 L batches",
+  },
+];
 
 const TRENDING_CATS = [
   { name: "Pyridine Derivatives",  change: "+18%", rfqs: 24 },
   { name: "Aroma Chemicals",        change: "+14%", rfqs: 31 },
   { name: "Agro Intermediates",     change: "+11%", rfqs: 18 },
-  { name: "Halogenation Chemistry", change: "+9%",  rfqs: 12 },
 ] as const;
 
 const MARKET_OPTIONS = ["Europe", "India", "APAC", "North America"] as const;
-type MarketOption = typeof MARKET_OPTIONS[number];
-type InterestState = "idle" | "animating" | "submitted";
+type MarketOption   = typeof MARKET_OPTIONS[number];
+type InterestState  = "idle" | "animating" | "submitted";
+
+// ─── Section 5 types + data ───────────────────────────────────────────────────
+type InterestLevel = "High" | "Medium" | "Low";
+type MarketStatus  = "Strong Demand" | "Healthy" | "Needs Optimization" | "Early Visibility";
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  Germany: "🇩🇪", India: "🇮🇳", Japan: "🇯🇵", Brazil: "🇧🇷",
+  USA: "🇺🇸", "United Kingdom": "🇬🇧", China: "🇨🇳", Australia: "🇦🇺",
+};
+
+const INTEREST_CFG: Record<InterestLevel, { bg: string; color: string }> = {
+  High:   { bg: "#E8FBF2", color: "#0E6F5C" },
+  Medium: { bg: "#FBF0C5", color: "#9C5022" },
+  Low:    { bg: "#F3F4F6", color: "#4B5563" },
+};
+
+const STATUS_CFG: Record<MarketStatus, { bg: string; color: string }> = {
+  "Strong Demand":      { bg: "#E6F3FB", color: "#0077CC" },
+  "Healthy":            { bg: "#E8FBF2", color: "#0E6F5C" },
+  "Needs Optimization": { bg: "#FFEFEF", color: "#C30E1A" },
+  "Early Visibility":   { bg: "#F3F4F6", color: "#4B5563" },
+};
+
+const PRODUCT_DATA: {
+  id: string; name: string; cas: string;
+  views: number; interest: InterestLevel; enquiries: number; status: MarketStatus;
+  regions: string[]; searchFreq: string; optimization: string; matchedRFQs: string[];
+}[] = [
+  {
+    id: "p1", name: "Triethyl Orthoformate", cas: "122-51-0",
+    views: 48, interest: "High", enquiries: 4, status: "Strong Demand",
+    regions: ["Germany", "India", "Japan"],
+    searchFreq: "18 buyer searches this week",
+    optimization: "Add purity grade and packaging variants to attract more RFQs.",
+    matchedRFQs: ["Fine Chemicals", "Pharmaceutical Intermediates", "Custom Synthesis"],
+  },
+  {
+    id: "p2", name: "Methyl Benzoate", cas: "93-58-3",
+    views: 12, interest: "Low", enquiries: 0, status: "Needs Optimization",
+    regions: ["Japan", "United Kingdom"],
+    searchFreq: "3 buyer searches this week",
+    optimization: "Upload COA and MSDS, specify purity ≥99% to improve shortlisting.",
+    matchedRFQs: ["Aroma Chemicals", "Flavour & Fragrance"],
+  },
+  {
+    id: "p3", name: "Sodium Lauryl Sulfate", cas: "151-21-3",
+    views: 31, interest: "Medium", enquiries: 2, status: "Healthy",
+    regions: ["Brazil", "USA", "India"],
+    searchFreq: "9 buyer searches this week",
+    optimization: "Upload GMP certificate to qualify for pharmaceutical sourcing.",
+    matchedRFQs: ["Surfactants", "Personal Care", "Industrial Cleaning"],
+  },
+];
+
+const WISDOM_SLIDES = [
+  { title: "Catalogue Depth Wins",       text: "Manufacturers listing 8+ products receive 34% more qualified visibility.",       cta: "Expand Catalogue →",      accent: "#f59e0b", emoji: "📦" },
+  { title: "Export Readiness Matters",   text: "Buyers filter by export experience before pricing. Be export-ready first.",       cta: "Add Export Markets →",    accent: "#2ACB83", emoji: "🌍" },
+  { title: "Specification Precision",    text: "Detailed purity and packaging specs improve buyer response rates by 2.4×.",       cta: "Improve Product Specs →", accent: "#0077CC", emoji: "🔬" },
+  { title: "Fast Response Advantage",    text: "Suppliers replying within 24 hours close 41% more enquiries.",                   cta: "Enable Notifications →",  accent: "#6237C7", emoji: "⚡"  },
+  { title: "Certifications Build Trust", text: "Products with uploaded compliance docs get shortlisted 2× faster.",              cta: "Upload Certifications →", accent: "#E36389", emoji: "✅" },
+  { title: "Market Timing Signal",       text: "Pyridine derivatives demand has risen 18% this week. Buyers are active now.",    cta: "Explore Market Pulse →",  accent: "#FD4923", emoji: "📈" },
+];
 
 // ─── Brand-gradient gauge — larger semicircle (green → teal → purple) ────────
 function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
@@ -1059,10 +1149,10 @@ function WorldRFQMap() {
 // SECTION 4 — BUYER DISCOVERY + MARKET PULSE
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── Single buyer card ────────────────────────────────────────────────────────
-function BuyerCard({ buyer }: { buyer: typeof BUYER_CARDS_DATA[number] }) {
-  const [hovered,  setHovered]  = useState(false);
-  const [interest, setInterest] = useState<InterestState>("idle");
+// ─── Single buyer card — vertical layout ─────────────────────────────────────
+function BuyerCard({ buyer }: { buyer: (typeof BUYER_CARDS_DATA)[number] }) {
+  const [hovered,   setHovered]   = useState(false);
+  const [interest,  setInterest]  = useState<InterestState>("idle");
   const [showThumb, setShowThumb] = useState(false);
 
   const handleInterest = () => {
@@ -1076,54 +1166,51 @@ function BuyerCard({ buyer }: { buyer: typeof BUYER_CARDS_DATA[number] }) {
 
   return (
     <div
-      className="relative flex flex-col bg-white rounded-2xl overflow-hidden min-h-[420px]"
+      className="relative flex flex-col bg-white rounded-2xl overflow-hidden"
       style={{
         border:     submitted ? "1px solid rgba(14,111,92,0.40)" : hovered ? "1px solid #0E6F5C" : "1px solid #E8EDF2",
-        boxShadow:  hovered
-          ? "0 8px 28px rgba(14,111,92,0.12), 0 2px 8px rgba(0,0,0,0.06)"
-          : submitted ? "0 2px 12px rgba(14,111,92,0.07)" : "0 1px 4px rgba(0,0,0,0.04)",
+        boxShadow:  hovered ? "0 8px 28px rgba(14,111,92,0.11),0 2px 8px rgba(0,0,0,0.05)"
+          : submitted        ? "0 2px 12px rgba(14,111,92,0.07)"
+          : "0 1px 4px rgba(0,0,0,0.04)",
         transform:  hovered ? "translateY(-6px)" : "translateY(0)",
         transition: "all 220ms ease",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Success accent bar */}
+      {/* Submitted accent bar */}
       {submitted && (
         <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
           style={{ background: "linear-gradient(90deg,#2ACB83,#0E6F5C)" }} />
       )}
-
-      {/* Floating thumbs-up */}
+      {/* Thumbs-up float */}
       {showThumb && (
-        <div
-          className="absolute bottom-16 left-1/2 -translate-x-1/2 text-[28px] z-20 pointer-events-none select-none"
-          style={{ animation: "d1-thumbUp 900ms cubic-bezier(0.22,1,0.36,1) forwards" }}
-        >
+        <div className="absolute bottom-16 left-1/2 text-[28px] z-20 pointer-events-none select-none"
+          style={{ animation: "d1-thumbUp 900ms cubic-bezier(0.22,1,0.36,1) forwards" }}>
           👍
         </div>
       )}
 
-      <div className="p-5 flex flex-col flex-1">
+      <div className="p-4 flex flex-col flex-1">
 
-        {/* ── Country + Industry ── */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <span className="text-[26px] leading-none">{buyer.flag}</span>
-            <div>
-              <p className="text-[14px] font-bold text-[#1e293b] leading-tight">{buyer.country}</p>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-400 mt-0.5">Procurement Request</p>
-            </div>
-          </div>
-          <span
-            className="text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0"
-            style={{ background: buyer.industryBg, color: buyer.industryColor }}
-          >
-            {buyer.industry}
-          </span>
-        </div>
+        {/* 1 — Flag */}
+        <span className="text-[30px] leading-none mb-2">{buyer.flag}</span>
 
-        {/* ── Demand statement ── */}
+        {/* 2 — Country + label */}
+        <p className="text-[14px] font-bold text-[#1e293b] leading-tight">{buyer.country}</p>
+        <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400 mb-2.5">
+          Procurement Request
+        </p>
+
+        {/* 3 — Industry pill */}
+        <span
+          className="self-start text-[10px] font-semibold px-2.5 py-[4px] rounded-full mb-4"
+          style={{ background: buyer.industryBg, color: buyer.industryColor }}
+        >
+          {buyer.industry}
+        </span>
+
+        {/* 4 — Heading + quote */}
         <div className="flex-1">
           <h4 className="text-[12.5px] font-bold text-[#1e293b] leading-snug mb-2">{buyer.title}</h4>
           <p
@@ -1134,7 +1221,7 @@ function BuyerCard({ buyer }: { buyer: typeof BUYER_CARDS_DATA[number] }) {
           </p>
         </div>
 
-        {/* ── Spec pills ── */}
+        {/* 5 — Spec pills */}
         <div className="flex flex-wrap gap-1 mt-4 mb-3">
           {buyer.spec.map((s, i) => (
             <span key={i} className="text-[9px] font-medium px-2 py-[3px] rounded-md"
@@ -1144,41 +1231,40 @@ function BuyerCard({ buyer }: { buyer: typeof BUYER_CARDS_DATA[number] }) {
           ))}
         </div>
 
-        {/* ── Volume row ── */}
-        <div className="flex items-center justify-between mb-4">
+        {/* 6 — Volume */}
+        <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-slate-400">Volume Needed</p>
             <p className="text-[13px] font-bold text-[#1e293b] mt-0.5">{buyer.volume}</p>
           </div>
           {submitted && (
-            <div
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold"
-              style={{ background: "#E8FBF2", color: "#0E6F5C" }}
-            >
+            <span className="text-[9px] font-bold px-2.5 py-1 rounded-full"
+              style={{ background: "#E8FBF2", color: "#0E6F5C" }}>
               ✓ Buyer notified
-            </div>
+            </span>
           )}
         </div>
 
-        {/* ── CTA ── */}
+        {/* 7 — CTA */}
         <button
           onClick={handleInterest}
           disabled={submitted}
           className="w-full py-2.5 rounded-xl text-[12px] font-bold transition-all duration-200"
           style={{
             background: submitted ? "linear-gradient(90deg,#2ACB83,#0E6F5C)" : hovered ? "#0d5c45" : "#0E6F5C",
-            color: "#fff",
+            color:  "#fff",
             cursor: submitted ? "default" : "pointer",
           }}
         >
           {submitted ? "Interest Submitted ✓" : "Show Interest"}
         </button>
+
       </div>
     </div>
   );
 }
 
-// ─── Market Pulse right panel ─────────────────────────────────────────────────
+// ─── Market Pulse — inner content only (no outer card wrapper) ────────────────
 function MarketPulsePanel() {
   const [pulsing,         setPulsing]         = useState<number | null>(null);
   const [hovTrend,        setHovTrend]        = useState<number | null>(null);
@@ -1203,18 +1289,16 @@ function MarketPulsePanel() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+    <div className="flex flex-col h-full">
 
-      {/* Header */}
+      {/* Sub-header */}
       <div className="px-4 pt-4 pb-3 border-b border-slate-100">
         <p className="text-[9px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-0.5">LIVE INTELLIGENCE</p>
-        <h3 className="text-[15px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
-          Market Pulse
-        </h3>
-        <p className="text-[11px] text-slate-400 mt-0.5">Live sourcing demand across active buyer markets</p>
+        <h3 className="text-[14px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>Market Pulse</h3>
+        <p className="text-[10.5px] text-slate-400 mt-0.5">Live sourcing demand across active buyer markets</p>
       </div>
 
-      {/* ── A: Trending Now ── */}
+      {/* A — Trending Now */}
       <div className="px-4 py-3 border-b border-slate-100">
         <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">TRENDING NOW</p>
         <div className="flex flex-col gap-0.5">
@@ -1222,8 +1306,7 @@ function MarketPulsePanel() {
             const isPulsing = pulsing === i;
             const isHov     = hovTrend === i;
             return (
-              <div
-                key={i}
+              <div key={i}
                 className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg cursor-pointer"
                 style={{
                   background: isPulsing ? "#E8FBF2" : isHov ? "#f8fafc" : "transparent",
@@ -1234,16 +1317,14 @@ function MarketPulsePanel() {
                 onMouseLeave={() => setHovTrend(null)}
               >
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[14px] font-bold shrink-0"
+                  <span className="text-[13px] font-bold shrink-0"
                     style={{ color: isPulsing ? "#2ACB83" : "#0E6F5C" }}>↗</span>
                   <span className="text-[11px] font-semibold text-[#1e293b] truncate">{cat.name}</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-[10px] font-bold" style={{ color: "#0E6F5C" }}>{cat.change}</span>
                   <span className="text-[8px] px-1.5 py-0.5 rounded-full text-slate-400"
-                    style={{ background: "#f1f5f9" }}>
-                    {cat.rfqs}
-                  </span>
+                    style={{ background: "#f1f5f9" }}>{cat.rfqs}</span>
                 </div>
               </div>
             );
@@ -1251,46 +1332,38 @@ function MarketPulsePanel() {
         </div>
       </div>
 
-      {/* ── B: Hottest Demand Today ── */}
+      {/* B — Hot Product Signal */}
       <div className="px-4 py-3 border-b border-slate-100">
-        <div
-          className="rounded-xl p-3"
+        <div className="rounded-xl p-3"
           style={{
-            background:  "#0d1117",
-            border:      "1px solid rgba(245,200,66,0.22)",
-            animation:   mounted ? "d1-hotGlow 4.5s ease-in-out infinite" : "none",
-          }}
-        >
+            background: "#0d1117",
+            border:     "1px solid rgba(245,200,66,0.22)",
+            animation:  mounted ? "d1-hotGlow 4.5s ease-in-out infinite" : "none",
+          }}>
           <p className="text-[8px] font-bold tracking-[0.16em] text-slate-500 mb-1.5">🔥 HOTTEST DEMAND TODAY</p>
-          <p className="text-[15px] font-black text-white leading-tight mb-1">Triethyl Orthoformate</p>
+          <p className="text-[14px] font-black text-white leading-tight mb-1">Triethyl Orthoformate</p>
           <p className="text-[10px] text-slate-400 leading-relaxed mb-2.5">
             12 active buyer requests<br />
-            <span style={{ color: "rgba(255,255,255,0.40)" }}>Across Germany, India, Japan</span>
+            <span style={{ color: "rgba(255,255,255,0.38)" }}>Across Germany, India, Japan</span>
           </p>
           <div className="flex items-center justify-between gap-2">
-            <span
-              className="text-[8.5px] font-bold px-2 py-[3px] rounded-full"
-              style={{ background: "rgba(42,203,131,0.15)", color: "#2ACB83" }}
-            >
+            <span className="text-[8.5px] font-bold px-2 py-[3px] rounded-full"
+              style={{ background: "rgba(42,203,131,0.15)", color: "#2ACB83" }}>
               ✦ High Match Potential
             </span>
-            <button
-              className="text-[9px] font-bold flex items-center gap-0.5 transition-opacity hover:opacity-75"
-              style={{ color: "#f5c842" }}
-            >
+            <button className="text-[9px] font-bold transition-opacity hover:opacity-75"
+              style={{ color: "#f5c842" }}>
               Explore Demand →
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── C: Market Insight Nudge ── */}
+      {/* C — Insight Nudge */}
       <div className="px-4 py-3 border-b border-slate-100">
-        <div
-          className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl"
-          style={{ background: "#E6F3FB", borderLeft: "3px solid #0077CC" }}
-        >
-          <span className="text-[15px] mt-0.5 shrink-0">💡</span>
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl"
+          style={{ background: "#E6F3FB", borderLeft: "3px solid #0077CC" }}>
+          <span className="text-[14px] mt-0.5 shrink-0">💡</span>
           <div className="flex-1 min-w-0">
             <p className="text-[10.5px] text-[#1e293b] font-medium leading-snug mb-2">
               Manufacturers listing this category receive{" "}
@@ -1298,25 +1371,23 @@ function MarketPulsePanel() {
             </p>
             <button
               className="text-[9.5px] font-bold px-2.5 py-1 rounded-lg border transition-all hover:bg-[#0077CC] hover:text-white"
-              style={{ borderColor: "#0077CC", color: "#0077CC" }}
-            >
+              style={{ borderColor: "#0077CC", color: "#0077CC" }}>
               Add Matching Product
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── D: Market Personalisation ── */}
-      <div className="px-4 py-3">
+      {/* D — Market Personalisation */}
+      <div className="px-4 py-3 flex-1 flex flex-col justify-between">
+        <div>
         <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-0.5">MARKETS THAT MATTER TO YOU</p>
-        <p className="text-[10.5px] text-slate-500 mb-3">Select to personalise your buyer feed.</p>
+        <p className="text-[10.5px] text-slate-500 mb-2.5">Select to personalise your buyer feed.</p>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {MARKET_OPTIONS.map(m => {
             const sel = selectedMarkets.includes(m);
             return (
-              <button
-                key={m}
-                onClick={() => toggleMarket(m)}
+              <button key={m} onClick={() => toggleMarket(m)}
                 className="px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-all duration-200"
                 style={{
                   background:  sel ? "linear-gradient(90deg,#2ACB83,#0E6F5C)" : "#fff",
@@ -1324,22 +1395,20 @@ function MarketPulsePanel() {
                   borderColor: sel ? "transparent" : "#e2e8f0",
                   transform:   sel ? "scale(1.05)" : "scale(1)",
                   boxShadow:   sel ? "0 2px 8px rgba(14,111,92,0.20)" : "none",
-                }}
-              >
+                }}>
                 {m}
               </button>
             );
           })}
         </div>
+        </div>
         {selectedMarkets.length > 0 && (
-          <button
-            onClick={() => setMarketsSaved(true)}
+          <button onClick={() => setMarketsSaved(true)}
             className="w-full py-1.5 rounded-xl text-[10px] font-bold transition-all duration-300"
             style={{
               background: marketsSaved ? "#E8FBF2" : "#0E6F5C",
               color:      marketsSaved ? "#0E6F5C" : "#fff",
-            }}
-          >
+            }}>
             {marketsSaved ? "✓ Preferences Saved" : "Save Preferences"}
           </button>
         )}
@@ -1349,56 +1418,751 @@ function MarketPulsePanel() {
   );
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
+// ─── Section 4 — two separate containers, equal height (mirrors OpportunitySection) ─
 function BuyerDiscoverySection() {
+  const VISIBLE    = 3;
+  const total      = BUYER_CARDS_DATA.length;
+  const totalPages = Math.ceil(total / VISIBLE);
+
+  const [page,    setPage]    = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+
+  const canPrev = page > 0;
+  const canNext = page < totalPages - 1;
+
+  const go = (dir: "prev" | "next") => {
+    setPage(p => dir === "prev" ? Math.max(0, p - 1) : Math.min(totalPages - 1, p + 1));
+    setAnimKey(k => k + 1);
+  };
+
+  const visibleCards = BUYER_CARDS_DATA.slice(page * VISIBLE, (page + 1) * VISIBLE);
+
   return (
-    <div>
+    <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
       <style>{`
         @keyframes d1-thumbUp {
-          0%   { transform: translate(-50%, 0)   scale(0.7); opacity: 1;   }
-          55%  { transform: translate(-50%, -55px) scale(1.4); opacity: 1;  }
-          100% { transform: translate(-50%, -90px) scale(1);   opacity: 0;  }
+          0%   { transform: translate(-50%, 0)     scale(0.7); opacity: 1; }
+          55%  { transform: translate(-50%, -55px) scale(1.4); opacity: 1; }
+          100% { transform: translate(-50%, -90px) scale(1);   opacity: 0; }
         }
         @keyframes d1-hotGlow {
           0%,100% { box-shadow: 0 0 0px  rgba(245,200,66,0.00); }
           50%     { box-shadow: 0 0 22px rgba(245,200,66,0.22); }
         }
+        @keyframes d1-cardsIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
       `}</style>
 
-      {/* ── Section header ── */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-0.5">TIER 4 · BUYER DISCOVERY</p>
-          <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
-            Buyers already looking for manufacturers like you
-          </h2>
-          <p className="text-[12px] text-slate-400 mt-0.5">
-            Verified procurement requests matched to your manufacturing capabilities.
-          </p>
-        </div>
-        <button className="shrink-0 mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#0E6F5C] hover:opacity-70 transition-opacity whitespace-nowrap">
-          See all buyer opportunities <ArrowRight size={11} strokeWidth={2.5} />
-        </button>
-      </div>
+      {/* ── LEFT 70% — Buyer Discovery card ── */}
+      <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
 
-      {/* ── 70/30 grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-start">
+        {/* Card header */}
+        <div className="px-5 pt-3 pb-3 border-b border-slate-100 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-0.5">BUYER DISCOVERY</p>
+            <h2 className="text-[15px] sm:text-[17px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+              Buyers already looking for manufacturers like you
+            </h2>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Verified procurement requests matched to your manufacturing capabilities.
+            </p>
+          </div>
 
-        {/* LEFT 70% — 3 buyer cards */}
-        <div className="lg:col-span-7">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {BUYER_CARDS_DATA.map(buyer => (
-              <BuyerCard key={buyer.id} buyer={buyer} />
-            ))}
+          {/* Chevron controls + counter + CTA */}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-[10px] text-slate-400 font-medium hidden sm:block">
+              {page * VISIBLE + 1}–{Math.min((page + 1) * VISIBLE, total)} of {total}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => go("prev")}
+                disabled={!canPrev}
+                className="w-7 h-7 rounded-lg flex items-center justify-center border transition-all duration-200"
+                style={{
+                  borderColor: canPrev ? "#e2e8f0" : "#f1f5f9",
+                  color:       canPrev ? "#475569"  : "#cbd5e1",
+                  background:  canPrev ? "#fff"      : "#fafafa",
+                }}
+              >
+                <ChevronLeft size={14} strokeWidth={2} />
+              </button>
+              <button
+                onClick={() => go("next")}
+                disabled={!canNext}
+                className="w-7 h-7 rounded-lg flex items-center justify-center border transition-all duration-200"
+                style={{
+                  borderColor: canNext ? "#0E6F5C"  : "#f1f5f9",
+                  color:       canNext ? "#0E6F5C"  : "#cbd5e1",
+                  background:  canNext ? "#E8FBF2"  : "#fafafa",
+                }}
+              >
+                <ChevronRight size={14} strokeWidth={2} />
+              </button>
+            </div>
+            <div className="w-px h-4 bg-slate-200 hidden sm:block" />
+            <button className="flex items-center gap-1 text-[11px] font-semibold text-[#0E6F5C] hover:opacity-70 transition-opacity whitespace-nowrap">
+              See all <ArrowRight size={11} strokeWidth={2.5} />
+            </button>
           </div>
         </div>
 
-        {/* RIGHT 30% — Market Pulse */}
-        <div className="lg:col-span-3">
-          <MarketPulsePanel />
+        {/* Cards grid */}
+        <div className="p-4 flex-1 flex flex-col">
+          <div
+            key={animKey}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1"
+            style={{ animation: "d1-cardsIn 280ms ease both" }}
+          >
+            {visibleCards.map(buyer => (
+              <BuyerCard key={buyer.id} buyer={buyer} />
+            ))}
+          </div>
+
+          {/* Dot page indicators */}
+          <div className="flex justify-center items-center gap-2 mt-4">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => { setPage(i); setAnimKey(k => k + 1); }}
+                aria-label={`Page ${i + 1}`}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width:      i === page ? 20 : 6,
+                  height:     6,
+                  background: i === page ? "#0E6F5C" : "#e2e8f0",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT 30% — Market Pulse card ── */}
+      <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <MarketPulsePanel />
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 5 — PRODUCT PERFORMANCE INTELLIGENCE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Product insight slide-in drawer ─────────────────────────────────────────
+function ProductInsightDrawer({
+  product,
+  onClose,
+}: {
+  product: (typeof PRODUCT_DATA)[0];
+  onClose: () => void;
+}) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 16); return () => clearTimeout(t); }, []);
+
+  const close = () => {
+    setVisible(false);
+    setTimeout(onClose, 300);
+  };
+
+  const scfg = STATUS_CFG[product.status];
+  const icfg = INTEREST_CFG[product.interest];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex justify-end"
+      onClick={close}
+      style={{
+        background:  visible ? "rgba(2,2,2,0.42)" : "rgba(2,2,2,0)",
+        transition:  "background 300ms ease",
+      }}
+    >
+      {/* Panel */}
+      <div
+        className="relative h-full w-[380px] max-w-[92vw] bg-white flex flex-col"
+        onClick={e => e.stopPropagation()}
+        style={{
+          transform:  visible ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 300ms cubic-bezier(0.22,1,0.36,1)",
+          boxShadow:  "-8px 0 48px rgba(0,0,0,0.14)",
+        }}
+      >
+        {/* Accent bar */}
+        <div className="h-[3px] shrink-0" style={{ background: `linear-gradient(90deg,${scfg.color},${scfg.color}55)` }} />
+
+        {/* Header */}
+        <div className="px-5 pt-4 pb-4 border-b border-slate-100 flex items-start justify-between gap-3 shrink-0">
+          <div className="min-w-0">
+            <p className="text-[8.5px] font-bold tracking-[0.20em] text-slate-400 uppercase mb-1">PRODUCT INTELLIGENCE</p>
+            <h3 className="text-[14.5px] font-bold text-[#1e293b] leading-snug">{product.name}</h3>
+            <p className="text-[10px] font-mono text-slate-400 mt-0.5">CAS {product.cas}</p>
+          </div>
+          <button
+            onClick={close}
+            className="w-7 h-7 rounded-lg flex items-center justify-center border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-colors shrink-0"
+          >
+            <X size={13} />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
+
+          {/* Status badges */}
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: scfg.bg, color: scfg.color }}>
+              {product.status}
+            </span>
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ background: icfg.bg, color: icfg.color }}>
+              {product.interest} Interest
+            </span>
+          </div>
+
+          {/* Buyer regions */}
+          <div>
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">ACTIVE BUYER REGIONS</p>
+            <div className="flex flex-col gap-1.5">
+              {product.regions.map((r, i) => (
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "#f8fafc" }}>
+                  <span className="text-[17px] leading-none">{COUNTRY_FLAGS[r] ?? "🌐"}</span>
+                  <span className="text-[12px] font-medium text-[#1e293b]">{r}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Search frequency */}
+          <div>
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">SEARCH FREQUENCY</p>
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg"
+              style={{ background: "#f8fafc", border: "1px solid #edf2f7" }}>
+              <Search size={14} className="text-slate-400 shrink-0" />
+              <p className="text-[12px] font-semibold text-[#1e293b]">{product.searchFreq}</p>
+            </div>
+          </div>
+
+          {/* Optimization tip */}
+          <div>
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">SUGGESTED OPTIMIZATION</p>
+            <div className="flex items-start gap-2.5 px-3 py-3 rounded-xl"
+              style={{ background: "#E6F3FB", borderLeft: "3px solid #0077CC" }}>
+              <span className="text-[14px] shrink-0 mt-0.5">💡</span>
+              <p className="text-[12px] text-[#1e293b] font-medium leading-snug">{product.optimization}</p>
+            </div>
+          </div>
+
+          {/* Matched RFQ categories */}
+          <div>
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-slate-400 mb-2">MATCHING RFQ CATEGORIES</p>
+            <div className="flex flex-wrap gap-1.5">
+              {product.matchedRFQs.map((cat, i) => (
+                <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-md"
+                  style={{ background: "#EDE8FB", color: "#6237C7" }}>
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer CTA */}
+        <div className="px-5 py-4 border-t border-slate-100 shrink-0">
+          <button
+            className="w-full py-2.5 rounded-xl text-[12px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}
+          >
+            Optimize This Product →
+          </button>
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── Scinode Wisdom Carousel (right panel) ────────────────────────────────────
+function ScimplifyWisdomCarousel() {
+  const [slide,    setSlide]    = useState(0);
+  const [slideKey, setSlideKey] = useState(0);
+  const [paused,   setPaused]   = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setSlide(s => (s + 1) % WISDOM_SLIDES.length);
+      setSlideKey(k => k + 1);
+    }, 6000);
+  }, []);
+
+  useEffect(() => {
+    if (!paused) startTimer();
+    else if (timerRef.current) clearInterval(timerRef.current);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [paused, startTimer]);
+
+  const goTo = (i: number) => {
+    setSlide(i);
+    setSlideKey(k => k + 1);
+    startTimer();
+  };
+
+  const current = WISDOM_SLIDES[slide];
+
+  return (
+    <div
+      className="flex flex-col h-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <style>{`
+        @keyframes p5-slideUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes p5-ctaIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+        @keyframes p5-emojiBounce {
+          0%,100% { transform: translateY(0);    }
+          40%     { transform: translateY(-6px); }
+          60%     { transform: translateY(-3px); }
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <p className="text-[8.5px] font-bold tracking-[0.24em] mb-0.5" style={{ color: current.accent }}>
+          SCINODE WISDOM
+        </p>
+        <p className="text-[10.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+          Platform insights for smarter supplier growth
+        </p>
+      </div>
+
+      {/* Slide — flex-1, re-mounts on key change */}
+      <div
+        key={slideKey}
+        className="flex-1 px-5 py-5 flex flex-col"
+        style={{ animation: "p5-slideUp 360ms cubic-bezier(0.22,1,0.36,1) both" }}
+      >
+        {/* Slide counter */}
+        <p className="text-[8px] font-bold tracking-[0.18em] mb-4" style={{ color: "rgba(255,255,255,0.20)" }}>
+          {String(slide + 1).padStart(2, "0")} / {String(WISDOM_SLIDES.length).padStart(2, "0")}
+        </p>
+
+        {/* Emoji */}
+        <span
+          className="text-[46px] leading-none mb-5 block"
+          style={{ animation: "p5-emojiBounce 0.55s ease 0.08s both" }}
+        >
+          {current.emoji}
+        </span>
+
+        {/* Title */}
+        <h3
+          className="text-[19px] font-black text-white leading-tight mb-3"
+          style={{ fontFamily: "Poppins,sans-serif" }}
+        >
+          {current.title}
+        </h3>
+
+        {/* Body text */}
+        <p className="text-[12.5px] leading-[1.75] flex-1" style={{ color: "rgba(255,255,255,0.52)" }}>
+          {current.text}
+        </p>
+
+        {/* Accent rule */}
+        <div className="h-[2px] w-10 rounded-full my-4" style={{ background: current.accent }} />
+
+        {/* CTA */}
+        <button
+          className="self-start text-[11.5px] font-bold transition-all duration-200 hover:underline"
+          style={{
+            color: current.accent,
+            animation: "p5-ctaIn 380ms ease 240ms both",
+          }}
+        >
+          {current.cta}
+        </button>
+      </div>
+
+      {/* Dot indicators */}
+      <div className="px-5 pb-5 flex items-center gap-1.5 shrink-0">
+        {WISDOM_SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Slide ${i + 1}`}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width:      i === slide ? 18 : 5,
+              height:     5,
+              background: i === slide ? current.accent : "rgba(255,255,255,0.18)",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Section 5 main component ─────────────────────────────────────────────────
+function ProductPerformanceSection() {
+  const [openProduct, setOpenProduct] = useState<(typeof PRODUCT_DATA)[0] | null>(null);
+  const [hoveredRow,  setHoveredRow]  = useState<string | null>(null);
+  const mounted = useMounted(400);
+
+  // Count-up for metric strip
+  const v0 = useCountUp(PRODUCT_DATA.length, 600, 200);
+  const v1 = useCountUp(14,                  800, 350);
+  const v2 = useCountUp(4,                   700, 500);
+  const v3 = useCountUp(2,                   500, 650);
+
+  const maxViews = Math.max(...PRODUCT_DATA.map(p => p.views));
+
+  const METRICS = [
+    { label: "Products Listed",        value: v0, Icon: Package,  micro: "Active catalogue entries"        },
+    { label: "Buyer Interest Signals", value: v1, Icon: Activity, micro: "Views with buyer intent"         },
+    { label: "Product Enquiries",      value: v2, Icon: FileText, micro: "Buyer requests received"         },
+    { label: "Export Ready",           value: v3, Icon: Globe,    micro: "Visible in international search" },
+  ] as const;
+
+  return (
+    <>
+      {openProduct && (
+        <ProductInsightDrawer product={openProduct} onClose={() => setOpenProduct(null)} />
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
+
+        {/* ── LEFT 70% — Product Performance ── */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+
+          {/* Card header */}
+          <div className="px-5 pt-3 pb-3 border-b border-slate-100 flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-0.5">CATALOGUE SIGNALS</p>
+              <h2 className="text-[15px] sm:text-[17px] font-bold text-[#1e293b]" style={{ fontFamily: "Poppins,sans-serif" }}>
+                How Your Products Are Performing
+              </h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Buyer activity across your listed products this week. Add more catalogue depth to improve discovery.
+              </p>
+            </div>
+            <button className="shrink-0 self-start mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#0E6F5C] hover:opacity-70 transition-opacity whitespace-nowrap">
+              See Full Catalogue <ArrowRight size={11} strokeWidth={2.5} />
+            </button>
+          </div>
+
+          {/* Metric strip — 4 columns */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-slate-100 border-b border-slate-100 shrink-0">
+            {METRICS.map(({ label, value, Icon, micro }, i) => (
+              <div key={i} className="px-4 py-3 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <Icon size={11} className="text-slate-400 shrink-0" />
+                  <p className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-wide truncate">{label}</p>
+                </div>
+                <p className="text-[24px] font-black text-[#1e293b] leading-none tabular-nums"
+                  style={{ fontFamily: "Poppins,sans-serif" }}>{value}</p>
+                <p className="text-[9px] text-slate-400">{micro}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Product table */}
+          <div className="flex-1 flex flex-col">
+            {PRODUCT_DATA.length === 0 ? (
+
+              /* ── Empty state ── */
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-8 py-10">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                  style={{ background: "#f8fafc", border: "1.5px dashed #cbd5e1" }}>
+                  <Package size={24} className="text-slate-300" />
+                </div>
+                <h3 className="text-[14px] font-bold text-[#1e293b] mb-1.5">Your catalogue is your buyer storefront</h3>
+                <p className="text-[11.5px] text-slate-400 leading-relaxed mb-5 max-w-[280px]">
+                  List products with specs, certifications, and packaging details to begin receiving matched demand signals.
+                </p>
+                <button className="px-5 py-2 rounded-lg text-[12px] font-bold text-white"
+                  style={{ background: "#0E6F5C" }}>
+                  Add Your First Product
+                </button>
+                <p className="text-[9.5px] text-slate-400 mt-2">Takes less than 4 minutes</p>
+              </div>
+
+            ) : (
+              <>
+                {/* Table header */}
+                <div className="grid px-4 py-2 border-b border-slate-100 shrink-0"
+                  style={{ gridTemplateColumns: "2fr 0.8fr 1.1fr 0.7fr 1.4fr", background: "#f9fafb" }}>
+                  {["PRODUCT", "VIEWS", "BUYER INTEREST", "ENQUIRIES", "MARKET STATUS"].map(h => (
+                    <p key={h} className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-slate-400">{h}</p>
+                  ))}
+                </div>
+
+                {/* Table rows */}
+                <div className="flex flex-col divide-y divide-slate-50 flex-1">
+                  {PRODUCT_DATA.map(product => {
+                    const icfg = INTEREST_CFG[product.interest];
+                    const scfg = STATUS_CFG[product.status];
+                    const barW = (product.views / maxViews) * 100;
+                    const isHov = hoveredRow === product.id;
+
+                    return (
+                      <div
+                        key={product.id}
+                        className="grid items-center px-4 py-3 cursor-pointer transition-all duration-200"
+                        style={{
+                          gridTemplateColumns: "2fr 0.8fr 1.1fr 0.7fr 1.4fr",
+                          background:   isHov ? "#f6fdf9" : "transparent",
+                          borderLeft:   `3px solid ${isHov ? "#2ACB83" : "transparent"}`,
+                          paddingLeft:  isHov ? "calc(1rem - 3px)" : "1rem",
+                        }}
+                        onMouseEnter={() => setHoveredRow(product.id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        onClick={() => setOpenProduct(product)}
+                      >
+                        {/* Product name + CAS */}
+                        <div className="min-w-0 pr-2">
+                          <p className="text-[12.5px] font-semibold text-[#1e293b] leading-snug truncate">{product.name}</p>
+                          <p className="text-[9px] font-mono text-slate-400 mt-0.5">CAS {product.cas}</p>
+                        </div>
+
+                        {/* Views + mini bar */}
+                        <div>
+                          <p className="text-[13px] font-bold text-[#1e293b] tabular-nums">{product.views}</p>
+                          <div className="w-full max-w-[44px] h-[3px] bg-slate-100 rounded-full mt-1 overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{ width: mounted ? `${barW}%` : "0%", background: "#2ACB83" }} />
+                          </div>
+                        </div>
+
+                        {/* Buyer interest badge */}
+                        <div>
+                          <span className="text-[9.5px] font-semibold px-2.5 py-[4px] rounded-full whitespace-nowrap"
+                            style={{ background: icfg.bg, color: icfg.color }}>
+                            {product.interest}
+                          </span>
+                        </div>
+
+                        {/* Enquiries */}
+                        <p className="text-[13px] font-bold tabular-nums"
+                          style={{ color: product.enquiries === 0 ? "#94a3b8" : "#1e293b" }}>
+                          {product.enquiries === 0 ? "—" : product.enquiries}
+                        </p>
+
+                        {/* Market status badge */}
+                        <div>
+                          <span className="text-[9.5px] font-semibold px-2.5 py-[4px] rounded-full whitespace-nowrap"
+                            style={{ background: scfg.bg, color: scfg.color }}>
+                            {product.status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* CTAs */}
+          <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between gap-4 flex-wrap shrink-0">
+            <p className="text-[10.5px] text-slate-400">
+              Manufacturers with <strong className="text-[#0E6F5C]">8+ listed products</strong> receive 2.7× more buyer discovery.
+            </p>
+            <div className="flex items-center gap-2">
+              <button className="px-3.5 py-2 rounded-lg text-[11px] font-bold border transition-all duration-200 hover:bg-[#0E6F5C] hover:text-white"
+                style={{ borderColor: "#0E6F5C", color: "#0E6F5C" }}>
+                Optimize Catalogue
+              </button>
+              <button className="px-3.5 py-2 rounded-lg text-[11px] font-bold text-white transition-all hover:brightness-110"
+                style={{ background: "#0E6F5C" }}>
+                Add More Products
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT 30% — Scinode Wisdom ── */}
+        <div
+          className="lg:col-span-3 rounded-2xl overflow-hidden flex flex-col"
+          style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <ScimplifyWisdomCarousel />
+        </div>
+
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 6 — PLATFORM STATS (ported from Day 0, identical animation)
+// ═══════════════════════════════════════════════════════════════════════════════
+const PLATFORM_STATS = [
+  { num: 500,  suffix: "+",  label: "MANUFACTURERS\nALREADY ONBOARDED",         thousands: false, decimal: false },
+  { num: 120,  suffix: "+",  label: "UNIQUE PROJECTS\nSUCCESSFULLY COMPLETED",  thousands: false, decimal: false },
+  { num: 2400, suffix: "+",  label: "SUPPLIER REQUIREMENTS\nSHARED",             thousands: true,  decimal: false },
+  { num: 130,  suffix: "+",  label: "COUNTRIES\nREQUESTING",                     thousands: false, decimal: false },
+  { num: 4.8,  suffix: "/5", label: "SUPPLIER\nSATISFACTION",                    thousands: false, decimal: true  },
+];
+
+function PlatformStatsSection() {
+  const [counts,      setCounts]      = useState(PLATFORM_STATS.map(() => 0));
+  const animatingRef  = useRef(false);
+  const rafRef        = useRef<number | undefined>(undefined);
+
+  // Trigger once on mount (auto-animate), then re-trigger on hover
+  const runAnimation = useCallback(() => {
+    if (animatingRef.current) return;
+    animatingRef.current = true;
+    const duration = 1400;
+    const start    = performance.now();
+    const tick     = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased    = 1 - Math.pow(1 - progress, 3);
+      setCounts(PLATFORM_STATS.map(s =>
+        s.decimal
+          ? Math.round(s.num * eased * 10) / 10
+          : Math.floor(s.num * eased)
+      ));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        animatingRef.current = false;
+      }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => {
+    // Auto-play on mount after a short delay
+    const t = setTimeout(runAnimation, 400);
+    return () => {
+      clearTimeout(t);
+      if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current);
+    };
+  }, [runAnimation]);
+
+  const fmt = (count: number, s: typeof PLATFORM_STATS[0]) => {
+    if (s.decimal)   return count.toFixed(1) + s.suffix;
+    if (s.thousands && count >= 1000)
+      return Math.floor(count / 1000) + "," + String(count % 1000).padStart(3, "0") + s.suffix;
+    return String(count) + s.suffix;
+  };
+
+  return (
+    <section
+      className="bg-[#0d1117] rounded-2xl px-4 py-8 sm:px-8 sm:py-10"
+      onMouseEnter={runAnimation}
+    >
+      <p className="text-center text-slate-500 text-[11px] font-bold uppercase tracking-[0.25em] mb-8">
+        What&apos;s Happening on the Platform
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+        {PLATFORM_STATS.map((s, i) => (
+          <div key={i} className="flex flex-col items-center gap-3">
+            <span className="text-4xl sm:text-5xl md:text-6xl font-black text-white tabular-nums leading-none">
+              {fmt(counts[i], s)}
+            </span>
+            <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider leading-[1.6] whitespace-pre-line">
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SECTION 7 — EXPERT CTA (ported from Day 0, with inline SVG illustration)
+// ═══════════════════════════════════════════════════════════════════════════════
+function ExpertTeamIllustration() {
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Left person — receded */}
+      <circle cx="20" cy="31" r="8.5" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+      <path d="M4 65c0-8.837 7.163-16 16-16h3" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* Center person — primary */}
+      <circle cx="40" cy="26" r="11" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.30)" strokeWidth="1.2" />
+      <path d="M18 66c0-12.15 9.85-22 22-22s22 9.85 22 22" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.22)" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Right person — receded */}
+      <circle cx="60" cy="31" r="8.5" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+      <path d="M57 49h3c8.837 0 16 7.163 16 16" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+function ExpertCTASection() {
+  return (
+    <section className="relative overflow-hidden rounded-[16px] px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10"
+      style={{ background: "linear-gradient(to right, #182133, #016358)" }}>
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute right-[200px] top-[60px] w-[256px] h-[256px] rounded-full"
+        style={{ background: "rgba(42,203,131,0.10)", filter: "blur(64px)" }} />
+
+      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-8">
+
+        {/* LEFT — content */}
+        <div className="flex-1 min-w-0 flex flex-col gap-0">
+          {/* Icon badge + title */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="relative shrink-0 w-[45px] h-[45px]">
+              <div className="absolute inset-0 rounded-[8px]"
+                style={{ background: "linear-gradient(135deg, rgba(247,254,231,0.50) 0%, rgba(247,254,231,0.10) 100%)" }} />
+              <div className="absolute top-[10px] left-[10px] text-white/80">
+                <MessageSquare size={22} />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-white text-[20px] font-semibold leading-[28px] tracking-[-0.005em]"
+                style={{ fontFamily: "Poppins, sans-serif" }}>
+                Talk to a Manufacturing Expert
+              </h3>
+              <p className="text-slate-400 text-[15px] font-normal leading-[24px]">
+                Get expert guidance on setting up your capabilities.
+              </p>
+            </div>
+          </div>
+
+          {/* Body */}
+          <p className="text-slate-300 text-[15px] font-normal leading-[24px] mb-6 max-w-[680px]">
+            Not sure how to get started or increase enquiries? Our team can guide you on setting up your profile, improving visibility, and connecting with the right opportunities.
+          </p>
+
+          {/* CTA row */}
+          <div className="flex items-center gap-8">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-[6px] text-white text-sm font-medium transition-colors"
+              style={{ background: "#1f6f54" }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1f6f54")}>
+              <Plus size={16} />
+              Schedule a call
+            </button>
+            <div className="flex items-center gap-[10px]">
+              <span className="relative flex h-[10px] w-[10px] shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-[10px] w-[10px] bg-emerald-400" />
+              </span>
+              <span className="text-slate-400 text-[14px]">Available now</span>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT — circle illustration */}
+        <div className="hidden md:flex items-center justify-center shrink-0 w-[192px] h-[192px] rounded-full border border-white/10"
+          style={{ background: "linear-gradient(136.89deg, rgba(1,114,231,0.20) 20.20%, rgba(45,209,124,0.20) 83.55%)" }}>
+          <ExpertTeamIllustration />
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1412,6 +2176,9 @@ export function ManufacturingDay1Dashboard() {
       <OpportunitySection />
       <WorldRFQMap />
       <BuyerDiscoverySection />
+      <ProductPerformanceSection />
+      <PlatformStatsSection />
+      <ExpertCTASection />
     </div>
   );
 }

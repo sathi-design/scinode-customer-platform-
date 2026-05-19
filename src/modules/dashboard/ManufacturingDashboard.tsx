@@ -985,9 +985,24 @@ function ToolCard({
 }
 
 // ─── 8. Expert CTA ────────────────────────────────────────────────────────────
-// Figma asset — right-side graphic (users icon)
-const EXPERT_ICON_SRC =
-  "https://www.figma.com/api/mcp/asset/1261a390-80d9-42d7-a1ce-22e3b804b103";
+// Inline SVG — three-person team illustration (replaces expired Figma asset URL)
+function ExpertTeamIllustration() {
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Left person — receded */}
+      <circle cx="20" cy="31" r="8.5" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+      <path d="M4 65c0-8.837 7.163-16 16-16h3" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+
+      {/* Center person — primary, larger */}
+      <circle cx="40" cy="26" r="11" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.30)" strokeWidth="1.2" />
+      <path d="M18 66c0-12.15 9.85-22 22-22s22 9.85 22 22" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.22)" strokeWidth="1.2" strokeLinecap="round" />
+
+      {/* Right person — receded */}
+      <circle cx="60" cy="31" r="8.5" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+      <path d="M57 49h3c8.837 0 16 7.163 16 16" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
 
 function ExpertCTA() {
   return (
@@ -1067,11 +1082,7 @@ function ExpertCTA() {
               "linear-gradient(136.89deg, rgba(1,114,231,0.20) 20.20%, rgba(45,209,124,0.20) 83.55%)",
           }}
         >
-          <img
-            src={EXPERT_ICON_SRC}
-            alt="Expert"
-            className="w-[80px] h-[80px] object-contain"
-          />
+          <ExpertTeamIllustration />
         </div>
 
       </div>
