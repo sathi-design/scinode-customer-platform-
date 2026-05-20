@@ -196,14 +196,10 @@ function ExclusiveInfoTooltip() {
           {/* Arrow */}
           <div className="absolute -bottom-1.5 right-3 w-3 h-3 rotate-45 border-b border-r"
             style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
-          <div className="relative bg-[#1e293b] rounded-xl p-4 shadow-2xl border border-white/10">
-            <p className="text-[11.5px] font-bold text-white mb-2">What are Exclusive Projects?</p>
+          <div className="relative bg-[#1e293b] rounded-xl p-3.5 shadow-2xl border border-white/10">
+            <p className="text-[11.5px] font-bold text-white mb-1.5">Exclusive Projects</p>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Exclusive Projects are highly matched opportunities tailored specifically to your
-              manufacturing capabilities, certifications, and catalogue.
-            </p>
-            <p className="text-[11px] text-slate-400 leading-relaxed mt-2">
-              These projects are not visible to all suppliers and are curated specifically for your business profile.
+              Projects reserved exclusively for you, with no competing bids.
             </p>
           </div>
         </div>
@@ -229,13 +225,10 @@ function OpenProjectsInfoTooltip() {
         >
           <div className="absolute -bottom-1.5 left-3 w-3 h-3 rotate-45 border-b border-r"
             style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
-          <div className="relative bg-[#1e293b] rounded-xl p-4 shadow-2xl border border-white/10">
-            <p className="text-[11.5px] font-bold text-white mb-2">What are Open Projects?</p>
+          <div className="relative bg-[#1e293b] rounded-xl p-3.5 shadow-2xl border border-white/10">
+            <p className="text-[11.5px] font-bold text-white mb-1.5">Open Projects</p>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Open Projects are publicly visible manufacturing opportunities available to all qualified suppliers on the platform.
-            </p>
-            <p className="text-[11px] text-slate-400 leading-relaxed mt-2">
-              They are matched to you based on your capabilities, certifications, and industry focus.
+              Projects open to all approved manufacturers on the platform.
             </p>
           </div>
         </div>
@@ -262,17 +255,15 @@ function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Product Ca
         >
           <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-b border-r"
             style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
-          <div className="relative bg-[#1e293b] rounded-xl p-4 shadow-2xl border border-white/10">
-            <p className="text-[11.5px] font-bold text-white mb-2">{type}</p>
-            {isCapability ? (
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Projects matched because your manufacturing capabilities, certifications, or past project history align with the buyer's requirements.
-              </p>
-            ) : (
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Projects matched because products in your catalogue match what the buyer is sourcing — by molecule, CAS number, or category.
-              </p>
-            )}
+          <div className="relative bg-[#1e293b] rounded-xl p-3.5 shadow-2xl border border-white/10">
+            <p className="text-[11.5px] font-bold text-white mb-1.5">
+              {isCapability ? "Capability-Based Projects" : "Catalogue-Based Projects"}
+            </p>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {isCapability
+                ? "Projects manufacturers can pursue based on their capability fit."
+                : "Leads generated for products listed in your catalogue."}
+            </p>
           </div>
         </div>
       )}
@@ -865,34 +856,42 @@ function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
 function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
   return (
     <div className="rounded-xl border overflow-hidden"
-      style={{ background: "linear-gradient(100deg,#0d1117 0%,#0e1f15 100%)", borderColor: "#2ACB8360" }}>
-      <div className="flex items-center justify-between gap-4 px-5 py-3.5">
-        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "rgba(42,203,131,0.15)", border: "1px solid rgba(42,203,131,0.35)" }}>
-            <Check size={13} style={{ color: "#2ACB83" }} strokeWidth={2.5} />
+      style={{ background: "linear-gradient(100deg,#0d0d0d 0%,#14100a 60%,#1a1400 100%)", borderColor: "#c9a22760" }}>
+      <div className="flex items-start justify-between gap-4 px-5 py-4">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(245,200,66,0.30)" }}>
+            <span style={{ fontSize: "14px", lineHeight: 1 }}>⭐</span>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12.5px] font-bold" style={{ color: "#2ACB83" }}>Trial Access Active</span>
-            <span style={{ color: "#2ACB8360", fontSize: "10px" }}>•</span>
-            <span className="text-[12.5px]" style={{ color: "#a3c9b5" }}>
-              You can explore Exclusive Projects for the next
-              <span className="font-bold text-white mx-1">{daysLeft} days</span>
-            </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[12.5px] font-bold" style={{ color: "#f5c842" }}>Trial Access Active</span>
+              <span style={{ color: "#c9a227", fontSize: "10px" }}>•</span>
+              <span className="text-[12.5px] font-medium" style={{ color: "#e0c97a" }}>
+                You can explore Exclusive Projects for the next
+                <span className="font-bold mx-1" style={{ color: "#f5c842" }}>{daysLeft} days</span>
+              </span>
+            </div>
+            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: "#9a7d3a" }}>
+              1 proposal included during your trial access.
+            </p>
           </div>
-          <span className="text-[11.5px] hidden sm:block" style={{ color: "#5a8a72" }}>
-            1 proposal included during your trial access.
-          </span>
         </div>
-        <button
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all shrink-0"
-          style={{ background: "linear-gradient(90deg,#2ACB83,#1F6F54)", color: "#fff" }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-        >
-          <Zap size={11} />
-          Upgrade to Premium
-        </button>
+        <div className="flex items-center gap-2 shrink-0 mt-0.5">
+          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap"
+            style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
+            {daysLeft} days left
+          </span>
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
+            style={{ background: "#c9a227", color: "#111111" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
+          >
+            <Zap size={11} />
+            Upgrade Plan
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1159,8 +1158,10 @@ export function ProjectsListing() {
           );
         })()}
 
-        {/* ── Trial banner (global — only while trial is active) ── */}
-        {planState === "trial" && activeTab === "open" && <TrialBanner daysLeft={trialDaysLeft} />}
+        {/* ── Global exclusive state banners — shown below search for all tabs ── */}
+        {demoState === 1 && <ExclusiveTrialStrip1 daysLeft={trialDaysLeft} />}
+        {demoState === 2 && <ExclusiveTrialStrip2 daysLeft={trialDaysLeft} />}
+        {demoState === 3 && <ExclusiveExpiredStrip />}
 
         {/* ── Primary tabs ── */}
         <div className="border-b border-slate-200">
@@ -1271,16 +1272,12 @@ export function ProjectsListing() {
 
             {/* ══ STATE 1 — Trial active, no projects yet ══ */}
             {demoState === 1 && (
-              <>
-                <ExclusiveTrialStrip1 daysLeft={trialDaysLeft} />
-                <ExclusiveEmptyState onExplore={() => switchTab("open")} />
-              </>
+              <ExclusiveEmptyState onExplore={() => switchTab("open")} />
             )}
 
             {/* ══ STATE 2 — Trial active, projects available ══ */}
             {demoState === 2 && (
               <>
-                <ExclusiveTrialStrip2 daysLeft={trialDaysLeft} />
                 {filteredExclusive.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredExclusive.map(project => (
@@ -1310,7 +1307,6 @@ export function ProjectsListing() {
             {/* ══ STATE 3 — Trial expired, locked ══ */}
             {demoState === 3 && (
               <>
-                <ExclusiveExpiredStrip />
                 <div className="relative min-h-[480px]">
                   {/* Ghost cards behind blur */}
                   <div className="pointer-events-none select-none"
