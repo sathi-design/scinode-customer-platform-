@@ -566,10 +566,13 @@ function ProjectCard({
             src={project.image} alt={project.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-[1.07]"
           />
+          {/* Top scrim — ensures pills are always legible */}
+          <div className="absolute inset-x-0 top-0 h-14 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%)" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Top-right pill group */}
-          <div className="absolute top-[8px] right-[9px] flex items-center gap-1.5">
+          {/* Top-left pill group */}
+          <div className="absolute top-[8px] left-[9px] flex items-center gap-1.5">
             {/* Exclusive pill — shown only on exclusive cards */}
             {isExclusive && (
               <div
