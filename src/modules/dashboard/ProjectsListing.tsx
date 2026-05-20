@@ -670,17 +670,11 @@ function MatchedBanner({ count }: { count: number }) {
 // ─── Exclusive empty state ────────────────────────────────────────────────────
 function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
   return (
-    <div className="relative flex flex-col items-center justify-center py-14 text-center overflow-hidden rounded-2xl"
-      style={{ background: "linear-gradient(160deg,#f8fffe 0%,#f0faf5 50%,#fafafa 100%)" }}>
-      {/* Subtle dot grid pattern */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.18]" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="dotgrid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="1.5" cy="1.5" r="1.5" fill="#1F6F54" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#dotgrid)" />
-      </svg>
+    <div className="relative flex flex-col items-center justify-center py-14 text-center overflow-hidden rounded-2xl border border-[#e6f4ee]"
+      style={{ background: "linear-gradient(145deg,rgba(31,111,84,0.06) 0%,rgba(42,203,131,0.04) 50%,rgba(255,255,255,0.10) 100%), #ffffff" }}>
+      {/* Subtle green radial glow behind icon */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[420px] h-[240px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at 50% 0%,rgba(42,203,131,0.10) 0%,transparent 70%)" }} />
 
       {/* Illustration */}
       <div className="relative mb-7">
@@ -728,21 +722,21 @@ function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={onExplore}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all whitespace-nowrap"
             style={{ background: "#1F6F54" }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
           >
-            Explore Capability-Based Projects <ArrowUpRight size={14} />
+            Explore Open Projects <ArrowUpRight size={14} />
           </button>
           <button
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold transition-all border"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold transition-all border whitespace-nowrap"
             style={{ borderColor: "#d1d5db", color: "#374151", background: "white" }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = "#1F6F54")}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = "#d1d5db")}
           >
             <UserCheck size={14} />
-            Complete Manufacturing Profile
+            Complete Profile
           </button>
         </div>
       </div>
