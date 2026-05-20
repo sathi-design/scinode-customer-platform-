@@ -94,22 +94,14 @@ function generateOpenProjects(count: number, offset = 0): Project[] {
 // ─── Filter drawer sections ───────────────────────────────────────────────────
 const FILTER_SECTIONS: { id: keyof DrawerFilters; label: string; options: string[] }[] = [
   {
-    id: "matchType",      label: "Project Match Type",
-    options: ["Capability-Based", "Catalogue-Based"],
+    id: "matchType",      label: "Type of Project",
+    options: ["RFQ", "Co Development", "Contract Manufacturing"],
   },
   {
     id: "industry",       label: "Industry",
     options: ["Agro Chemical", "Pharmaceutical", "Industrial Chemicals", "Flavors & Fragrances",
               "Beauty & Personal Care", "Food & Nutrition", "Dyes and Pigments", "Oleochemicals",
               "Metallurgy Chemicals", "Elemental Derivatives"],
-  },
-  {
-    id: "capabilityType", label: "Capability Type",
-    options: ["Custom Synthesis", "CMO / CDMO", "Scale-up", "Tech Transfer", "API Manufacturing", "Fermentation"],
-  },
-  {
-    id: "batchScale",     label: "Batch Scale",
-    options: ["< 10 kg", "10–100 kg", "100 kg – 1 MT", "1–10 MT", "> 10 MT"],
   },
   {
     id: "geography",      label: "Geography",
@@ -122,10 +114,6 @@ const FILTER_SECTIONS: { id: keyof DrawerFilters; label: string; options: string
   {
     id: "deadline",       label: "Proposal Deadline",
     options: ["< 7 days", "7–14 days", "14–30 days", "> 30 days"],
-  },
-  {
-    id: "projectType",    label: "Project Type",
-    options: ["RFQ", "CMO", "Tech Transfer", "Scale-up", "Open Projects"],
   },
 ];
 
