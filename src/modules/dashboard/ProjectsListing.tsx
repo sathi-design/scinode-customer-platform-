@@ -95,7 +95,7 @@ function generateOpenProjects(count: number, offset = 0): Project[] {
 const FILTER_SECTIONS: { id: keyof DrawerFilters; label: string; options: string[] }[] = [
   {
     id: "matchType",      label: "Type of Project",
-    options: ["RFQ", "Co Development", "Contract Manufacturing"],
+    options: ["Capability-Based", "Catalogue-Based"],
   },
   {
     id: "industry",       label: "Industry",
@@ -374,9 +374,11 @@ function FilterDrawer({
                   <div className="px-5 pb-3 flex flex-col gap-0.5">
                     {section.options.map(opt => {
                       const checked = filters[section.id].includes(opt);
+                      const isCapabilityOption = section.id === "matchType" && opt === "Capability-Based";
+                      const capSubOptions = ["RFQ", "Co Development", "Contract Manufacturing"];
                       return (
+                        <div key={opt}>
                         <label
-                          key={opt}
                           className="flex items-center gap-2.5 py-1.5 cursor-pointer group/opt"
                           onClick={() => onToggle(section.id, opt)}
                         >
@@ -396,6 +398,42 @@ function FilterDrawer({
                             {opt}
                           </span>
                         </label>
+
+                        {/* Nested sub-options for Capability-Based */}
+                        {isCapabilityOption && checked && (
+                          <div className="ml-6 mb-1 mt-0.5 flex flex-col gap-0.5 border-l-2 border-[#1F6F54]/20 pl-3">
+                            <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide py-1">
+                              Capability Type
+                            </p>
+                            {capSubOptions.map(sub => {
+                              const subChecked = filters.capabilityType.includes(sub);
+                              return (
+                                <label
+                                  key={sub}
+                                  className="flex items-center gap-2.5 py-1.5 cursor-pointer group/sub"
+                                  onClick={e => { e.stopPropagation(); onToggle("capabilityType", sub); }}
+                                >
+                                  <div
+                                    className="w-3.5 h-3.5 rounded flex items-center justify-center flex-shrink-0 border transition-all duration-150"
+                                    style={{
+                                      background:  subChecked ? "#0E6F5C" : "#fff",
+                                      borderColor: subChecked ? "#0E6F5C" : "#d1d5db",
+                                    }}
+                                  >
+                                    {subChecked && <Check size={9} color="#fff" strokeWidth={3} />}
+                                  </div>
+                                  <span className={cn(
+                                    "text-[12px] transition-colors",
+                                    subChecked ? "text-[#0E6F5C] font-medium" : "text-[#374151] group-hover/sub:text-[#09090b]",
+                                  )}>
+                                    {sub}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                        </div>
                       );
                     })}
                   </div>
