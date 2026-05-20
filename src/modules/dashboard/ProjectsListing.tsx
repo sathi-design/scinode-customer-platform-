@@ -530,17 +530,36 @@ function ProjectCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Match type pill — top-right of image */}
-          {displayMT && (
-            <div className="absolute top-[8px] right-[9px] px-2 py-[3px] rounded-full text-[9px] font-semibold"
-              style={{
-                background: displayMT === "Capability-Based" ? "rgba(14,111,92,0.88)" : "rgba(99,55,199,0.88)",
-                color: "#fff",
-                backdropFilter: "blur(4px)",
-              }}>
-              {displayMT === "Capability-Based" ? "Capability" : "Catalogue"}
-            </div>
-          )}
+          {/* Top-right pill group */}
+          <div className="absolute top-[8px] right-[9px] flex items-center gap-1.5">
+            {/* Exclusive pill — shown only on exclusive cards */}
+            {isExclusive && (
+              <div
+                className="flex items-center gap-[4px] px-2 py-[3px] rounded-full text-[9px] font-bold"
+                style={{
+                  background: "linear-gradient(135deg, #111111 0%, #1a1400 100%)",
+                  color: "#f5c842",
+                  border: "1px solid #c9a22766",
+                  backdropFilter: "blur(4px)",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                <span style={{ fontSize: "9px", lineHeight: 1 }}>⭐</span>
+                Exclusive
+              </div>
+            )}
+            {/* Match type pill */}
+            {displayMT && (
+              <div className="px-2 py-[3px] rounded-full text-[9px] font-semibold"
+                style={{
+                  background: displayMT === "Capability-Based" ? "rgba(14,111,92,0.88)" : "rgba(99,55,199,0.88)",
+                  color: "#fff",
+                  backdropFilter: "blur(4px)",
+                }}>
+                {displayMT === "Capability-Based" ? "Capability" : "Catalogue"}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Industry pill */}
