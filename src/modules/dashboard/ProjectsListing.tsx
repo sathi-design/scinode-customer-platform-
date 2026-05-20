@@ -21,7 +21,7 @@ const PROPOSALS_USED                   = 0;   // 0 = 1 remaining, 1+ = limit rea
 // ─── Types ────────────────────────────────────────────────────────────────────
 type PlanState      = "trial" | "trial_used" | "trial_expired" | "growth" | "scale";
 type ExclusiveState = "empty" | "available" | "locked";
-type MatchType      = "Capability-Based" | "Catalogue-Based";
+type MatchType      = "Capability-Based" | "Product Catalogue-Based";
 type TabType        = "open" | "exclusive";
 
 interface Project {
@@ -71,7 +71,7 @@ const OPEN_SEED: Project[] = ALL_PROJECTS.map((p, i) => ({
   industry: p.industry,
   title: p.title,
   description: p.description,
-  matchType: (i % 3 === 0 ? "Catalogue-Based" : "Capability-Based") as MatchType,
+  matchType: (i % 3 === 0 ? "Product Catalogue-Based" : "Capability-Based") as MatchType,
 }));
 
 const EXCLUSIVE_PROJECTS: Project[] = ALL_PROJECTS.map((p, i) => ({
@@ -81,7 +81,7 @@ const EXCLUSIVE_PROJECTS: Project[] = ALL_PROJECTS.map((p, i) => ({
   industry: p.industry,
   title: p.title,
   description: p.description,
-  matchType: (i % 2 === 0 ? "Capability-Based" : "Catalogue-Based") as MatchType,
+  matchType: (i % 2 === 0 ? "Capability-Based" : "Product Catalogue-Based") as MatchType,
 }));
 
 function generateOpenProjects(count: number, offset = 0): Project[] {
@@ -95,7 +95,7 @@ function generateOpenProjects(count: number, offset = 0): Project[] {
 const FILTER_SECTIONS: { id: keyof DrawerFilters; label: string; options: string[] }[] = [
   {
     id: "matchType",      label: "Type of Project",
-    options: ["Capability-Based", "Catalogue-Based"],
+    options: ["Capability-Based", "Product Catalogue-Based"],
   },
   {
     id: "industry",       label: "Industry",
@@ -248,7 +248,7 @@ function OpenProjectsInfoTooltip() {
 }
 
 // ─── Match type info tooltips ─────────────────────────────────────────────────
-function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Catalogue-Based" }) {
+function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Product Catalogue-Based" }) {
   const [show, setShow] = useState(false);
   const isCapability = type === "Capability-Based";
   return (
@@ -597,7 +597,7 @@ function ProjectCard({
                   color: "#fff",
                   backdropFilter: "blur(4px)",
                 }}>
-                {displayMT === "Capability-Based" ? "Capability" : "Catalogue"}
+                {displayMT === "Capability-Based" ? "Capability" : "Product Catalogue"}
               </div>
             )}
           </div>
@@ -1001,7 +1001,7 @@ export function ProjectsListing() {
         <div className="flex items-center gap-2 mt-2">
           {/* Segmented control wrapper */}
           <div className="flex items-center p-[3px] bg-[#f4f4f5] rounded-[8px] border border-[#e4e4e7]">
-            {(["all", "Capability-Based", "Catalogue-Based"] as const).map(opt => (
+            {(["all", "Capability-Based", "Product Catalogue-Based"] as const).map(opt => (
               <button
                 key={opt}
                 onClick={() => setMatchTypeFilter(opt)}
@@ -1010,7 +1010,7 @@ export function ProjectsListing() {
                   matchTypeFilter === opt
                     ? opt === "Capability-Based"
                       ? "bg-[#0E6F5C] text-white shadow-sm"
-                      : opt === "Catalogue-Based"
+                      : opt === "Product Catalogue-Based"
                       ? "bg-[#6237C7] text-white shadow-sm"
                       : "bg-white text-[#18181b] shadow-sm"
                     : "text-[#62748e] hover:text-[#374151]",
