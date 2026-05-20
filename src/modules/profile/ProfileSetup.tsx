@@ -21,7 +21,7 @@ import { TermsCondition }         from "./tabs/TermsCondition";
 // ─── Tab config ───────────────────────────────────────────────────────────────
 const TABS = [
   { id: "company",    label: "Company Profile",          Icon: Building2,   step: "COMPANY PROFILE",    subtitle: "A complete profile builds trust and helps buyers understand who you are at a glance." },
-  { id: "products",   label: "Products",                 Icon: Package,     step: "PRODUCTS",           subtitle: "Adding your products boosts visibility and helps you attract more relevant leads." },
+  { id: "products",   label: "Product Catalogue",        Icon: Package,     step: "PRODUCT CATALOGUE",  subtitle: "Adding your products boosts visibility and helps you attract more relevant buyer demand." },
   { id: "licences",   label: "Licenses & Certifications",Icon: Award,       step: "LICENSES",           subtitle: "Showcasing your credentials builds credibility and reassures potential buyers." },
   { id: "reactors",   label: "Reactors",                 Icon: FlaskConical,step: "REACTORS",           subtitle: "Accurate reactor data helps match you to projects with specific manufacturing needs." },
   { id: "equipments", label: "Equipments",               Icon: Wrench,      step: "EQUIPMENTS",         subtitle: "Listing your equipment capability increases your eligibility for complex projects." },

@@ -1,16 +1,23 @@
 "use client";
 
-import {
-  useState, useEffect, useRef, useCallback, ChangeEvent,
+import React, {
+  useState, useEffect, useRef, useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
   X, ChevronDown, Upload, Trash2, FileText, List,
-  Send, CheckCircle2, Clock, ClipboardList,
+  Send, CheckCircle2, Clock, ClipboardList, Lock,
+  AlertTriangle, Zap, ArrowRight, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectDetail } from "@/lib/projectsData";
 import { useProposalStore } from "@/store/useProposalStore";
+
+// ─── Demo state types ─────────────────────────────────────────────────────────
+type DrawerDemo = 1 | 2 | 3;
+// 1 = Trial active, proposal available
+// 2 = Proposal submitted, limit used
+// 3 = Trial expired, form locked
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ProposalType = "CMO" | "RFQ";
@@ -366,6 +373,168 @@ function FileUploadZone({
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEMO STATE COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Demo switcher ────────────────────────────────────────────────────────────
+function DrawerDemoSwitcher({ current, onChange }: { current: DrawerDemo; onChange: (s: DrawerDemo) => void }) {
+  const labels: Record<DrawerDemo, string> = { 1: "Trial Active", 2: "Limit Reached", 3: "Trial Expired" };
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#e4e4e7] bg-[#fafafa]">
+      <span className="text-[9.5px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
+      <div className="flex items-center gap-1">
+        {([1, 2, 3] as const).map(s => (
+          <button key={s} onClick={() => onChange(s)}
+            className={cn(
+              "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
+              current === s ? "bg-[#020202] text-white" : "text-[#6b7280] hover:bg-[#f0f0f0]",
+            )}>
+            {labels[s]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── State banners ────────────────────────────────────────────────────────────
+function TrialActiveBanner({ proposalsRemaining = 1, total = 1 }: { proposalsRemaining?: number; total?: number }) {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#f0fdf4] border border-[#86efac]/50">
+      <div className="w-6 h-6 rounded-full bg-[#1F6F54]/15 flex items-center justify-center shrink-0 mt-0.5">
+        <CheckCircle2 size={13} className="text-[#1F6F54]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold text-[#1F6F54]">Your free trial is active</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1F6F54] text-white">
+            Free Trial Active
+          </span>
+        </div>
+        <p className="text-[12px] text-[#15803d] mt-0.5 leading-[18px]">
+          <span className="font-bold">{proposalsRemaining} of {total} proposal</span> remaining.
+          Submit before your trial expires.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function LimitReachedBanner() {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#fff7ed] border border-[#fed7aa]/60">
+      <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
+        <AlertTriangle size={13} className="text-orange-500" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold text-orange-700">Free trial proposal limit reached</span>
+        </div>
+        <p className="text-[12px] text-orange-600 mt-0.5 leading-[18px]">
+          You've used your 1 free proposal.
+          Upgrade to continue participating in buyer opportunities.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TrialExpiredBanner() {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#fff1f2] border border-[#fecdd3]/60">
+      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+        <ShieldAlert size={13} className="text-red-500" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold text-red-700">Your 14-day free trial has expired</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
+            Trial Expired
+          </span>
+        </div>
+        <p className="text-[12px] text-red-600 mt-0.5 leading-[18px]">
+          Upgrade your plan to continue submitting proposals and accessing exclusive buyer opportunities.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Confetti piece ───────────────────────────────────────────────────────────
+function ConfettiPiece({ x, color, delay, size }: { x: number; color: string; delay: number; size: number }) {
+  return (
+    <div
+      className="absolute top-0 rounded-sm pointer-events-none"
+      style={{
+        left: `${x}%`,
+        width: size,
+        height: size * 0.6,
+        background: color,
+        animation: `confettiFall 1.4s ease-in ${delay}s forwards`,
+        opacity: 0,
+      }}
+    />
+  );
+}
+
+const CONFETTI_COLORS = ["#2ACB83","#1F6F54","#f5c842","#0077CC","#E36389","#6237C7","#FD4923","#10b981"];
+
+// ─── Success overlay (State 2 transition) ─────────────────────────────────────
+function SuccessOverlay({ onDone }: { onDone: () => void }) {
+  const pieces = React.useMemo(() =>
+    Array.from({ length: 28 }, (_, i) => ({
+      x: Math.random() * 100,
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      delay: Math.random() * 0.5,
+      size: 6 + Math.random() * 7,
+    })), []);
+
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm rounded-[14px] overflow-hidden">
+      <style>{`
+        @keyframes confettiFall {
+          0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(240px) rotate(360deg); opacity: 0; }
+        }
+      `}</style>
+      {pieces.map((p, i) => <ConfettiPiece key={i} {...p} />)}
+      <div className="flex flex-col items-center gap-3 text-center px-6 relative z-10">
+        <div className="w-16 h-16 rounded-full bg-[#e8faf2] flex items-center justify-center animate-in zoom-in-50 duration-300">
+          <CheckCircle2 size={36} className="text-[#1F6F54]" />
+        </div>
+        <p className="text-[17px] font-bold text-[#020202] mt-1">Proposal submitted!</p>
+        <p className="text-[13px] text-[#62748e] leading-[20px] max-w-[260px]">
+          You've used your free trial proposal. Upgrade to submit unlimited proposals.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Locked form overlay (State 3) ────────────────────────────────────────────
+function LockedFormOverlay() {
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[14px]"
+      style={{ background: "rgba(249,250,251,0.82)", backdropFilter: "blur(3px)" }}>
+      <div className="flex flex-col items-center gap-3 text-center px-6">
+        <div className="w-12 h-12 rounded-full bg-[#f3f4f6] border border-[#e4e4e7] flex items-center justify-center">
+          <Lock size={20} className="text-[#9ca3af]" />
+        </div>
+        <p className="text-[13.5px] font-semibold text-[#374151]">Proposal submissions locked</p>
+        <p className="text-[12px] text-[#9ca3af] max-w-[220px] leading-[18px]">
+          Locked after trial expiry. Upgrade to unlock.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── CMO Form ─────────────────────────────────────────────────────────────────
 function CMOForm({
   form,
@@ -373,15 +542,18 @@ function CMOForm({
   files,
   onAddFiles,
   onRemoveFile,
+  disabled,
 }: {
   form: FormState;
   set: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   files: UploadedFile[];
   onAddFiles: (f: UploadedFile[]) => void;
   onRemoveFile: (id: string) => void;
+  disabled?: boolean;
 }) {
+  const disabledCls = disabled ? "opacity-50 pointer-events-none select-none" : "";
   return (
-    <div className="flex flex-col gap-5">
+    <div className={cn("flex flex-col gap-5", disabledCls)}>
       {/* Proposed Quantity */}
       <FormGroup>
         <FormLabel required>Proposed Quantity</FormLabel>
@@ -461,15 +633,18 @@ function RFQForm({
   files,
   onAddFiles,
   onRemoveFile,
+  disabled,
 }: {
   form: FormState;
   set: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   files: UploadedFile[];
   onAddFiles: (f: UploadedFile[]) => void;
   onRemoveFile: (id: string) => void;
+  disabled?: boolean;
 }) {
+  const disabledCls = disabled ? "opacity-50 pointer-events-none select-none" : "";
   return (
-    <div className="flex flex-col gap-5">
+    <div className={cn("flex flex-col gap-5", disabledCls)}>
       {/* Proposed Quantity */}
       <FormGroup>
         <FormLabel required>Proposed Quantity</FormLabel>
@@ -614,6 +789,14 @@ export function ProposalDrawer({
   const proposalType = getProposalType(project);
   const storageKey = `proposal_draft_${project.projectId}`;
 
+  // ── Demo state ─────────────────────────────────────────────────────────────
+  const [drawerDemo, setDrawerDemo] = useState<DrawerDemo>(1);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Derived from demo state
+  const isFormLocked = drawerDemo === 3;
+  const isLimitReached = drawerDemo === 2;
+
   // ── Form state ─────────────────────────────────────────────────────────────
   const [form, setForm] = useState<FormState>(() => {
     const parsed = parseQty(project.quantity);
@@ -718,10 +901,83 @@ export function ProposalDrawer({
       revisions: [],
     });
     localStorage.removeItem(storageKey);
+    // Show confetti success overlay, then advance demo to state 2
+    setShowSuccess(true);
     setSubmitted(true);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
+  // Footer CTAs — derived from demo state
+  const renderFooter = () => {
+    // After real submit (confetti done) → same as state 2
+    if (submitted || isLimitReached) {
+      return (
+        <div className="flex flex-col gap-2.5">
+          <button
+            onClick={() => { onClose(); router.push("/dashboard/proposals"); }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[13.5px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
+          >
+            <ClipboardList className="w-4 h-4" /> View Submitted Proposal
+          </button>
+          <button
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13.5px] font-bold text-[#020202] transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 14px rgba(245,200,66,0.45)" }}
+          >
+            <Zap size={14} /> Upgrade to Premium
+          </button>
+          <p className="text-[11.5px] text-[#9ca3af] text-center leading-[17px]">
+            Upgrade your plan to continue participating in buyer opportunities.
+          </p>
+        </div>
+      );
+    }
+    if (isFormLocked) {
+      return (
+        <div className="flex flex-col gap-2.5">
+          <button
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13.5px] font-bold text-[#020202] transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 14px rgba(245,200,66,0.45)" }}
+          >
+            <Zap size={14} /> Upgrade to Send Proposal
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-[10px] border border-[#e4e4e7] text-[13px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
+          >
+            View Plans
+          </button>
+        </div>
+      );
+    }
+    // State 1 — normal
+    return (
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[13.5px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex-[2] flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13.5px] font-semibold transition-colors shadow-sm"
+          >
+            <Send className="w-4 h-4" /> Submit Proposal
+          </button>
+        </div>
+        <button
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[10px] border border-[#e4e4e7] text-[12.5px] font-medium text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
+        >
+          <ArrowRight size={13} /> Upgrade to Premium
+        </button>
+        <p className="text-[11.5px] text-[#9ca3af] text-center">
+          Unlock more proposals and exclusive projects with Growth Access.
+        </p>
+      </div>
+    );
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -744,75 +1000,70 @@ export function ProposalDrawer({
       >
         {/* ── Fixed Header ──────────────────────────────────────────────── */}
         <div className="flex-shrink-0 bg-white border-b border-[#e4e4e7] shadow-sm">
-          {/* Drawer title row */}
+          {/* Title row */}
           <div className="flex items-center justify-between px-5 py-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-[10px] bg-[#f0faf5] flex items-center justify-center">
                 <Send className="w-4 h-4 text-[#1F6F54]" />
               </div>
               <div>
-                <h2 className="text-[15px] font-bold text-[#020202] leading-tight">
-                  Submit Proposal
-                </h2>
-                <p className="text-[11px] text-[#9ca3af]">
-                  {proposalType} · {project.industry}
-                </p>
+                <h2 className="text-[15px] font-bold text-[#020202] leading-tight">Submit Proposal</h2>
+                <p className="text-[11px] text-[#9ca3af]">{proposalType} · {project.industry}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Auto-save indicator */}
-              {!submitted && (
+              {!submitted && !isLimitReached && !isFormLocked && (
                 <span className={cn(
                   "flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full",
-                  saved
-                    ? "bg-[#f0faf5] text-[#1F6F54]"
-                    : "bg-[#fef3c7] text-[#92400e]",
+                  saved ? "bg-[#f0faf5] text-[#1F6F54]" : "bg-[#fef3c7] text-[#92400e]",
                 )}>
-                  {saved
-                    ? <><CheckCircle2 className="w-3 h-3" /> Saved</>
-                    : <><Clock className="w-3 h-3" /> Saving…</>
-                  }
+                  {saved ? <><CheckCircle2 className="w-3 h-3" /> Saved</> : <><Clock className="w-3 h-3" /> Saving…</>}
                 </span>
               )}
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#71717a] hover:bg-[#f3f4f6] hover:text-[#020202] transition-colors"
-              >
+              <button onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#71717a] hover:bg-[#f3f4f6] hover:text-[#020202] transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Project summary card */}
-          <div className="mx-5 mb-4 rounded-[12px] border border-[#e4e4e7] bg-[#f9fafb] p-3 flex items-center gap-3">
+          {/* Project card */}
+          <div className="mx-5 mb-3 rounded-[12px] border border-[#e4e4e7] bg-[#f9fafb] p-3 flex items-center gap-3">
             <div className="w-[56px] h-[44px] rounded-[8px] overflow-hidden flex-shrink-0 bg-[#cfd8dc]">
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-[#020202] line-clamp-1 leading-tight">
-                {project.title}
-              </p>
-              <p className="text-[11px] text-[#62748e] mt-0.5">
-                {project.projectId}
-              </p>
+              <p className="text-[13px] font-semibold text-[#020202] line-clamp-1 leading-tight">{project.title}</p>
+              <p className="text-[11px] text-[#62748e] mt-0.5">{project.projectId}</p>
             </div>
             <span className={cn(
               "flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border",
-              submitted
+              (submitted || isLimitReached)
                 ? "bg-[#f0faf5] text-[#1F6F54] border-[#bbf7d0]"
                 : "bg-[#fef3c7] text-[#92400e] border-[#fde68a]",
             )}>
-              {submitted ? "Submitted" : "Draft"}
+              {(submitted || isLimitReached) ? "Submitted" : "Draft"}
             </span>
+          </div>
+
+          {/* Demo switcher */}
+          <div className="px-5 pb-3">
+            <DrawerDemoSwitcher current={drawerDemo} onChange={(s) => {
+              setDrawerDemo(s);
+              if (s !== 2) { setSubmitted(false); setShowSuccess(false); }
+              if (s === 2) { setSubmitted(true); }
+            }} />
           </div>
         </div>
 
         {/* ── Scrollable Form Body ───────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
+        <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+
+          {/* ── State banner ── */}
+          {drawerDemo === 1 && !submitted && <TrialActiveBanner />}
+          {(drawerDemo === 2 || (drawerDemo === 1 && submitted)) && <LimitReachedBanner />}
+          {drawerDemo === 3 && <TrialExpiredBanner />}
+
           {/* Type badge */}
           <div className="flex items-center gap-2">
             <span className={cn(
@@ -824,69 +1075,39 @@ export function ProposalDrawer({
               {proposalType} Proposal
             </span>
             <span className="text-[12px] text-[#9ca3af]">
-              Fill all required fields to submit
+              {isFormLocked ? "Form locked — trial expired" : isLimitReached || submitted ? "Read-only — proposal submitted" : "Fill all required fields to submit"}
             </span>
           </div>
 
-          {/* Dynamic form */}
-          <div className="bg-white rounded-[14px] border border-[#e4e4e7] p-5 shadow-[0px_1px_4px_rgba(0,0,0,0.06)]">
+          {/* Form with optional overlays */}
+          <div className="relative bg-white rounded-[14px] border border-[#e4e4e7] p-5 shadow-[0px_1px_4px_rgba(0,0,0,0.06)]">
+            {/* Confetti success overlay (state 1 → 2 transition) */}
+            {showSuccess && (
+              <SuccessOverlay onDone={() => {
+                setShowSuccess(false);
+                setDrawerDemo(2);
+              }} />
+            )}
+            {/* Locked overlay (state 3) */}
+            {isFormLocked && <LockedFormOverlay />}
+
             {proposalType === "RFQ" ? (
-              <RFQForm
-                form={form}
-                set={set}
-                files={files}
-                onAddFiles={handleAddFiles}
-                onRemoveFile={handleRemoveFile}
-              />
+              <RFQForm form={form} set={set} files={files}
+                onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile}
+                disabled={isFormLocked || isLimitReached || submitted} />
             ) : (
-              <CMOForm
-                form={form}
-                set={set}
-                files={files}
-                onAddFiles={handleAddFiles}
-                onRemoveFile={handleRemoveFile}
-              />
+              <CMOForm form={form} set={set} files={files}
+                onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile}
+                disabled={isFormLocked || isLimitReached || submitted} />
             )}
           </div>
 
-          {/* Bottom spacing */}
           <div className="h-2" />
         </div>
 
         {/* ── Fixed Footer ───────────────────────────────────────────────── */}
-        <div className="flex-shrink-0 bg-white border-t border-[#e4e4e7] px-5 py-4 flex items-center justify-between gap-3">
-          {submitted ? (
-            <>
-              {/* Success state footer */}
-              <button
-                onClick={onClose}
-                className="flex-1 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[14px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] hover:text-[#353535] transition-colors"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => { onClose(); router.push("/dashboard/proposals"); }}
-                className="flex-[2] flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[14px] font-semibold transition-colors shadow-sm"
-              >
-                <ClipboardList className="w-4 h-4" /> Track your Proposal
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={onClose}
-                className="flex-1 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[14px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] hover:text-[#353535] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="flex-[2] flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[14px] font-semibold transition-colors shadow-sm"
-              >
-                <Send className="w-4 h-4" /> Submit Proposal
-              </button>
-            </>
-          )}
+        <div className="flex-shrink-0 bg-white border-t border-[#e4e4e7] px-5 py-4">
+          {renderFooter()}
         </div>
       </div>
     </>

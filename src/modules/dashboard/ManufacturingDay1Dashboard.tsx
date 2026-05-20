@@ -2103,7 +2103,7 @@ function ExpertTeamIllustration() {
 function ExpertCTASection() {
   return (
     <section className="relative overflow-hidden rounded-[16px] px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-10"
-      style={{ background: "linear-gradient(to right, #182133, #016358)" }}>
+      style={{ background: "linear-gradient(135deg, #003A1B 0%, #001C08 100%)" }}>
       {/* Ambient glow */}
       <div className="pointer-events-none absolute right-[200px] top-[60px] w-[256px] h-[256px] rounded-full"
         style={{ background: "rgba(42,203,131,0.10)", filter: "blur(64px)" }} />

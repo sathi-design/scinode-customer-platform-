@@ -96,6 +96,21 @@ function DetailDemoSwitcher({ current, onChange }: { current: DetailDemoState; o
   );
 }
 
+// ─── Gold glow upgrade button (shared across locked overlay + trial card) ───────
+function GoldGlowButton({ label = "Upgrade to Premium", className = "" }: { label?: string; className?: string }) {
+  return (
+    <button
+      className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[12.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98] ${className}`}
+      style={{
+        background: "linear-gradient(90deg,#f5c842,#c9a227)",
+        boxShadow: "0 0 18px rgba(245,200,66,0.50), 0 2px 6px rgba(0,0,0,0.25)",
+      }}
+    >
+      <Zap size={13} /> {label}
+    </button>
+  );
+}
+
 // ─── Locked section overlay ────────────────────────────────────────────────────
 function LockedSection({ children }: { children: React.ReactNode }) {
   return (
@@ -119,12 +134,7 @@ function LockedSection({ children }: { children: React.ReactNode }) {
         <p className="text-[11.5px] text-slate-400 leading-relaxed mb-4 max-w-[260px]">
           Upgrade to Premium to unlock manufacturing requirements, technical specifications, and documentation.
         </p>
-        <button
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12.5px] font-bold text-[#020202] transition-all hover:brightness-110"
-          style={{ background: "linear-gradient(90deg,#f5c842,#f59e0b)" }}
-        >
-          <Zap size={13} /> Upgrade to Premium
-        </button>
+        <GoldGlowButton />
       </div>
     </div>
   );
@@ -133,7 +143,8 @@ function LockedSection({ children }: { children: React.ReactNode }) {
 // ─── Scinode Connect (inline SVGs instead of broken Figma MCP URLs) ────────────
 function ScinodeConnectCard() {
   return (
-    <div className="rounded-[12px] p-[14px] relative overflow-hidden bg-[#020202]">
+    <div className="rounded-[12px] p-[14px] relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #003A1B 0%, #001C08 100%)" }}>
       {/* Decorative background pattern */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -190,54 +201,95 @@ function ScinodeConnectCard() {
 function TrialStateCard({ demo, isExclusive }: { demo: DetailDemoState; isExclusive: boolean }) {
   if (demo === "trial-active") {
     return (
-      <div className="rounded-[14px] border border-[#c9a227]/50 bg-[#111111] p-4">
-        <div className="flex items-center gap-2 mb-2.5">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-[#f5c842]/10 border border-[#f5c842]/25 shrink-0">
-            <Clock size={13} className="text-[#f5c842]" />
+      <div className="rounded-[14px] border bg-[#0e0e0e] p-4 flex flex-col gap-3"
+        style={{ borderColor: "rgba(201,162,39,0.30)" }}>
+
+        {/* Header — white label, gold only on icon + days badge */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Clock size={13} style={{ color: "#c9a227" }} />
+            <span className="text-[13px] font-semibold text-white">Free Trial Active</span>
           </div>
-          <p className="text-[13px] font-bold text-[#f5c842] leading-snug">
-            Your 14-day trial period is active
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 mb-2.5">
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227]">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+            style={{ background: "rgba(245,200,66,0.10)", color: "#f5c842", border: "1px solid rgba(201,162,39,0.35)" }}>
             {TRIAL_DAYS_LEFT} days left
           </span>
         </div>
-        <p className="text-[11.5px] text-[#9a7d3a] leading-relaxed mb-3">
+
+        {/* Divider */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+
+        {/* Hero — "1 Proposal Included" gold pill (sole gold accent) */}
+        <div className="flex items-center gap-2.5">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-[5px] rounded-[6px] text-[11.5px] font-bold text-[#020202] shrink-0"
+            style={{
+              background: "linear-gradient(90deg,#f5c842,#c9a227)",
+              boxShadow: "0 0 10px rgba(245,200,66,0.35)",
+            }}
+          >
+            <Zap size={10} /> 1 Proposal Included
+          </span>
+          <span className="text-[11px] text-white/40">in your 14-day trial</span>
+        </div>
+
+        {/* Body — white text, no gold */}
+        <p className="text-[12px] text-white/60 leading-[19px]">
           {isExclusive
-            ? "Hurry — this exclusive project will lock after 14 days and you won't be able to send proposals."
-            : "Your free trial is active. You can currently explore and submit proposals during the trial period."}
+            ? "This exclusive project locks when your trial ends. Use your proposal now."
+            : "Submit your included proposal before the trial window closes."}{" "}
+          <span className="font-bold text-white">Don't wait.</span>
         </p>
-        <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-[12.5px] font-bold bg-[#c9a227] text-[#111111] hover:bg-[#f5c842] transition-colors">
-          <Zap size={12} /> Upgrade to Premium
+
+        {/* Primary CTA — gold glow button */}
+        <GoldGlowButton label="Upgrade to Premium" className="w-full py-2.5 text-[13px]" />
+
+        {/* Secondary — white ghost */}
+        <button className="w-full py-2 rounded-[8px] text-[12px] font-medium text-white/55 border transition-colors hover:text-white hover:border-white/30"
+          style={{ borderColor: "rgba(255,255,255,0.14)" }}>
+          Compare Plans
         </button>
       </div>
     );
   }
 
-  // Trial expired
+  // Trial expired — dark card, red accent only in status row, gold CTA on black bg (no clash)
   return (
-    <div className="rounded-[14px] border border-red-800/50 bg-[#1a0808] p-4">
-      <div className="flex items-center gap-2 mb-2.5">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center bg-red-900/40 border border-red-700/40 shrink-0">
-          <Lock size={13} className="text-red-400" />
+    <div className="rounded-[14px] border bg-[#0e0e0e] p-4 flex flex-col gap-3"
+      style={{ borderColor: "rgba(220,38,38,0.30)" }}>
+
+      {/* Header — red status only */}
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.30)" }}>
+          <Lock size={11} className="text-red-500" />
         </div>
-        <p className="text-[13px] font-bold text-red-400 leading-snug">
-          Your 14-day trial has expired
+        <span className="text-[13px] font-semibold text-red-400">Trial Expired</span>
+        <span className="text-[13px] text-white/40">— Content Locked</span>
+      </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+
+      {/* Callout — white on dark, highlight "1 proposal" */}
+      <div className="px-3 py-2.5 rounded-[8px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+        <p className="text-[12px] text-white/70 leading-[19px]">
+          You missed your{" "}
+          <span className="font-bold text-white">1 proposal</span>{" "}
+          window.{" "}
+          <span className="font-bold text-white">Upgrade now</span>{" "}
+          to unlock full access and submit unlimited proposals.
         </p>
       </div>
-      <p className="text-[11.5px] text-red-800/80 leading-relaxed mb-3">
-        Upgrade to Premium to continue accessing advanced project details, technical documents, manufacturing scope, and facility requirements.
-      </p>
-      <div className="flex flex-col gap-2">
-        <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-[12.5px] font-bold bg-red-600 text-white hover:bg-red-500 transition-colors">
-          <Zap size={12} /> Upgrade to Premium
-        </button>
-        <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-[12.5px] font-semibold border border-red-800/50 text-red-400 hover:bg-red-900/30 transition-colors">
-          Talk to Scinode Team
-        </button>
-      </div>
+
+      {/* Primary CTA — same gold glow (on black bg, no clash) */}
+      <GoldGlowButton label="Upgrade to Premium" className="w-full py-2.5 text-[13px]" />
+
+      {/* Secondary — white ghost */}
+      <button className="w-full py-2 rounded-[8px] text-[12px] font-medium text-white/55 border transition-colors hover:text-white hover:border-white/30"
+        style={{ borderColor: "rgba(255,255,255,0.14)" }}>
+        Talk to Scinode Team
+      </button>
     </div>
   );
 }
@@ -564,11 +616,11 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
               </button>
             </div>
 
-            {/* Scinode Connect */}
-            <ScinodeConnectCard />
-
             {/* Trial / Upgrade state card */}
             <TrialStateCard demo={demo} isExclusive={isExclusive} />
+
+            {/* Scinode Connect */}
+            <ScinodeConnectCard />
           </div>
         </div>
       </div>

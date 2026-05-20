@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import {
   Search, ChevronDown, X, ArrowUpRight, Sparkles,
   Info, Lock, SlidersHorizontal, ChevronRight, Check,
-  AlertCircle, Zap, UserCheck,
+  AlertCircle, Zap, UserCheck, Upload, FileSpreadsheet,
+  CheckCircle2, Package, Download, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_PROJECTS, type BadgeType } from "@/lib/projectsData";
@@ -155,12 +156,13 @@ function TrialBanner({ daysLeft }: { daysLeft: number }) {
           {daysLeft} days left
         </span>
         <button
-          className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold transition-colors"
-          style={{ background: "#c9a227", color: "#111111" }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97]"
+          style={{
+            background: "linear-gradient(90deg,#f5c842,#c9a227)",
+            boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
+          }}
         >
-          Upgrade Plan
+          <Zap size={11} /> Upgrade Plan
         </button>
         <button onClick={() => setDismissed(true)} className="transition-colors" style={{ color: "#c9a227" }}
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#f5c842")}
@@ -762,9 +764,12 @@ function ExclusiveLockedOverlay() {
           for your business capabilities and product catalogue.
         </p>
         <div className="flex flex-col gap-2">
-          <button className="w-full py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110"
-            style={{ background: "linear-gradient(90deg,#f5c842,#f59e0b)" }}>
-            Upgrade to Premium
+          <button className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(90deg,#f5c842,#c9a227)",
+              boxShadow: "0 0 18px rgba(245,200,66,0.50), 0 2px 6px rgba(0,0,0,0.25)",
+            }}>
+            <Zap size={13} /> Upgrade to Premium
           </button>
           <button className="w-full py-2.5 rounded-xl text-[13px] font-semibold border transition-colors hover:bg-white/10"
             style={{ borderColor: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.70)" }}>
@@ -844,9 +849,13 @@ function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
             {daysLeft} days left
           </span>
           <button
-            className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold bg-[#c9a227] text-[#111111] hover:bg-[#f5c842] transition-colors whitespace-nowrap"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97] whitespace-nowrap"
+            style={{
+              background: "linear-gradient(90deg,#f5c842,#c9a227)",
+              boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
+            }}
           >
-            Upgrade Plan
+            <Zap size={11} /> Upgrade Plan
           </button>
         </div>
       </div>
@@ -871,14 +880,20 @@ function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
                 You can explore Exclusive Projects for the next <span className="font-bold text-[#f5c842]">{daysLeft} days</span>
               </span>
             </div>
-            <p className="text-[11px] text-[#9a7d3a]">1 proposal included · Exclusive Projects lock when trial ends — don&apos;t wait.</p>
+            <p className="text-[11px] text-white/70">1 proposal included · Exclusive Projects lock when trial ends — don&apos;t wait.</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227] whitespace-nowrap">
             {daysLeft} days left
           </span>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold bg-[#c9a227] text-[#111111] hover:bg-[#f5c842] transition-colors whitespace-nowrap">
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97] whitespace-nowrap"
+            style={{
+              background: "linear-gradient(90deg,#f5c842,#c9a227)",
+              boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
+            }}
+          >
             <Zap size={11} /> Upgrade Plan
           </button>
         </div>
@@ -902,7 +917,7 @@ function ExclusiveExpiredStrip() {
               <span className="text-red-800 text-[10px]">•</span>
               <span className="text-[12.5px] text-red-300">Exclusive Project access is now locked</span>
             </div>
-            <p className="text-[11px] text-red-800/80 hidden sm:block">
+            <p className="text-[11px] text-white/60 hidden sm:block">
               Upgrade to Premium to continue accessing matched opportunities and submit proposals.
             </p>
           </div>
@@ -917,6 +932,406 @@ function ExclusiveExpiredStrip() {
         </div>
       </div>
     </StripShell>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCT CATALOGUE-BASED FLOW — Components
+// ═══════════════════════════════════════════════════════════════════════════════
+
+type CatDemoState = 1 | 2 | 3;
+
+// ─── Catalogue Demo Switcher ──────────────────────────────────────────────────
+function CatalogueDemoSwitcher({ current, onChange }: { current: CatDemoState; onChange: (s: CatDemoState) => void }) {
+  const labels: Record<CatDemoState, string> = {
+    1: "No Products",
+    2: "Mapping Demand",
+    3: "Demand Mapped",
+  };
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa]">
+      <span className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
+      <div className="flex items-center gap-1">
+        {([1, 2, 3] as const).map(s => (
+          <button key={s} onClick={() => onChange(s)}
+            className={cn(
+              "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
+              current === s ? "bg-[#020202] text-white" : "text-[#6b7280] hover:bg-[#f0f0f0]",
+            )}>
+            {labels[s]}
+          </button>
+        ))}
+      </div>
+      <span className="text-[10.5px] text-[#9ca3af] italic hidden sm:block">{labels[current]}</span>
+    </div>
+  );
+}
+
+// ─── Quick Add Product Drawer ─────────────────────────────────────────────────
+type QuickAddTab = "single" | "bulk";
+type BulkPhase   = "idle" | "uploading" | "parsing" | "success" | "error";
+
+function QuickAddProductDrawer({
+  open, onClose, onProductSaved, initialTab = "single",
+}: { open: boolean; onClose: () => void; onProductSaved: () => void; initialTab?: QuickAddTab }) {
+  const [tab, setTab]       = React.useState<QuickAddTab>(initialTab);
+  // Sync initial tab whenever the drawer opens
+  React.useEffect(() => { if (open) setTab(initialTab); }, [open, initialTab]);
+  const [form, setForm]     = React.useState({ name: "", casNo: "", category: "", capability: "", moq: "", capacity: "", certifications: "", description: "" });
+  const [saved, setSaved]   = React.useState(false);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [bulkPhase, setBulkPhase]   = React.useState<BulkPhase>("idle");
+  const [fileName, setFileName]     = React.useState("");
+  const [progress, setProgress]     = React.useState(0);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  const set = (k: keyof typeof form, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleSave = () => {
+    if (!form.name.trim()) return;
+    setSaved(true);
+    setTimeout(() => { setSaved(false); onProductSaved(); onClose(); resetDrawer(); }, 1400);
+  };
+
+  const handleFile = (file: File) => {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (!["xlsx", "csv", "xls"].includes(ext ?? "")) { setBulkPhase("error"); return; }
+    if (file.size > 10 * 1024 * 1024) { setBulkPhase("error"); return; }
+    setFileName(file.name); setBulkPhase("uploading"); setProgress(0);
+    const tick = setInterval(() => {
+      setProgress(p => { if (p >= 100) { clearInterval(tick); setBulkPhase("parsing"); return 100; } return p + 15; });
+    }, 100);
+    setTimeout(() => { setBulkPhase("success"); }, 2000);
+  };
+
+  const resetDrawer = () => {
+    setTab("single"); setForm({ name: "", casNo: "", category: "", capability: "", moq: "", capacity: "", certifications: "", description: "" });
+    setSaved(false); setBulkPhase("idle"); setFileName(""); setProgress(0);
+  };
+
+  const handleClose = () => { resetDrawer(); onClose(); };
+
+  if (!open) return null;
+
+  const inputCls = "w-full px-3 py-2 text-[13px] rounded-[8px] border border-[#e4e4e7] bg-white text-[#020202] placeholder:text-[#9ca3af] outline-none focus:border-[#1F6F54] focus:ring-2 focus:ring-[#1F6F54]/15 transition-all";
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/40" onClick={handleClose} />
+      {/* Drawer */}
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-[480px] bg-white shadow-2xl flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f3f4f6]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[10px] bg-[#e8faf2] flex items-center justify-center">
+              <Package size={17} className="text-[#1F6F54]" />
+            </div>
+            <div>
+              <h3 className="text-[15px] font-semibold text-[#020202]">Add to Product Catalogue</h3>
+              <p className="text-[11.5px] text-[#62748e]">Data saved to Profile → Product Catalogue</p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="p-1.5 rounded-lg text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-[#f3f4f6] px-5">
+          {(["single", "bulk"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={cn(
+                "px-4 py-3 text-[13px] font-semibold transition-all border-b-2 -mb-px",
+                tab === t ? "border-[#1F6F54] text-[#1F6F54]" : "border-transparent text-[#62748e] hover:text-[#374151]",
+              )}>
+              {t === "single" ? "Single Product" : "Bulk Upload"}
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-5">
+
+          {/* ─── Single Product Tab ─── */}
+          {tab === "single" && !saved && (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Product Name *</label>
+                <input className={inputCls} value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Ibuprofen API" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">CAS Number</label>
+                  <input className={inputCls} value={form.casNo} onChange={e => set("casNo", e.target.value)} placeholder="e.g. 15687-27-1" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Category</label>
+                  <input className={inputCls} value={form.category} onChange={e => set("category", e.target.value)} placeholder="e.g. API, Excipient" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Manufacturing Capability</label>
+                <input className={inputCls} value={form.capability} onChange={e => set("capability", e.target.value)} placeholder="e.g. Custom Synthesis, Fermentation" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">MOQ</label>
+                  <input className={inputCls} value={form.moq} onChange={e => set("moq", e.target.value)} placeholder="e.g. 50 kg" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Production Capacity</label>
+                  <input className={inputCls} value={form.capacity} onChange={e => set("capacity", e.target.value)} placeholder="e.g. 500 MT/yr" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Certifications</label>
+                <input className={inputCls} value={form.certifications} onChange={e => set("certifications", e.target.value)} placeholder="e.g. GMP, ISO 9001" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11.5px] font-semibold text-[#374151] uppercase tracking-wide">Product Description</label>
+                <textarea className={inputCls + " resize-none"} rows={3} value={form.description}
+                  onChange={e => set("description", e.target.value)} placeholder="Brief description of the product and its applications…" />
+              </div>
+            </div>
+          )}
+
+          {/* Single product success */}
+          {tab === "single" && saved && (
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-[#e8faf2] flex items-center justify-center">
+                <CheckCircle2 size={32} className="text-[#1F6F54]" />
+              </div>
+              <p className="text-[15px] font-semibold text-[#020202]">Product added successfully</p>
+              <p className="text-[13px] text-[#62748e] max-w-[280px] leading-[20px]">
+                We'll begin mapping relevant buyer demand to your product catalogue.
+              </p>
+            </div>
+          )}
+
+          {/* ─── Bulk Upload Tab ─── */}
+          {tab === "bulk" && (
+            <div className="flex flex-col gap-5">
+              <p className="text-[13px] text-[#62748e] leading-[20px]">
+                Upload your complete product catalogue. We'll process and map products to relevant buyer demand automatically.
+              </p>
+
+              {bulkPhase === "idle" && (
+                <div
+                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={e => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+                  onClick={() => fileRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-[12px] py-12 flex flex-col items-center gap-3 cursor-pointer transition-all",
+                    isDragging ? "border-[#1F6F54] bg-[#f0faf5]" : "border-[#d1d5db] hover:border-[#1F6F54]/50 hover:bg-[#fafafa]",
+                  )}
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#e8faf2] flex items-center justify-center">
+                    <FileSpreadsheet size={22} className="text-[#1F6F54]" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[14px] font-semibold text-[#020202]">Drop your file here</p>
+                    <p className="text-[12.5px] text-[#62748e] mt-0.5">
+                      or <span className="text-[#1F6F54] font-semibold underline underline-offset-2">browse files</span>
+                    </p>
+                  </div>
+                  <p className="text-[11.5px] text-[#9ca3af]">XLSX · CSV · XLS — Maximum 10 MB</p>
+                  <input ref={fileRef} type="file" accept=".xlsx,.csv,.xls" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                </div>
+              )}
+
+              {bulkPhase === "uploading" && (
+                <div className="flex flex-col gap-3 p-4 bg-[#fafafa] rounded-[10px] border border-[#e4e4e7]">
+                  <div className="flex items-center gap-3">
+                    <FileSpreadsheet size={16} className="text-[#6237C7] shrink-0" />
+                    <span className="text-[13px] font-medium text-[#020202] truncate flex-1">{fileName}</span>
+                    <span className="text-[12px] text-[#62748e]">{progress}%</span>
+                  </div>
+                  <div className="w-full h-[5px] bg-[#e4e4e7] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#1F6F54] rounded-full transition-all duration-150"
+                      style={{ width: `${progress}%` }} />
+                  </div>
+                  <p className="text-[11.5px] text-[#62748e]">Uploading…</p>
+                </div>
+              )}
+
+              {bulkPhase === "parsing" && (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <div className="w-10 h-10 rounded-full border-2 border-[#1F6F54] border-t-transparent animate-spin" />
+                  <p className="text-[13px] font-medium text-[#020202]">Parsing catalogue…</p>
+                  <p className="text-[12px] text-[#62748e]">Reading product rows and validating fields</p>
+                </div>
+              )}
+
+              {bulkPhase === "success" && (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <div className="w-14 h-14 rounded-full bg-[#e8faf2] flex items-center justify-center">
+                    <CheckCircle2 size={28} className="text-[#1F6F54]" />
+                  </div>
+                  <p className="text-[15px] font-semibold text-[#020202]">Catalogue uploaded successfully</p>
+                  <p className="text-[13px] text-[#62748e] max-w-[300px] leading-[20px]">
+                    Our system is processing your products for demand matching. You'll be notified once matching begins.
+                  </p>
+                  <button onClick={() => { setBulkPhase("idle"); setFileName(""); setProgress(0); onProductSaved(); onClose(); resetDrawer(); }}
+                    className="mt-2 px-5 py-2 rounded-[8px] bg-[#1F6F54] text-white text-[13px] font-semibold hover:bg-[#185C45] transition-colors">
+                    Done
+                  </button>
+                </div>
+              )}
+
+              {bulkPhase === "error" && (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#ffefef] flex items-center justify-center">
+                    <AlertCircle size={24} className="text-[#C30E1A]" />
+                  </div>
+                  <p className="text-[13.5px] font-semibold text-[#020202]">Upload failed</p>
+                  <p className="text-[12.5px] text-[#62748e]">Please upload a valid .xlsx or .csv file under 10 MB.</p>
+                  <button onClick={() => { setBulkPhase("idle"); setFileName(""); setProgress(0); }}
+                    className="mt-1 px-4 py-2 rounded-[8px] border border-[#e4e4e7] text-[13px] font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors">
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {bulkPhase === "idle" && (
+                <button className="flex items-center justify-center gap-2 text-[12.5px] font-medium text-[#0077CC] hover:text-[#005fa3] transition-colors">
+                  <Download size={13} /> Download Sample Template
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer — single product only */}
+        {tab === "single" && !saved && (
+          <div className="px-5 py-4 border-t border-[#f3f4f6] flex items-center justify-between gap-3">
+            <p className="text-[11.5px] text-[#9ca3af] leading-[17px]">
+              Saved data goes to Profile → Product Catalogue
+            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={handleClose}
+                className="px-3.5 py-2 rounded-[8px] border border-[#e4e4e7] text-[13px] font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleSave} disabled={!form.name.trim()}
+                className="px-4 py-2 rounded-[8px] bg-[#1F6F54] hover:bg-[#185C45] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[13px] font-semibold transition-colors">
+                Save Product
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ─── State 1 — No products added ─────────────────────────────────────────────
+function CatalogueEmptyState({
+  onAddProduct, onBulkUpload,
+}: { onAddProduct: () => void; onBulkUpload: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center gap-5 max-w-[480px] mx-auto">
+      {/* Illustration */}
+      <div className="relative w-[88px] h-[88px]">
+        <div className="absolute inset-0 rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(31,111,84,0.10) 0%,transparent 70%)" }} />
+        <div className="absolute inset-0 rounded-full border border-[#1F6F54]/20 animate-pulse" />
+        <div className="absolute inset-3 rounded-full bg-[#e8faf2] flex items-center justify-center">
+          <Package size={28} className="text-[#1F6F54]" />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[16px] font-semibold text-[#020202]">Add your Product Catalogue</h3>
+        <p className="text-[13px] text-[#62748e] leading-[20px]">
+          This section tracks projects and demand mapped to your product catalogue.
+          It looks like you haven't added any products yet. Upload your catalogue to help us
+          match relevant buyer demand to your offerings.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap justify-center">
+        <button onClick={onAddProduct}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13px] font-semibold transition-colors shadow-sm">
+          <Plus size={14} /> Add Products
+        </button>
+        <button onClick={onBulkUpload}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] border border-[#e4e4e7] text-[#374151] text-[13px] font-medium hover:bg-[#f9fafb] transition-colors">
+          <Upload size={14} /> Bulk Upload Catalogue
+        </button>
+      </div>
+
+      <p className="text-[12px] text-[#9ca3af]">
+        Data saved to your{" "}
+        <button className="text-[#0077CC] hover:underline">Profile → Product Catalogue</button>
+      </p>
+    </div>
+  );
+}
+
+// ─── State 2 — Products added, demand mapping in progress ────────────────────
+function CatalogueMappingState({ onExploreCapability, onManageCatalogue }: {
+  onExploreCapability: () => void; onManageCatalogue: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center gap-5 max-w-[480px] mx-auto">
+      {/* Animated searching illustration */}
+      <div className="relative w-[88px] h-[88px]">
+        <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#1F6F54]/30 animate-spin"
+          style={{ animationDuration: "5s" }} />
+        <div className="absolute inset-0 rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(31,111,84,0.08) 0%,transparent 70%)" }} />
+        <div className="absolute inset-4 rounded-full bg-[#e8faf2] flex items-center justify-center">
+          <Search size={22} className="text-[#1F6F54]" />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-[#1F6F54] animate-pulse" />
+          <span className="text-[12px] font-semibold text-[#1F6F54] uppercase tracking-wide">Mapping Demand</span>
+        </div>
+        <h3 className="text-[16px] font-semibold text-[#020202]">Products added successfully</h3>
+        <p className="text-[13px] text-[#62748e] leading-[20px]">
+          Our team is identifying and mapping relevant buyer demand to your catalogue.
+          In the meantime, explore open opportunities based on your manufacturing capabilities.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap justify-center">
+        <button onClick={onExploreCapability}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13px] font-semibold transition-colors shadow-sm">
+          <ArrowUpRight size={14} /> Explore Capability-Based Projects
+        </button>
+        <button onClick={onManageCatalogue}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[8px] border border-[#e4e4e7] text-[#374151] text-[13px] font-medium hover:bg-[#f9fafb] transition-colors">
+          <Package size={14} /> Manage Product Catalogue
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── State 3 — Demand mapped banner ──────────────────────────────────────────
+function CatalogueMappedBanner({ onManageCatalogue }: { onManageCatalogue: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-[10px] bg-[#f0faf5] border border-[#1F6F54]/20">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-7 h-7 rounded-full bg-[#1F6F54]/10 flex items-center justify-center shrink-0">
+          <CheckCircle2 size={14} className="text-[#1F6F54]" />
+        </div>
+        <div className="min-w-0">
+          <span className="text-[13px] font-semibold text-[#1F6F54]">Demand mapped to your catalogue </span>
+          <span className="text-[12.5px] text-[#62748e]">— projects matched to your products are shown below</span>
+        </div>
+      </div>
+      <button onClick={onManageCatalogue}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-white border border-[#e4e4e7] text-[12px] font-semibold text-[#374151] hover:bg-[#f9fafb] transition-colors shrink-0 whitespace-nowrap">
+        <Package size={12} /> Manage Catalogue
+      </button>
+    </div>
   );
 }
 
@@ -956,6 +1371,13 @@ export function ProjectsListing() {
   // Tab + match type
   const [activeTab,       setActiveTab]       = useState<TabType>("open");
   const [matchTypeFilter, setMatchTypeFilter] = useState<"all" | MatchType>("all");
+
+  // Product Catalogue-Based demo state
+  const [catDemoState, setCatDemoState] = useState<CatDemoState>(1);
+  const [quickAddOpen,  setQuickAddOpen]  = useState(false);
+  const [quickAddTab,   setQuickAddTab]   = useState<QuickAddTab>("single");
+
+  const openQuickAdd = (tab: QuickAddTab = "single") => { setQuickAddTab(tab); setQuickAddOpen(true); };
 
   // Search + sort
   const [search, setSearch] = useState("");
@@ -1047,6 +1469,14 @@ export function ProjectsListing() {
         onToggle={toggleDrawerFilter}
         onClear={() => setDrawerFilters(EMPTY_DRAWER_FILTERS)}
         activeCount={activeFilterCount}
+      />
+
+      {/* Quick Add Product Drawer */}
+      <QuickAddProductDrawer
+        open={quickAddOpen}
+        initialTab={quickAddTab}
+        onClose={() => setQuickAddOpen(false)}
+        onProductSaved={() => setCatDemoState(2)}
       />
 
       <div className="flex flex-col gap-3 p-4 sm:p-6 pb-8 h-full overflow-y-auto">
@@ -1191,7 +1621,7 @@ export function ProjectsListing() {
                     ? opt === "Capability-Based"
                       ? "bg-[#0E6F5C] text-white shadow-sm"
                       : opt === "Product Catalogue-Based"
-                      ? "bg-[#6237C7] text-white shadow-sm"
+                      ? "bg-[#1F6F54] text-white shadow-sm"
                       : "bg-white text-[#18181b] shadow-sm"
                     : "text-[#62748e] hover:text-[#374151]",
                 )}
@@ -1209,36 +1639,98 @@ export function ProjectsListing() {
 
         {activeTab === "open" && (
           <>
+            {/* ─── Product Catalogue-Based: 3-state demo flow ─── */}
+            {matchTypeFilter === "Product Catalogue-Based" ? (
+              <div className="flex flex-col gap-4">
+                {/* Demo switcher */}
+                <CatalogueDemoSwitcher current={catDemoState} onChange={setCatDemoState} />
 
-            {filteredOpen.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredOpen.map(project => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onClick={() => router.push(`/dashboard/projects/${project.id}`)}
-                    planState={planState}
-                    proposalsUsed={proposalsUsed}
+                {/* State 1 — no products */}
+                {catDemoState === 1 && (
+                  <CatalogueEmptyState
+                    onAddProduct={() => openQuickAdd("single")}
+                    onBulkUpload={() => openQuickAdd("bulk")}
                   />
-                ))}
+                )}
+
+                {/* State 2 — products added, mapping in progress */}
+                {catDemoState === 2 && (
+                  <CatalogueMappingState
+                    onExploreCapability={() => setMatchTypeFilter("Capability-Based")}
+                    onManageCatalogue={() => openQuickAdd("single")}
+                  />
+                )}
+
+                {/* State 3 — demand mapped, show project cards */}
+                {catDemoState === 3 && (
+                  <>
+                    <CatalogueMappedBanner onManageCatalogue={() => openQuickAdd("single")} />
+                    {filteredOpen.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {filteredOpen.map(project => (
+                          <ProjectCard
+                            key={project.id}
+                            project={project}
+                            onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                            planState={planState}
+                            proposalsUsed={proposalsUsed}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-14 h-14 rounded-full bg-[#f0faf5] flex items-center justify-center mb-3">
+                          <Search className="w-6 h-6 text-[#1F6F54]" />
+                        </div>
+                        <p className="text-base font-semibold text-[#020202]">No catalogue projects found</p>
+                        <p className="text-sm text-[#62748e] mt-1">Try adjusting your search or filters.</p>
+                      </div>
+                    )}
+                    {/* Infinite scroll */}
+                    <div ref={sentinelRef} className="h-1" />
+                    {isLoading && <ScrollLoader />}
+                    {!hasMore && filteredOpen.length > 0 && (
+                      <div className="flex items-center justify-center py-4">
+                        <p className="text-sm text-[#9ca3af]">All projects loaded</p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-[#f0faf5] flex items-center justify-center mb-4">
-                  <Search className="w-7 h-7 text-[#1F6F54]" />
-                </div>
-                <p className="text-base font-semibold text-[#020202]">No projects found</p>
-                <p className="text-sm text-[#62748e] mt-1">Try adjusting your search or filters.</p>
-              </div>
-            )}
+              /* ─── Normal / Capability-Based flow ─── */
+              <>
+                {filteredOpen.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {filteredOpen.map(project => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onClick={() => router.push(`/dashboard/projects/${project.id}`)}
+                        planState={planState}
+                        proposalsUsed={proposalsUsed}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-16 h-16 rounded-full bg-[#f0faf5] flex items-center justify-center mb-4">
+                      <Search className="w-7 h-7 text-[#1F6F54]" />
+                    </div>
+                    <p className="text-base font-semibold text-[#020202]">No projects found</p>
+                    <p className="text-sm text-[#62748e] mt-1">Try adjusting your search or filters.</p>
+                  </div>
+                )}
 
-            {/* Infinite scroll */}
-            <div ref={sentinelRef} className="h-1" />
-            {isLoading && <ScrollLoader />}
-            {!hasMore && filteredOpen.length > 0 && (
-              <div className="flex items-center justify-center py-4">
-                <p className="text-sm text-[#9ca3af]">All projects loaded</p>
-              </div>
+                {/* Infinite scroll */}
+                <div ref={sentinelRef} className="h-1" />
+                {isLoading && <ScrollLoader />}
+                {!hasMore && filteredOpen.length > 0 && (
+                  <div className="flex items-center justify-center py-4">
+                    <p className="text-sm text-[#9ca3af]">All projects loaded</p>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
