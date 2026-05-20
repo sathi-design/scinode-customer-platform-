@@ -757,23 +757,23 @@ export function ProjectsListing() {
         activeCount={activeFilterCount}
       />
 
-      <div className="flex flex-col gap-5 p-4 sm:p-6 pb-8 h-full overflow-y-auto">
+      <div className="flex flex-col gap-3 p-4 sm:p-6 pb-8 h-full overflow-y-auto">
 
         {/* ── Page header ── */}
         <div>
-          <h1 className="text-[30px] font-semibold leading-[36px] tracking-[-0.225px] text-[#18181b]"
+          <h1 className="text-[26px] font-semibold leading-[32px] tracking-[-0.2px] text-[#18181b]"
             style={{ fontFamily: "Poppins, sans-serif" }}>
-            Open Projects
+            Projects
           </h1>
-          <p className="text-sm text-[#62748e] mt-1 leading-[24px] max-w-[600px]">
-            Explore manufacturing opportunities matched to your capabilities, products, and industry focus.
+          <p className="text-[13px] text-[#62748e] mt-0.5 leading-[20px] max-w-[600px]">
+            Manufacturing opportunities matched to your capabilities, products, and industry focus.
           </p>
         </div>
 
         {/* ── Search + Sort + Filters CTA ── */}
         <div className="flex items-center gap-2.5">
           {/* Search */}
-          <div className="flex-1 flex items-center gap-2 px-3 py-[10px] bg-white border border-[#e4e4e7] rounded-[6px] hover:border-[#1F6F54]/40 transition-colors focus-within:border-[#1F6F54]/60">
+          <div className="flex-1 flex items-center gap-2 px-3 py-[9px] bg-white border border-[#e4e4e7] rounded-[6px] hover:border-[#1F6F54]/40 transition-colors focus-within:border-[#1F6F54]/60">
             <Search className="w-4 h-4 text-[#71717a] flex-shrink-0" />
             <input
               type="text"
@@ -796,7 +796,7 @@ export function ProjectsListing() {
           <button
             onClick={() => setDrawerOpen(true)}
             className={cn(
-              "flex items-center gap-2 px-3.5 py-[10px] border rounded-[6px] text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 px-3.5 py-[9px] border rounded-[6px] text-sm font-medium transition-all whitespace-nowrap",
               activeFilterCount > 0
                 ? "bg-[#1F6F54] text-white border-[#1F6F54] shadow-sm"
                 : "bg-white text-[#374151] border-[#e4e4e7] hover:border-[#1F6F54]/40",
@@ -812,17 +812,49 @@ export function ProjectsListing() {
           </button>
         </div>
 
+        {/* ── Applied filter chips ── */}
+        {activeFilterCount > 0 && (() => {
+          const chips = (Object.entries(drawerFilters) as [keyof DrawerFilters, string[]][])
+            .flatMap(([key, vals]) => vals.map(v => ({ key, v })));
+          return (
+            <div className="flex items-center gap-2 flex-wrap -mt-1">
+              <span className="text-[12px] font-semibold text-[#374151] shrink-0">Applied Filters</span>
+              {chips.map(({ key, v }) => (
+                <span
+                  key={`${key}-${v}`}
+                  className="inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[4px] bg-[#f0faf5] border border-[#1F6F54]/25 text-[11.5px] font-medium text-[#1F6F54]"
+                >
+                  {v}
+                  <button
+                    onClick={() => toggleDrawerFilter(key, v)}
+                    className="ml-0.5 hover:text-[#0E6F5C] transition-colors"
+                    aria-label={`Remove ${v}`}
+                  >
+                    <X size={10} strokeWidth={2.5} />
+                  </button>
+                </span>
+              ))}
+              <button
+                onClick={() => setDrawerFilters(EMPTY_DRAWER_FILTERS)}
+                className="ml-auto text-[11.5px] font-semibold text-[#0077CC] hover:underline shrink-0"
+              >
+                Clear All
+              </button>
+            </div>
+          );
+        })()}
+
         {/* ── Trial banner ── */}
         {planState === "trial" && <TrialBanner daysLeft={trialDaysLeft} />}
 
         {/* ── Primary tabs ── */}
-        <div className="border-b border-slate-200 -mb-2">
+        <div className="border-b border-slate-200 -mb-1">
           <div className="flex items-end gap-0">
             {/* Open Projects tab */}
             <button
               onClick={() => switchTab("open")}
               className={cn(
-                "px-5 py-2.5 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
+                "px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
                 activeTab === "open"
                   ? "border-[#1F6F54] text-[#1F6F54]"
                   : "border-transparent text-[#62748e] hover:text-[#374151]",
@@ -835,7 +867,7 @@ export function ProjectsListing() {
             <button
               onClick={() => switchTab("exclusive")}
               className={cn(
-                "flex items-center gap-1.5 px-5 py-2.5 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
+                "flex items-center gap-1.5 px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
                 activeTab === "exclusive"
                   ? "border-[#1F6F54] text-[#1F6F54]"
                   : isExclusiveLocked
@@ -851,22 +883,29 @@ export function ProjectsListing() {
         </div>
 
         {/* ── Secondary match type filter ── */}
-        <div className="flex items-center gap-2">
-          {(["all", "Capability-Based", "Catalogue-Based"] as const).map(opt => (
-            <button
-              key={opt}
-              onClick={() => setMatchTypeFilter(opt)}
-              className={cn(
-                "px-3.5 py-1.5 rounded-full text-[12px] font-semibold border transition-all duration-200",
-                matchTypeFilter === opt
-                  ? "bg-[#020202] text-white border-[#020202]"
-                  : "bg-white text-[#62748e] border-[#e4e4e7] hover:border-[#374151] hover:text-[#374151]",
-              )}
-            >
-              {opt === "all" ? "All" : opt}
-            </button>
-          ))}
-          <span className="text-[11px] text-slate-400 ml-1">
+        <div className="flex items-center gap-2 -mt-1">
+          {/* Segmented control wrapper */}
+          <div className="flex items-center p-[3px] bg-[#f4f4f5] rounded-[8px] border border-[#e4e4e7]">
+            {(["all", "Capability-Based", "Catalogue-Based"] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setMatchTypeFilter(opt)}
+                className={cn(
+                  "px-4 py-[6px] rounded-[6px] text-[12.5px] font-semibold transition-all duration-200",
+                  matchTypeFilter === opt
+                    ? opt === "Capability-Based"
+                      ? "bg-[#0E6F5C] text-white shadow-sm"
+                      : opt === "Catalogue-Based"
+                      ? "bg-[#6237C7] text-white shadow-sm"
+                      : "bg-white text-[#18181b] shadow-sm"
+                    : "text-[#62748e] hover:text-[#374151]",
+                )}
+              >
+                {opt === "all" ? "All" : opt}
+              </button>
+            ))}
+          </div>
+          <span className="text-[11px] text-slate-400">
             — Filter by how projects were matched to you
           </span>
         </div>
