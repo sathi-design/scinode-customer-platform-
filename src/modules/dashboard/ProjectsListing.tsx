@@ -152,31 +152,34 @@ function TrialBanner({ daysLeft }: { daysLeft: number }) {
   if (dismissed) return null;
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border"
-      style={{ background: "linear-gradient(90deg,#fffbeb,#fef9e7)", borderColor: "#fcd34d" }}>
+      style={{ background: "linear-gradient(90deg,#111111,#1a1400)", borderColor: "#c9a227" }}>
       <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
-        <span className="text-[12px] font-bold text-amber-700 whitespace-nowrap">Free Trial Active</span>
-        <span className="text-amber-400">•</span>
-        <span className="text-[12px] text-amber-700/80">
+        <span className="text-[12px] font-bold whitespace-nowrap" style={{ color: "#f5c842" }}>Free Trial Active</span>
+        <span style={{ color: "#c9a227" }}>•</span>
+        <span className="text-[12px]" style={{ color: "#e0c97a" }}>
           Explore Exclusive Projects for 14 days. 1 proposal included during trial access.
         </span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <p className="hidden sm:block text-[11px] text-amber-600/70 italic">
+        <p className="hidden sm:block text-[11px] italic" style={{ color: "#a07e30" }}>
           After trial expiry, Exclusive Projects will lock.
         </p>
         <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border"
-          style={{ background: "#fef3c7", color: "#b45309", borderColor: "#fcd34d" }}>
+          style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
           {daysLeft} days left
         </span>
         <button
-          className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-white transition-colors"
-          style={{ background: "#d97706" }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#b45309")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#d97706")}
+          className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold transition-colors"
+          style={{ background: "#c9a227", color: "#111111" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
         >
           Upgrade Plan
         </button>
-        <button onClick={() => setDismissed(true)} className="text-amber-400 hover:text-amber-600 transition-colors">
+        <button onClick={() => setDismissed(true)} className="transition-colors" style={{ color: "#c9a227" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#f5c842")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#c9a227")}
+        >
           <X size={14} />
         </button>
       </div>
@@ -217,11 +220,74 @@ function ExclusiveInfoTooltip() {
             <p className="text-[11px] text-slate-400 leading-relaxed mt-2">
               These projects are not visible to all suppliers and are curated specifically for your business profile.
             </p>
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <p className="text-[10.5px] text-slate-500">
-                Open Projects are publicly visible opportunities available to all manufacturers.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Open Projects tooltip ────────────────────────────────────────────────────
+function OpenProjectsInfoTooltip() {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      className="relative flex items-center"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <Info size={12} className="text-slate-400 cursor-help" />
+      {show && (
+        <div
+          className="absolute bottom-full left-0 mb-2.5 w-[272px] z-50"
+          style={{ animation: "tooltipFadeIn 160ms ease both" }}
+        >
+          <div className="absolute -bottom-1.5 left-3 w-3 h-3 rotate-45 border-b border-r"
+            style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
+          <div className="relative bg-[#1e293b] rounded-xl p-4 shadow-2xl border border-white/10">
+            <p className="text-[11.5px] font-bold text-white mb-2">What are Open Projects?</p>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Open Projects are publicly visible manufacturing opportunities available to all qualified suppliers on the platform.
+            </p>
+            <p className="text-[11px] text-slate-400 leading-relaxed mt-2">
+              They are matched to you based on your capabilities, certifications, and industry focus.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Match type info tooltips ─────────────────────────────────────────────────
+function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Catalogue-Based" }) {
+  const [show, setShow] = useState(false);
+  const isCapability = type === "Capability-Based";
+  return (
+    <div
+      className="relative flex items-center"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <Info size={10} className="cursor-help" style={{ color: isCapability ? "#0E6F5C" : "#6237C7", opacity: 0.7 }} />
+      {show && (
+        <div
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-[248px] z-50"
+          style={{ animation: "tooltipFadeIn 160ms ease both" }}
+        >
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-b border-r"
+            style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
+          <div className="relative bg-[#1e293b] rounded-xl p-4 shadow-2xl border border-white/10">
+            <p className="text-[11.5px] font-bold text-white mb-2">{type}</p>
+            {isCapability ? (
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Projects matched because your manufacturing capabilities, certifications, or past project history align with the buyer's requirements.
               </p>
-            </div>
+            ) : (
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Projects matched because products in your catalogue match what the buyer is sourcing — by molecule, CAS number, or category.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -848,19 +914,20 @@ export function ProjectsListing() {
         {planState === "trial" && <TrialBanner daysLeft={trialDaysLeft} />}
 
         {/* ── Primary tabs ── */}
-        <div className="border-b border-slate-200 -mb-1">
+        <div className="border-b border-slate-200">
           <div className="flex items-end gap-0">
             {/* Open Projects tab */}
             <button
               onClick={() => switchTab("open")}
               className={cn(
-                "px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
+                "flex items-center gap-1.5 px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
                 activeTab === "open"
                   ? "border-[#1F6F54] text-[#1F6F54]"
                   : "border-transparent text-[#62748e] hover:text-[#374151]",
               )}
             >
               Open Projects
+              <OpenProjectsInfoTooltip />
             </button>
 
             {/* Exclusive Projects tab */}
@@ -883,7 +950,7 @@ export function ProjectsListing() {
         </div>
 
         {/* ── Secondary match type filter ── */}
-        <div className="flex items-center gap-2 -mt-1">
+        <div className="flex items-center gap-2 mt-2">
           {/* Segmented control wrapper */}
           <div className="flex items-center p-[3px] bg-[#f4f4f5] rounded-[8px] border border-[#e4e4e7]">
             {(["all", "Capability-Based", "Catalogue-Based"] as const).map(opt => (
@@ -891,7 +958,7 @@ export function ProjectsListing() {
                 key={opt}
                 onClick={() => setMatchTypeFilter(opt)}
                 className={cn(
-                  "px-4 py-[6px] rounded-[6px] text-[12.5px] font-semibold transition-all duration-200",
+                  "flex items-center gap-1 px-4 py-[6px] rounded-[6px] text-[12.5px] font-semibold transition-all duration-200",
                   matchTypeFilter === opt
                     ? opt === "Capability-Based"
                       ? "bg-[#0E6F5C] text-white shadow-sm"
@@ -902,12 +969,10 @@ export function ProjectsListing() {
                 )}
               >
                 {opt === "all" ? "All" : opt}
+                {opt !== "all" && <MatchTypeInfoTooltip type={opt} />}
               </button>
             ))}
           </div>
-          <span className="text-[11px] text-slate-400">
-            — Filter by how projects were matched to you
-          </span>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════════
@@ -916,7 +981,6 @@ export function ProjectsListing() {
 
         {activeTab === "open" && (
           <>
-            <MatchedBanner count={MATCHED_COUNT} />
 
             {filteredOpen.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
