@@ -476,19 +476,6 @@ function ProjectCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Type badge */}
-          {project.badge && badge && (
-            <div
-              className="absolute top-[8px] left-[9px] flex items-center gap-[5px] px-2 py-1 rounded-[39px] border border-white/30"
-              style={{ backgroundColor: badge.bg }}
-            >
-              {badge.hasStar && <StarIcon size={13} />}
-              <span className="text-[11px] font-medium leading-[20px]" style={{ color: badge.text }}>
-                {project.badge}
-              </span>
-            </div>
-          )}
-
           {/* Match type pill — top-right of image */}
           {displayMT && (
             <div className="absolute top-[8px] right-[9px] px-2 py-[3px] rounded-full text-[9px] font-semibold"
