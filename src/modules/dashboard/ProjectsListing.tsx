@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -809,136 +810,113 @@ function DemoSwitcher({ current, onChange }: { current: 1|2|3; onChange: (s: 1|2
   );
 }
 
+// ─── Shared strip shell ───────────────────────────────────────────────────────
+function StripShell({ children, borderCls, bgCls }: { children: React.ReactNode; borderCls: string; bgCls: string }) {
+  return (
+    <div className={cn("rounded-xl border", borderCls, bgCls)}>
+      {children}
+    </div>
+  );
+}
+
 // ─── State 1 strip — Trial active, no projects yet ───────────────────────────
 function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
   return (
-    <div className="rounded-xl border overflow-hidden"
-      style={{ background: "linear-gradient(100deg,#0d0d0d 0%,#14100a 60%,#1a1400 100%)", borderColor: "#c9a22760" }}>
-      <div className="flex items-start justify-between gap-4 px-5 py-4">
-        <div className="flex items-start gap-3 min-w-0 flex-1">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(245,200,66,0.30)" }}>
-            <span style={{ fontSize: "14px", lineHeight: 1 }}>⭐</span>
+    <StripShell borderCls="border-[#c9a227]/50" bgCls="bg-[#111111]">
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#f5c842]/10 border border-[#f5c842]/25">
+            <span className="text-[14px] leading-none">⭐</span>
           </div>
-          <div className="min-w-0">
+          <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12.5px] font-bold" style={{ color: "#f5c842" }}>Free Trial Active</span>
-              <span style={{ color: "#c9a227", fontSize: "10px" }}>•</span>
-              <span className="text-[12.5px] font-medium" style={{ color: "#e0c97a" }}>
-                Explore Exclusive Projects free for 14 days
-              </span>
+              <span className="text-[12.5px] font-bold text-[#f5c842]">Free Trial Active</span>
+              <span className="text-[#c9a227] text-[10px]">•</span>
+              <span className="text-[12.5px] font-medium text-[#e0c97a]">Explore Exclusive Projects free for 14 days</span>
             </div>
-            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: "#9a7d3a" }}>
+            <p className="text-[11px] text-[#9a7d3a]">
               We&apos;re curating highly matched opportunities based on your capabilities and catalogue.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 mt-0.5">
-          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap"
-            style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227] whitespace-nowrap">
             {daysLeft} days left
           </span>
           <button
-            className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
-            style={{ background: "#c9a227", color: "#111111" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
+            className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold bg-[#c9a227] text-[#111111] hover:bg-[#f5c842] transition-colors whitespace-nowrap"
           >
             Upgrade Plan
           </button>
         </div>
       </div>
-    </div>
+    </StripShell>
   );
 }
 
 // ─── State 2 strip — Trial active, projects available ────────────────────────
 function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
   return (
-    <div className="rounded-xl border overflow-hidden"
-      style={{ background: "linear-gradient(100deg,#0d0d0d 0%,#14100a 60%,#1a1400 100%)", borderColor: "#c9a22760" }}>
-      <div className="flex items-start justify-between gap-4 px-5 py-4">
-        <div className="flex items-start gap-3 min-w-0 flex-1">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(245,200,66,0.30)" }}>
-            <span style={{ fontSize: "14px", lineHeight: 1 }}>⭐</span>
+    <StripShell borderCls="border-[#c9a227]/50" bgCls="bg-[#111111]">
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#f5c842]/10 border border-[#f5c842]/25">
+            <span className="text-[14px] leading-none">⭐</span>
           </div>
-          <div className="min-w-0">
+          <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12.5px] font-bold" style={{ color: "#f5c842" }}>Trial Access Active</span>
-              <span style={{ color: "#c9a227", fontSize: "10px" }}>•</span>
-              <span className="text-[12.5px] font-medium" style={{ color: "#e0c97a" }}>
-                You can explore Exclusive Projects for the next
-                <span className="font-bold mx-1" style={{ color: "#f5c842" }}>{daysLeft} days</span>
+              <span className="text-[12.5px] font-bold text-[#f5c842]">Trial Access Active</span>
+              <span className="text-[#c9a227] text-[10px]">•</span>
+              <span className="text-[12.5px] text-[#e0c97a]">
+                You can explore Exclusive Projects for the next <span className="font-bold text-[#f5c842]">{daysLeft} days</span>
               </span>
             </div>
-            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: "#9a7d3a" }}>
-              1 proposal included during your trial access.
-            </p>
+            <p className="text-[11px] text-[#9a7d3a]">1 proposal included during your trial access.</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 mt-0.5">
-          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap"
-            style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227] whitespace-nowrap">
             {daysLeft} days left
           </span>
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
-            style={{ background: "#c9a227", color: "#111111" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
-          >
-            <Zap size={11} />
-            Upgrade Plan
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold bg-[#c9a227] text-[#111111] hover:bg-[#f5c842] transition-colors whitespace-nowrap">
+            <Zap size={11} /> Upgrade Plan
           </button>
         </div>
       </div>
-    </div>
+    </StripShell>
   );
 }
 
 // ─── State 3 strip — Trial expired ───────────────────────────────────────────
 function ExclusiveExpiredStrip() {
   return (
-    <div className="rounded-xl border overflow-hidden"
-      style={{ background: "linear-gradient(100deg,#1a0a0a 0%,#1f0e0e 100%)", borderColor: "#C30E1A60" }}>
-      <div className="flex items-center justify-between gap-4 px-5 py-3.5">
+    <StripShell borderCls="border-red-800/60" bgCls="bg-[#1a0808]">
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
         <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "rgba(195,14,26,0.15)", border: "1px solid rgba(195,14,26,0.35)" }}>
-            <AlertCircle size={13} style={{ color: "#C30E1A" }} strokeWidth={2} />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-red-900/40 border border-red-700/40">
+            <AlertCircle size={14} className="text-red-400" strokeWidth={2} />
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12.5px] font-bold" style={{ color: "#ef4444" }}>Trial Expired</span>
-            <span style={{ color: "#C30E1A60", fontSize: "10px" }}>•</span>
-            <span className="text-[12.5px]" style={{ color: "#f87171" }}>
-              Exclusive Project access is now locked
-            </span>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[12.5px] font-bold text-red-400">Trial Expired</span>
+              <span className="text-red-800 text-[10px]">•</span>
+              <span className="text-[12.5px] text-red-300">Exclusive Project access is now locked</span>
+            </div>
+            <p className="text-[11px] text-red-800/80 hidden sm:block">
+              Upgrade to Premium to continue accessing matched opportunities and submit proposals.
+            </p>
           </div>
-          <span className="text-[11.5px] hidden sm:block" style={{ color: "#9a4a4a" }}>
-            Upgrade to Premium to continue accessing matched opportunities and submit proposals.
-          </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
-            style={{ background: "#C30E1A", color: "#fff" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-          >
+          <button className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold bg-red-600 text-white hover:bg-red-500 transition-colors whitespace-nowrap">
             Upgrade to Premium
           </button>
-          <button
-            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-semibold whitespace-nowrap transition-all border"
-            style={{ borderColor: "rgba(195,14,26,0.40)", color: "#f87171", background: "transparent" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(195,14,26,0.12)")}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}
-          >
+          <button className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-semibold border border-red-800/50 text-red-400 hover:bg-red-900/30 transition-colors whitespace-nowrap">
             View Plans
           </button>
         </div>
       </div>
-    </div>
+    </StripShell>
   );
 }
 
