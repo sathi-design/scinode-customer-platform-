@@ -5,17 +5,14 @@ import { useRouter } from "next/navigation";
 import {
   Search, ChevronDown, X, ArrowUpRight, Sparkles,
   Info, Lock, SlidersHorizontal, ChevronRight, Check,
+  AlertCircle, Zap, UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_PROJECTS, type BadgeType } from "@/lib/projectsData";
 
-// ─── Dev config — change these constants to preview different states ───────────
-// planState:      "trial" | "trial_used" | "trial_expired" | "growth" | "scale"
-// exclusiveState: "empty" | "available" | "locked"
-const PLAN_STATE:        PlanState      = "trial";
-const EXCLUSIVE_STATE:   ExclusiveState = "available";
-const TRIAL_DAYS_LEFT                  = 11;
-const PROPOSALS_USED                   = 0;   // 0 = 1 remaining, 1+ = limit reached
+// ─── Demo config (driven by in-UI switcher, not static constants) ─────────────
+const TRIAL_DAYS_LEFT = 11;
+const PROPOSALS_USED  = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -673,38 +670,82 @@ function MatchedBanner({ count }: { count: number }) {
 // ─── Exclusive empty state ────────────────────────────────────────────────────
 function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center max-w-[480px] mx-auto">
+    <div className="relative flex flex-col items-center justify-center py-14 text-center overflow-hidden rounded-2xl"
+      style={{ background: "linear-gradient(160deg,#f8fffe 0%,#f0faf5 50%,#fafafa 100%)" }}>
+      {/* Subtle dot grid pattern */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.18]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="dotgrid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+            <circle cx="1.5" cy="1.5" r="1.5" fill="#1F6F54" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dotgrid)" />
+      </svg>
+
       {/* Illustration */}
-      <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
-        style={{ background: "linear-gradient(135deg,#020202,#1a1a2e)", border: "1px solid rgba(245,200,66,0.22)" }}>
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-          <rect x="4"  y="10" width="30" height="22" rx="3" stroke="rgba(245,200,66,0.60)" strokeWidth="1.5" fill="none"/>
-          <rect x="10" y="16" width="18" height="10" rx="2" stroke="rgba(245,200,66,0.40)" strokeWidth="1.2" fill="none"/>
-          <path d="M19 5l1.5 3 3.5.4-2.5 2.4.6 3.4L19 12.8l-3.1 1.4.6-3.4L14 8.4l3.5-.4z"
-            fill="#f5c842" opacity="0.90"/>
-        </svg>
+      <div className="relative mb-7">
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full opacity-20 blur-xl"
+          style={{ background: "radial-gradient(circle,#f5c842,transparent 70%)" }} />
+        {/* Main icon container */}
+        <div className="relative w-24 h-24 rounded-[22px] flex items-center justify-center shadow-lg"
+          style={{
+            background: "linear-gradient(145deg,#0e1a14,#1a2e20)",
+            border: "1px solid rgba(245,200,66,0.28)",
+            boxShadow: "0 4px 32px rgba(42,203,131,0.14), inset 0 1px 0 rgba(255,255,255,0.06)",
+          }}>
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            {/* Layered cards */}
+            <rect x="6"  y="18" width="40" height="28" rx="4" stroke="rgba(42,203,131,0.25)" strokeWidth="1.2" fill="rgba(42,203,131,0.06)"/>
+            <rect x="10" y="14" width="32" height="28" rx="4" stroke="rgba(42,203,131,0.40)" strokeWidth="1.2" fill="rgba(42,203,131,0.09)"/>
+            <rect x="14" y="20" width="24" height="16" rx="3" stroke="rgba(42,203,131,0.60)" strokeWidth="1.2" fill="rgba(42,203,131,0.12)"/>
+            {/* Lines representing content */}
+            <line x1="18" y1="25" x2="34" y2="25" stroke="rgba(42,203,131,0.50)" strokeWidth="1" strokeLinecap="round"/>
+            <line x1="18" y1="29" x2="30" y2="29" stroke="rgba(42,203,131,0.35)" strokeWidth="1" strokeLinecap="round"/>
+            {/* Gold star */}
+            <path d="M26 5l1.8 3.6 4.2.5-3 2.9.7 4.1-3.7-1.9-3.7 1.9.7-4.1-3-2.9 4.2-.5z"
+              fill="#f5c842" opacity="0.95"/>
+            {/* Sparkle dots */}
+            <circle cx="44" cy="12" r="1.5" fill="#f5c842" opacity="0.60"/>
+            <circle cx="8"  cy="11" r="1.2" fill="#2ACB83" opacity="0.55"/>
+            <circle cx="46" cy="34" r="1.0" fill="#2ACB83" opacity="0.45"/>
+          </svg>
+        </div>
       </div>
 
-      <h3 className="text-[18px] font-bold text-[#09090b] mb-2.5"
-        style={{ fontFamily: "Poppins, sans-serif" }}>
-        Exclusive Projects Are Being Curated For You
-      </h3>
-      <p className="text-[13.5px] text-[#62748e] leading-relaxed mb-1.5">
-        We&apos;re actively mapping exclusive projects tailored to your manufacturing capabilities and catalogue.
-      </p>
-      <p className="text-[13.5px] text-[#62748e] leading-relaxed mb-8">
-        Meanwhile, explore capability-based opportunities to improve your matching score.
-      </p>
+      <div className="relative max-w-[440px] mx-auto px-4">
+        <h3 className="text-[19px] font-bold text-[#09090b] mb-3 leading-snug"
+          style={{ fontFamily: "Poppins, sans-serif" }}>
+          Exclusive Projects Are Being Curated For You
+        </h3>
+        <p className="text-[13.5px] text-[#4b5563] leading-relaxed mb-1">
+          We&apos;re actively mapping exclusive projects tailored to your manufacturing capabilities and catalogue.
+        </p>
+        <p className="text-[13.5px] text-[#4b5563] leading-relaxed mb-8">
+          Meanwhile, explore capability-based opportunities to improve your matching score.
+        </p>
 
-      <button
-        onClick={onExplore}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-colors"
-        style={{ background: "#1F6F54" }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
-      >
-        Explore Capability-Based Projects <ArrowUpRight size={14} />
-      </button>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={onExplore}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all"
+            style={{ background: "#1F6F54" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
+          >
+            Explore Capability-Based Projects <ArrowUpRight size={14} />
+          </button>
+          <button
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold transition-all border"
+            style={{ borderColor: "#d1d5db", color: "#374151", background: "white" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = "#1F6F54")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = "#d1d5db")}
+          >
+            <UserCheck size={14} />
+            Complete Manufacturing Profile
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -731,8 +772,8 @@ function ExclusiveLockedOverlay() {
           Exclusive Access Locked
         </h3>
         <p className="text-[13px] text-slate-400 leading-relaxed mb-6">
-          Upgrade to Premium to continue accessing highly matched manufacturing opportunities
-          tailored specifically for your business.
+          Upgrade to Premium to continue accessing Exclusive Projects tailored specifically
+          for your business capabilities and product catalogue.
         </p>
         <div className="flex flex-col gap-2">
           <button className="w-full py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110"
@@ -741,6 +782,165 @@ function ExclusiveLockedOverlay() {
           </button>
           <button className="w-full py-2.5 rounded-xl text-[13px] font-semibold border transition-colors hover:bg-white/10"
             style={{ borderColor: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.70)" }}>
+            Compare Plans
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Demo state switcher ──────────────────────────────────────────────────────
+const DEMO_LABELS: Record<1|2|3, { short: string; desc: string }> = {
+  1: { short: "State 1", desc: "Free Trial Active — No Projects Mapped" },
+  2: { short: "State 2", desc: "Free Trial Active — Projects Available" },
+  3: { short: "State 3", desc: "Trial Expired — Locked" },
+};
+function DemoSwitcher({ current, onChange }: { current: 1|2|3; onChange: (s: 1|2|3) => void }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa]">
+      <span className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
+      <div className="flex items-center gap-1">
+        {([1, 2, 3] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => onChange(s)}
+            title={DEMO_LABELS[s].desc}
+            className={cn(
+              "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
+              current === s
+                ? "bg-[#020202] text-white"
+                : "text-[#6b7280] hover:bg-[#f0f0f0]",
+            )}
+          >
+            {DEMO_LABELS[s].short}
+          </button>
+        ))}
+      </div>
+      <span className="text-[10.5px] text-[#9ca3af] italic truncate hidden sm:block">
+        {DEMO_LABELS[current].desc}
+      </span>
+    </div>
+  );
+}
+
+// ─── State 1 strip — Trial active, no projects yet ───────────────────────────
+function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
+  return (
+    <div className="rounded-xl border overflow-hidden"
+      style={{ background: "linear-gradient(100deg,#0d0d0d 0%,#14100a 60%,#1a1400 100%)", borderColor: "#c9a22760" }}>
+      <div className="flex items-start justify-between gap-4 px-5 py-4">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(245,200,66,0.30)" }}>
+            <span style={{ fontSize: "14px", lineHeight: 1 }}>⭐</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[12.5px] font-bold" style={{ color: "#f5c842" }}>Free Trial Active</span>
+              <span style={{ color: "#c9a227", fontSize: "10px" }}>•</span>
+              <span className="text-[12.5px] font-medium" style={{ color: "#e0c97a" }}>
+                Explore Exclusive Projects free for 14 days
+              </span>
+            </div>
+            <p className="text-[11.5px] mt-0.5 leading-relaxed" style={{ color: "#9a7d3a" }}>
+              We&apos;re curating highly matched opportunities based on your capabilities and catalogue.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 mt-0.5">
+          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap"
+            style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
+            {daysLeft} days left
+          </span>
+          <button
+            className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
+            style={{ background: "#c9a227", color: "#111111" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#f5c842")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#c9a227")}
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── State 2 strip — Trial active, projects available ────────────────────────
+function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
+  return (
+    <div className="rounded-xl border overflow-hidden"
+      style={{ background: "linear-gradient(100deg,#0d1117 0%,#0e1f15 100%)", borderColor: "#2ACB8360" }}>
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5">
+        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "rgba(42,203,131,0.15)", border: "1px solid rgba(42,203,131,0.35)" }}>
+            <Check size={13} style={{ color: "#2ACB83" }} strokeWidth={2.5} />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[12.5px] font-bold" style={{ color: "#2ACB83" }}>Trial Access Active</span>
+            <span style={{ color: "#2ACB8360", fontSize: "10px" }}>•</span>
+            <span className="text-[12.5px]" style={{ color: "#a3c9b5" }}>
+              You can explore Exclusive Projects for the next
+              <span className="font-bold text-white mx-1">{daysLeft} days</span>
+            </span>
+          </div>
+          <span className="text-[11.5px] hidden sm:block" style={{ color: "#5a8a72" }}>
+            1 proposal included during your trial access.
+          </span>
+        </div>
+        <button
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all shrink-0"
+          style={{ background: "linear-gradient(90deg,#2ACB83,#1F6F54)", color: "#fff" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+        >
+          <Zap size={11} />
+          Upgrade to Premium
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── State 3 strip — Trial expired ───────────────────────────────────────────
+function ExclusiveExpiredStrip() {
+  return (
+    <div className="rounded-xl border overflow-hidden"
+      style={{ background: "linear-gradient(100deg,#1a0a0a 0%,#1f0e0e 100%)", borderColor: "#C30E1A60" }}>
+      <div className="flex items-center justify-between gap-4 px-5 py-3.5">
+        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "rgba(195,14,26,0.15)", border: "1px solid rgba(195,14,26,0.35)" }}>
+            <AlertCircle size={13} style={{ color: "#C30E1A" }} strokeWidth={2} />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[12.5px] font-bold" style={{ color: "#ef4444" }}>Trial Expired</span>
+            <span style={{ color: "#C30E1A60", fontSize: "10px" }}>•</span>
+            <span className="text-[12.5px]" style={{ color: "#f87171" }}>
+              Exclusive Project access is now locked
+            </span>
+          </div>
+          <span className="text-[11.5px] hidden sm:block" style={{ color: "#9a4a4a" }}>
+            Upgrade to Premium to continue accessing matched opportunities and submit proposals.
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all"
+            style={{ background: "#C30E1A", color: "#fff" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+          >
+            Upgrade to Premium
+          </button>
+          <button
+            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-semibold whitespace-nowrap transition-all border"
+            style={{ borderColor: "rgba(195,14,26,0.40)", color: "#f87171", background: "transparent" }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(195,14,26,0.12)")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+          >
             View Plans
           </button>
         </div>
@@ -765,15 +965,22 @@ function ScrollLoader() {
   );
 }
 
+// ─── Derive plan/exclusive state from demo state ──────────────────────────────
+function deriveStates(demo: 1|2|3): { planState: PlanState; exclusiveState: ExclusiveState } {
+  if (demo === 1) return { planState: "trial",         exclusiveState: "empty"     };
+  if (demo === 2) return { planState: "trial",         exclusiveState: "available" };
+  return              { planState: "trial_expired", exclusiveState: "available" };
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ProjectsListing() {
   const router = useRouter();
 
-  // Plan state (from dev config)
-  const planState:      PlanState      = PLAN_STATE;
-  const exclusiveState: ExclusiveState = EXCLUSIVE_STATE;
-  const trialDaysLeft                  = TRIAL_DAYS_LEFT;
-  const proposalsUsed                  = PROPOSALS_USED;
+  // Demo switcher state — controls which exclusive scenario is shown
+  const [demoState, setDemoState] = useState<1|2|3>(2);
+  const { planState, exclusiveState } = deriveStates(demoState);
+  const trialDaysLeft = TRIAL_DAYS_LEFT;
+  const proposalsUsed = PROPOSALS_USED;
 
   // Tab + match type
   const [activeTab,       setActiveTab]       = useState<TabType>("open");
@@ -958,8 +1165,8 @@ export function ProjectsListing() {
           );
         })()}
 
-        {/* ── Trial banner ── */}
-        {planState === "trial" && <TrialBanner daysLeft={trialDaysLeft} />}
+        {/* ── Trial banner (global — only while trial is active) ── */}
+        {planState === "trial" && activeTab === "open" && <TrialBanner daysLeft={trialDaysLeft} />}
 
         {/* ── Primary tabs ── */}
         <div className="border-b border-slate-200">
@@ -1064,13 +1271,22 @@ export function ProjectsListing() {
         )}
 
         {activeTab === "exclusive" && (
-          <>
-            {exclusiveState === "empty" && (
-              <ExclusiveEmptyState onExplore={() => switchTab("open")} />
+          <div className="flex flex-col gap-4">
+            {/* ── Demo switcher (visible when exclusive tab is active) ── */}
+            <DemoSwitcher current={demoState} onChange={s => { setDemoState(s); setMatchTypeFilter("all"); }} />
+
+            {/* ══ STATE 1 — Trial active, no projects yet ══ */}
+            {demoState === 1 && (
+              <>
+                <ExclusiveTrialStrip1 daysLeft={trialDaysLeft} />
+                <ExclusiveEmptyState onExplore={() => switchTab("open")} />
+              </>
             )}
 
-            {exclusiveState === "available" && !isExclusiveLocked && (
+            {/* ══ STATE 2 — Trial active, projects available ══ */}
+            {demoState === 2 && (
               <>
+                <ExclusiveTrialStrip2 daysLeft={trialDaysLeft} />
                 {filteredExclusive.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredExclusive.map(project => (
@@ -1097,32 +1313,34 @@ export function ProjectsListing() {
               </>
             )}
 
-            {isExclusiveLocked && (
-              <div className="relative min-h-[400px]">
-                {/* Ghost cards behind blur */}
-                <div
-                  className="pointer-events-none select-none"
-                  style={{ filter: "blur(5px)", opacity: 0.45 }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {EXCLUSIVE_PROJECTS.slice(0, 8).map(project => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onClick={() => {}}
-                        isExclusive
-                        matchType={project.matchType}
-                        planState={planState}
-                        proposalsUsed={proposalsUsed}
-                      />
-                    ))}
+            {/* ══ STATE 3 — Trial expired, locked ══ */}
+            {demoState === 3 && (
+              <>
+                <ExclusiveExpiredStrip />
+                <div className="relative min-h-[480px]">
+                  {/* Ghost cards behind blur */}
+                  <div className="pointer-events-none select-none"
+                    style={{ filter: "blur(6px)", opacity: 0.38 }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {EXCLUSIVE_PROJECTS.slice(0, 8).map(project => (
+                        <ProjectCard
+                          key={project.id}
+                          project={project}
+                          onClick={() => {}}
+                          isExclusive
+                          matchType={project.matchType}
+                          planState={planState}
+                          proposalsUsed={proposalsUsed}
+                        />
+                      ))}
+                    </div>
                   </div>
+                  {/* Overlay */}
+                  <ExclusiveLockedOverlay />
                 </div>
-                {/* Overlay */}
-                <ExclusiveLockedOverlay />
-              </div>
+              </>
             )}
-          </>
+          </div>
         )}
 
       </div>
