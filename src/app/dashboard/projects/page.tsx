@@ -1,7 +1,17 @@
 "use client";
 
-import { ProjectsListing } from "@/modules/dashboard/ProjectsListing";
+import { useAuth } from "@/hooks/useAuth";
+import { ProjectsListing }       from "@/modules/dashboard/ProjectsListing";
+import { ProjectsListingLegacy } from "@/modules/dashboard/ProjectsListingLegacy";
 
 export default function ProjectsPage() {
-  return <ProjectsListing />;
+  const { user } = useAuth();
+
+  // New manufacturer-specific listing (tabs, trial banner, filter drawer, exclusive states)
+  // All other roles (cro, researcher, pi, scientist, …) keep the original listing
+  if (user?.role === "manufacturing") {
+    return <ProjectsListing />;
+  }
+
+  return <ProjectsListingLegacy />;
 }
