@@ -835,7 +835,7 @@ function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
               <span className="text-[12.5px] font-medium text-[#e0c97a]">Explore Exclusive Projects free for 14 days</span>
             </div>
             <p className="text-[11px] text-[#9a7d3a]">
-              We&apos;re curating highly matched opportunities based on your capabilities and catalogue.
+              After your free trial ends, Exclusive Projects will lock — upgrade now to keep access.
             </p>
           </div>
         </div>
@@ -871,7 +871,7 @@ function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
                 You can explore Exclusive Projects for the next <span className="font-bold text-[#f5c842]">{daysLeft} days</span>
               </span>
             </div>
-            <p className="text-[11px] text-[#9a7d3a]">1 proposal included during your trial access.</p>
+            <p className="text-[11px] text-[#9a7d3a]">1 proposal included · Exclusive Projects lock when trial ends — don&apos;t wait.</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
