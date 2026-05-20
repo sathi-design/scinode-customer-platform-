@@ -15,7 +15,7 @@ import { ProposalDrawer } from "./ProposalDrawer";
 type DetailDemoState = "trial-active" | "trial-expired";
 const TRIAL_DAYS_LEFT   = 11;
 const DETAIL_MATCH_TYPE = "Capability-Based" as const;  // or "Product Catalogue-Based"
-const DETAIL_CAP_TYPE   = "CMO Tech Transfer";          // Co-Development | Contract Manufacturing | CMO Tech Transfer
+const DETAIL_CAP_TYPE   = "Co-Development";             // RFQ | Co-Development | Contract Manufacturing
 
 // ─── Shared primitives ─────────────────────────────────────────────────────────
 function SectionCard({
