@@ -7,19 +7,21 @@ import {
   Search, ChevronDown, X, ArrowUpRight, Sparkles,
   Info, Lock, SlidersHorizontal, ChevronRight, Check,
   AlertCircle, Zap, UserCheck, Upload, FileSpreadsheet,
-  CheckCircle2, Package, Download, Plus,
+  CheckCircle2, Package, Download, Plus, Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALL_PROJECTS, type BadgeType } from "@/lib/projectsData";
+import { UpgradePremiumModal } from "./UpgradePremiumModal";
 
-// ─── Demo config (driven by in-UI switcher, not static constants) ─────────────
-const TRIAL_DAYS_LEFT = 11;
-const PROPOSALS_USED  = 0;
+// ─── Demo config ───────────────────────────────────────────────────────────────
+const FREE_PROPOSAL_LIMIT = 2;
+const PROPOSALS_USED      = 0;   // 0 = fresh free account for demo
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type PlanState      = "trial" | "trial_used" | "trial_expired" | "growth" | "scale";
-type ExclusiveState = "empty" | "available" | "locked";
+type DemoState      = "free" | "premium";
+type PlanState      = "free" | "premium";
+type ExclusiveState = "available" | "locked";
 type MatchType      = "Capability-Based" | "Product Catalogue-Based";
 type TabType        = "open" | "exclusive";
 
@@ -133,47 +135,7 @@ function StarIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-// ─── Trial banner ─────────────────────────────────────────────────────────────
-function TrialBanner({ daysLeft }: { daysLeft: number }) {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
-  return (
-    <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border"
-      style={{ background: "linear-gradient(90deg,#111111,#1a1400)", borderColor: "#c9a227" }}>
-      <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
-        <span className="text-[12px] font-bold whitespace-nowrap" style={{ color: "#f5c842" }}>Free Trial Active</span>
-        <span style={{ color: "#c9a227" }}>•</span>
-        <span className="text-[12px]" style={{ color: "#e0c97a" }}>
-          Explore Exclusive Projects for 14 days. 1 proposal included during trial access.
-        </span>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <p className="hidden sm:block text-[11px] italic" style={{ color: "#a07e30" }}>
-          After trial expiry, Exclusive Projects will lock.
-        </p>
-        <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold border"
-          style={{ background: "#1f1700", color: "#f5c842", borderColor: "#c9a227" }}>
-          {daysLeft} days left
-        </span>
-        <button
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97]"
-          style={{
-            background: "linear-gradient(90deg,#f5c842,#c9a227)",
-            boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
-          }}
-        >
-          <Zap size={11} /> Upgrade Plan
-        </button>
-        <button onClick={() => setDismissed(true)} className="transition-colors" style={{ color: "#c9a227" }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#f5c842")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "#c9a227")}
-        >
-          <X size={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
+// (internal TrialBanner removed — replaced by FreeAccessStrip / PremiumAccessStrip below)
 
 // ─── Exclusive tooltip ────────────────────────────────────────────────────────
 function ExclusiveInfoTooltip() {
@@ -183,6 +145,7 @@ function ExclusiveInfoTooltip() {
       className="relative flex items-center"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
+      onClick={e => e.stopPropagation()}
     >
       <style>{`
         @keyframes tooltipFadeIn {
@@ -193,7 +156,7 @@ function ExclusiveInfoTooltip() {
       <Info size={12} className="text-slate-400 cursor-help" />
       {show && (
         <div
-          className="absolute bottom-full right-0 mb-2.5 w-[288px] z-50"
+          className="absolute bottom-full right-0 mb-2.5 w-[288px] z-50 pointer-events-none"
           style={{ animation: "tooltipFadeIn 160ms ease both" }}
         >
           {/* Arrow */}
@@ -202,7 +165,8 @@ function ExclusiveInfoTooltip() {
           <div className="relative bg-[#1e293b] rounded-xl p-3.5 shadow-2xl border border-white/10">
             <p className="text-[11.5px] font-bold text-white mb-1.5">Exclusive Projects</p>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Projects reserved exclusively for you, with no competing bids.
+              Projects matched exclusively to your capabilities — no competing bids.
+              Premium plan required.
             </p>
           </div>
         </div>
@@ -219,11 +183,12 @@ function OpenProjectsInfoTooltip() {
       className="relative flex items-center"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
+      onClick={e => e.stopPropagation()}
     >
       <Info size={12} className="text-slate-400 cursor-help" />
       {show && (
         <div
-          className="absolute bottom-full left-0 mb-2.5 w-[272px] z-50"
+          className="absolute bottom-full left-0 mb-2.5 w-[272px] z-50 pointer-events-none"
           style={{ animation: "tooltipFadeIn 160ms ease both" }}
         >
           <div className="absolute -bottom-1.5 left-3 w-3 h-3 rotate-45 border-b border-r"
@@ -249,11 +214,12 @@ function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Product Ca
       className="relative flex items-center"
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
+      onClick={e => e.stopPropagation()}   /* prevent tooltip click stealing the filter-button click */
     >
       <Info size={10} className="cursor-help" style={{ color: isCapability ? "#0E6F5C" : "#6237C7", opacity: 0.7 }} />
       {show && (
         <div
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-[248px] z-50"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-[248px] z-50 pointer-events-none"
           style={{ animation: "tooltipFadeIn 160ms ease both" }}
         >
           <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-b border-r"
@@ -500,15 +466,17 @@ function getFooterMessage(
   planState: PlanState,
   proposalsUsed: number,
 ): { text: string; color: string } | null {
-  if (planState === "trial" && proposalsUsed === 0)
-    return { text: "1 trial proposal remaining", color: "#059669" };
-  if (planState === "trial" && proposalsUsed >= 1)
-    return { text: "Upgrade to continue submitting proposals", color: "#d97706" };
-  if (planState === "trial_used")
-    return { text: "Upgrade to continue submitting proposals", color: "#d97706" };
-  if (planState === "trial_expired" && isExclusive)
-    return { text: "Exclusive access requires premium upgrade", color: "#dc2626" };
-  return null;
+  if (planState === "premium") return null;
+
+  // Free plan — exclusive projects are always locked
+  if (isExclusive)
+    return { text: "Exclusive projects require Premium upgrade", color: "#dc2626" };
+
+  const remaining = FREE_PROPOSAL_LIMIT - proposalsUsed;
+  if (remaining > 0)
+    return { text: `${remaining} free proposal${remaining > 1 ? "s" : ""} remaining`, color: "#059669" };
+
+  return { text: "Proposal limit reached — upgrade to continue", color: "#d97706" };
 }
 
 // ─── Project card ─────────────────────────────────────────────────────────────
@@ -532,7 +500,7 @@ function ProjectCard({
   const displayMT   = matchType ?? project.matchType;
 
   return (
-    <div className="group relative cursor-pointer flex-1 min-w-0" onClick={onClick}>
+    <div className="group relative cursor-pointer h-full" onClick={onClick}>
       {/* Animated gradient border on hover */}
       <div
         className="absolute -inset-[1.5px] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -545,7 +513,7 @@ function ProjectCard({
 
       {/* Card body */}
       <div className={cn(
-        "relative bg-white rounded-[12px] p-[10px] flex flex-col gap-3 overflow-hidden",
+        "relative bg-white rounded-[12px] p-[10px] flex flex-col gap-3 overflow-hidden h-full",
         "shadow-[0px_4px_6px_0px_rgba(0,0,0,0.1),0px_2px_4px_0px_rgba(0,0,0,0.06)]",
         "group-hover:shadow-[0px_16px_32px_rgba(31,111,84,0.18)] group-hover:pb-11",
         "transition-[box-shadow,padding] duration-300 ease-in-out",
@@ -739,7 +707,7 @@ function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
 }
 
 // ─── Exclusive locked overlay ─────────────────────────────────────────────────
-function ExclusiveLockedOverlay() {
+function ExclusiveLockedOverlay({ onUpgrade }: { onUpgrade?: () => void }) {
   return (
     <div
       className="absolute inset-0 z-30 flex items-center justify-center rounded-xl"
@@ -759,44 +727,42 @@ function ExclusiveLockedOverlay() {
           style={{ fontFamily: "Poppins, sans-serif" }}>
           Exclusive Access Locked
         </h3>
-        <p className="text-[13px] text-slate-400 leading-relaxed mb-6">
-          Upgrade to Premium to continue accessing Exclusive Projects tailored specifically
-          for your business capabilities and product catalogue.
+        <p className="text-[13px] text-slate-400 leading-relaxed mb-1.5">
+          Exclusive Projects are reserved for Premium members — matched specifically to your
+          capabilities and product catalogue with no competing bids.
         </p>
-        <div className="flex flex-col gap-2">
-          <button className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{
-              background: "linear-gradient(90deg,#f5c842,#c9a227)",
-              boxShadow: "0 0 18px rgba(245,200,66,0.50), 0 2px 6px rgba(0,0,0,0.25)",
-            }}>
-            <Zap size={13} /> Upgrade to Premium
-          </button>
-          <button className="w-full py-2.5 rounded-xl text-[13px] font-semibold border transition-colors hover:bg-white/10"
-            style={{ borderColor: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.70)" }}>
-            Compare Plans
-          </button>
-        </div>
+        <p className="text-[12px] text-slate-500 mb-6">
+          Free plan includes 2 proposals on Open Projects only.
+        </p>
+        <button
+          onClick={onUpgrade}
+          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(90deg,#f5c842,#c9a227)",
+            boxShadow: "0 0 18px rgba(245,200,66,0.50), 0 2px 6px rgba(0,0,0,0.25)",
+          }}>
+          <Zap size={13} /> Upgrade to Premium
+        </button>
       </div>
     </div>
   );
 }
 
 // ─── Demo state switcher ──────────────────────────────────────────────────────
-const DEMO_LABELS: Record<1|2|3, { short: string; desc: string }> = {
-  1: { short: "State 1", desc: "Free Trial Active — No Projects Mapped" },
-  2: { short: "State 2", desc: "Free Trial Active — Projects Available" },
-  3: { short: "State 3", desc: "Trial Expired — Locked" },
+const DEMO_CONFIG: Record<DemoState, { label: string; desc: string }> = {
+  free:    { label: "Free Plan",   desc: "Free — 2 proposals, Exclusive locked" },
+  premium: { label: "Premium",     desc: "Premium — unlimited access"           },
 };
-function DemoSwitcher({ current, onChange }: { current: 1|2|3; onChange: (s: 1|2|3) => void }) {
+function DemoSwitcher({ current, onChange }: { current: DemoState; onChange: (s: DemoState) => void }) {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa]">
       <span className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
       <div className="flex items-center gap-1">
-        {([1, 2, 3] as const).map(s => (
+        {(["free", "premium"] as DemoState[]).map(s => (
           <button
             key={s}
             onClick={() => onChange(s)}
-            title={DEMO_LABELS[s].desc}
+            title={DEMO_CONFIG[s].desc}
             className={cn(
               "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
               current === s
@@ -804,134 +770,102 @@ function DemoSwitcher({ current, onChange }: { current: 1|2|3; onChange: (s: 1|2
                 : "text-[#6b7280] hover:bg-[#f0f0f0]",
             )}
           >
-            {DEMO_LABELS[s].short}
+            {DEMO_CONFIG[s].label}
           </button>
         ))}
       </div>
       <span className="text-[10.5px] text-[#9ca3af] italic truncate hidden sm:block">
-        {DEMO_LABELS[current].desc}
+        {DEMO_CONFIG[current].desc}
       </span>
     </div>
   );
 }
 
-// ─── Shared strip shell ───────────────────────────────────────────────────────
-function StripShell({ children, borderCls, bgCls }: { children: React.ReactNode; borderCls: string; bgCls: string }) {
+// ─── Free plan strip ──────────────────────────────────────────────────────────
+function FreeAccessStrip({ onUpgrade }: { onUpgrade: () => void }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
   return (
-    <div className={cn("rounded-xl border", borderCls, bgCls)}>
-      {children}
+    <div
+      className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl border flex-wrap"
+      style={{ background: "#111111", borderColor: "rgba(201,162,39,0.50)" }}
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "rgba(245,200,66,0.10)", border: "1px solid rgba(245,200,66,0.25)" }}>
+          <Crown size={14} style={{ color: "#f5c842" }} />
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[12.5px] font-bold" style={{ color: "#f5c842" }}>Free Plan Active</span>
+            <span className="text-[#c9a227] text-[10px]">•</span>
+            <span className="text-[12.5px] font-medium" style={{ color: "#e0c97a" }}>
+              {FREE_PROPOSAL_LIMIT} proposals included · Exclusive Projects locked
+            </span>
+          </div>
+          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.50)" }}>
+            Upgrade to Premium for unlimited proposals, Exclusive Projects, and Market Intelligence.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={onUpgrade}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97] whitespace-nowrap"
+          style={{
+            background: "linear-gradient(90deg,#f5c842,#c9a227)",
+            boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
+          }}
+        >
+          <Zap size={11} /> Upgrade Plan
+        </button>
+        <button
+          onClick={() => setDismissed(true)}
+          className="w-6 h-6 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
+          style={{ color: "rgba(201,162,39,0.70)" }}
+          aria-label="Dismiss"
+        >
+          <X size={13} />
+        </button>
+      </div>
     </div>
   );
 }
 
-// ─── State 1 strip — Trial active, no projects yet ───────────────────────────
-function ExclusiveTrialStrip1({ daysLeft }: { daysLeft: number }) {
+// ─── Premium plan strip ───────────────────────────────────────────────────────
+function PremiumAccessStrip() {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
   return (
-    <StripShell borderCls="border-[#c9a227]/50" bgCls="bg-[#111111]">
-      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#f5c842]/10 border border-[#f5c842]/25">
-            <span className="text-[14px] leading-none">⭐</span>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12.5px] font-bold text-[#f5c842]">Free Trial Active</span>
-              <span className="text-[#c9a227] text-[10px]">•</span>
-              <span className="text-[12.5px] font-medium text-[#e0c97a]">Explore Exclusive Projects free for 14 days</span>
-            </div>
-            <p className="text-[11px] text-[#9a7d3a]">
-              After your free trial ends, Exclusive Projects will lock — upgrade now to keep access.
-            </p>
-          </div>
+    <div
+      className="flex items-center justify-between gap-3 px-5 py-3.5 rounded-xl border flex-wrap"
+      style={{ background: "#111111", borderColor: "rgba(201,162,39,0.50)" }}
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.35)" }}
+        >
+          <Crown size={13} style={{ color: "#f5c842" }} />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227] whitespace-nowrap">
-            {daysLeft} days left
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          <span className="text-[12.5px] font-bold whitespace-nowrap" style={{ color: "#f5c842" }}>
+            Premium Active
           </span>
-          <button
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97] whitespace-nowrap"
-            style={{
-              background: "linear-gradient(90deg,#f5c842,#c9a227)",
-              boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
-            }}
-          >
-            <Zap size={11} /> Upgrade Plan
-          </button>
-        </div>
-      </div>
-    </StripShell>
-  );
-}
-
-// ─── State 2 strip — Trial active, projects available ────────────────────────
-function ExclusiveTrialStrip2({ daysLeft }: { daysLeft: number }) {
-  return (
-    <StripShell borderCls="border-[#c9a227]/50" bgCls="bg-[#111111]">
-      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-[#f5c842]/10 border border-[#f5c842]/25">
-            <span className="text-[14px] leading-none">⭐</span>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12.5px] font-bold text-[#f5c842]">Trial Access Active</span>
-              <span className="text-[#c9a227] text-[10px]">•</span>
-              <span className="text-[12.5px] text-[#e0c97a]">
-                You can explore Exclusive Projects for the next <span className="font-bold text-[#f5c842]">{daysLeft} days</span>
-              </span>
-            </div>
-            <p className="text-[11px] text-white/70">1 proposal included · Exclusive Projects lock when trial ends — don&apos;t wait.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-[#1f1700] text-[#f5c842] border border-[#c9a227] whitespace-nowrap">
-            {daysLeft} days left
+          <span className="text-[12.5px] font-normal" style={{ color: "rgba(255,255,255,0.50)" }}>
+            — Unlimited proposals · Full Exclusive Projects access · Market Intelligence
           </span>
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.97] whitespace-nowrap"
-            style={{
-              background: "linear-gradient(90deg,#f5c842,#c9a227)",
-              boxShadow: "0 0 14px rgba(245,200,66,0.50), 0 2px 4px rgba(0,0,0,0.30)",
-            }}
-          >
-            <Zap size={11} /> Upgrade Plan
-          </button>
         </div>
       </div>
-    </StripShell>
-  );
-}
-
-// ─── State 3 strip — Trial expired ───────────────────────────────────────────
-function ExclusiveExpiredStrip() {
-  return (
-    <StripShell borderCls="border-red-800/60" bgCls="bg-[#1a0808]">
-      <div className="flex items-center justify-between gap-4 px-5 py-3.5 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-1 flex-wrap">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-red-900/40 border border-red-700/40">
-            <AlertCircle size={14} className="text-red-400" strokeWidth={2} />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12.5px] font-bold text-red-400">Trial Expired</span>
-              <span className="text-red-800 text-[10px]">•</span>
-              <span className="text-[12.5px] text-red-300">Exclusive Project access is now locked</span>
-            </div>
-            <p className="text-[11px] text-white/60 hidden sm:block">
-              Upgrade to Premium to continue accessing matched opportunities and submit proposals.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-bold bg-red-600 text-white hover:bg-red-500 transition-colors whitespace-nowrap">
-            Upgrade to Premium
-          </button>
-          <button className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-semibold border border-red-800/50 text-red-400 hover:bg-red-900/30 transition-colors whitespace-nowrap">
-            View Plans
-          </button>
-        </div>
-      </div>
-    </StripShell>
+      <button
+        onClick={() => setDismissed(true)}
+        className="w-6 h-6 flex items-center justify-center rounded-full transition-colors hover:bg-white/10 shrink-0"
+        style={{ color: "rgba(201,162,39,0.60)" }}
+        aria-label="Dismiss"
+      >
+        <X size={13} />
+      </button>
+    </div>
   );
 }
 
@@ -1352,21 +1286,23 @@ function ScrollLoader() {
 }
 
 // ─── Derive plan/exclusive state from demo state ──────────────────────────────
-function deriveStates(demo: 1|2|3): { planState: PlanState; exclusiveState: ExclusiveState } {
-  if (demo === 1) return { planState: "trial",         exclusiveState: "empty"     };
-  if (demo === 2) return { planState: "trial",         exclusiveState: "available" };
-  return              { planState: "trial_expired", exclusiveState: "available" };
+function deriveStates(demo: DemoState): { planState: PlanState; exclusiveState: ExclusiveState } {
+  if (demo === "free")    return { planState: "free",    exclusiveState: "locked"    };
+  return                         { planState: "premium", exclusiveState: "available" };
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function ProjectsListing() {
   const router = useRouter();
 
-  // Demo switcher state — controls which exclusive scenario is shown
-  const [demoState, setDemoState] = useState<1|2|3>(2);
+  // Demo switcher state — "free" or "premium"
+  const [demoState, setDemoState] = useState<DemoState>("free");
   const { planState, exclusiveState } = deriveStates(demoState);
-  const trialDaysLeft = TRIAL_DAYS_LEFT;
   const proposalsUsed = PROPOSALS_USED;
+
+  // Upgrade modal
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const openUpgrade = () => setUpgradeOpen(true);
 
   // Tab + match type
   const [activeTab,       setActiveTab]       = useState<TabType>("open");
@@ -1374,6 +1310,10 @@ export function ProjectsListing() {
 
   // Product Catalogue-Based demo state
   const [catDemoState, setCatDemoState] = useState<CatDemoState>(1);
+
+  // Premium exclusive sub-state: "empty" = no projects assigned yet, "cards" = projects available
+  type PremiumExclusiveState = "empty" | "cards";
+  const [premiumExclusiveState, setPremiumExclusiveState] = useState<PremiumExclusiveState>("empty");
   const [quickAddOpen,  setQuickAddOpen]  = useState(false);
   const [quickAddTab,   setQuickAddTab]   = useState<QuickAddTab>("single");
 
@@ -1448,8 +1388,7 @@ export function ProjectsListing() {
     setMatchTypeFilter("all");
   };
 
-  const isExclusiveLocked =
-    exclusiveState === "locked" || planState === "trial_expired";
+  const isExclusiveLocked = exclusiveState === "locked";
 
   return (
     <>
@@ -1460,6 +1399,9 @@ export function ProjectsListing() {
           100% { background-position: 0%   50%; }
         }
       `}</style>
+
+      {/* Upgrade modal */}
+      <UpgradePremiumModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       {/* Filter drawer — rendered outside scroll container */}
       <FilterDrawer
@@ -1566,10 +1508,11 @@ export function ProjectsListing() {
           );
         })()}
 
-        {/* ── Global exclusive state banners — shown below search for all tabs ── */}
-        {demoState === 1 && <ExclusiveTrialStrip1 daysLeft={trialDaysLeft} />}
-        {demoState === 2 && <ExclusiveTrialStrip2 daysLeft={trialDaysLeft} />}
-        {demoState === 3 && <ExclusiveExpiredStrip />}
+        {/* ── Global plan state banners — shown below search for all tabs ── */}
+        {/* Demo switcher — always visible so testers can toggle plans */}
+        <DemoSwitcher current={demoState} onChange={s => { setDemoState(s); setMatchTypeFilter("all"); }} />
+        {demoState === "free"    && <FreeAccessStrip onUpgrade={openUpgrade} />}
+        {demoState === "premium" && <PremiumAccessStrip />}
 
         {/* ── Primary tabs ── */}
         <div className="border-b border-slate-200">
@@ -1588,19 +1531,19 @@ export function ProjectsListing() {
               <OpenProjectsInfoTooltip />
             </button>
 
-            {/* Exclusive Projects tab */}
+            {/* Exclusive Projects tab — always clickable; locked state shown inside */}
             <button
               onClick={() => switchTab("exclusive")}
               className={cn(
                 "flex items-center gap-1.5 px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
                 activeTab === "exclusive"
                   ? "border-[#1F6F54] text-[#1F6F54]"
-                  : isExclusiveLocked
-                  ? "border-transparent text-[#9ca3af] opacity-60"
                   : "border-transparent text-[#62748e] hover:text-[#374151]",
               )}
             >
-              {isExclusiveLocked && <Lock size={11} className="shrink-0" />}
+              {isExclusiveLocked && (
+                <Lock size={11} className="shrink-0 text-[#9ca3af]" />
+              )}
               Exclusive Projects
               <ExclusiveInfoTooltip />
             </button>
@@ -1737,20 +1680,40 @@ export function ProjectsListing() {
 
         {activeTab === "exclusive" && (
           <div className="flex flex-col gap-4">
-            {/* ── Demo switcher (visible when exclusive tab is active) ── */}
-            <DemoSwitcher current={demoState} onChange={s => { setDemoState(s); setMatchTypeFilter("all"); }} />
 
-            {/* ══ STATE 1 — Trial active, no projects yet ══ */}
-            {demoState === 1 && (
-              <ExclusiveEmptyState onExplore={() => switchTab("open")} />
-            )}
-
-            {/* ══ STATE 2 — Trial active, projects available ══ */}
-            {demoState === 2 && (
+            {/* ══ PREMIUM — two exclusive sub-states ══ */}
+            {demoState === "premium" && (
               <>
-                {filteredExclusive.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredExclusive.map(project => (
+                {/* Sub-state switcher */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa]">
+                  <span className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Exclusive</span>
+                  <div className="flex items-center gap-1">
+                    {(["empty", "cards"] as const).map(s => (
+                      <button key={s} onClick={() => setPremiumExclusiveState(s)}
+                        className={cn(
+                          "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
+                          premiumExclusiveState === s ? "bg-[#020202] text-white" : "text-[#6b7280] hover:bg-[#f0f0f0]",
+                        )}>
+                        {s === "empty" ? "Not Assigned" : "Projects Assigned"}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-[10.5px] text-[#9ca3af] italic hidden sm:block">
+                    {premiumExclusiveState === "empty"
+                      ? "Premium unlocked — no exclusive projects curated yet"
+                      : "2 exclusive projects matched to your profile"}
+                  </span>
+                </div>
+
+                {/* Sub-state 1 — Premium unlocked, no projects assigned yet */}
+                {premiumExclusiveState === "empty" && (
+                  <ExclusiveEmptyState onExplore={() => switchTab("open")} />
+                )}
+
+                {/* Sub-state 2 — 2–3 exclusive project cards */}
+                {premiumExclusiveState === "cards" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {EXCLUSIVE_PROJECTS.slice(0, 3).map(project => (
                       <ProjectCard
                         key={project.id}
                         project={project}
@@ -1762,43 +1725,33 @@ export function ProjectsListing() {
                       />
                     ))}
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="w-16 h-16 rounded-full bg-[#f0faf5] flex items-center justify-center mb-4">
-                      <Search className="w-7 h-7 text-[#1F6F54]" />
-                    </div>
-                    <p className="text-base font-semibold text-[#020202]">No exclusive projects found</p>
-                    <p className="text-sm text-[#62748e] mt-1">Try adjusting your search or filters.</p>
-                  </div>
                 )}
               </>
             )}
 
-            {/* ══ STATE 3 — Trial expired, locked ══ */}
-            {demoState === 3 && (
-              <>
-                <div className="relative min-h-[480px]">
-                  {/* Ghost cards behind blur */}
-                  <div className="pointer-events-none select-none"
-                    style={{ filter: "blur(6px)", opacity: 0.38 }}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {EXCLUSIVE_PROJECTS.slice(0, 8).map(project => (
-                        <ProjectCard
-                          key={project.id}
-                          project={project}
-                          onClick={() => {}}
-                          isExclusive
-                          matchType={project.matchType}
-                          planState={planState}
-                          proposalsUsed={proposalsUsed}
-                        />
-                      ))}
-                    </div>
+            {/* ══ FREE — always locked ══ */}
+            {demoState === "free" && (
+              <div className="relative min-h-[480px]">
+                {/* Ghost cards behind blur */}
+                <div className="pointer-events-none select-none"
+                  style={{ filter: "blur(6px)", opacity: 0.35 }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {EXCLUSIVE_PROJECTS.slice(0, 8).map(project => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onClick={() => {}}
+                        isExclusive
+                        matchType={project.matchType}
+                        planState={planState}
+                        proposalsUsed={proposalsUsed}
+                      />
+                    ))}
                   </div>
-                  {/* Overlay */}
-                  <ExclusiveLockedOverlay />
                 </div>
-              </>
+                {/* Overlay with upgrade CTA */}
+                <ExclusiveLockedOverlay onUpgrade={openUpgrade} />
+              </div>
             )}
           </div>
         )}

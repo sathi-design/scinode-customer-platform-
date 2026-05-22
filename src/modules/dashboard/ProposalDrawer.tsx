@@ -6,18 +6,18 @@ import React, {
 import { useRouter } from "next/navigation";
 import {
   X, ChevronDown, Upload, Trash2, FileText, List,
-  Send, CheckCircle2, Clock, ClipboardList, Lock,
-  AlertTriangle, Zap, ArrowRight, ShieldAlert,
+  Send, CheckCircle2, Clock, Lock,
+  AlertTriangle, Zap, Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectDetail } from "@/lib/projectsData";
 import { useProposalStore } from "@/store/useProposalStore";
 
 // ─── Demo state types ─────────────────────────────────────────────────────────
-type DrawerDemo = 1 | 2 | 3;
-// 1 = Trial active, proposal available
-// 2 = Proposal submitted, limit used
-// 3 = Trial expired, form locked
+type DrawerDemo    = 1 | 2 | 3;
+type DrawerPlanMode = "free" | "premium";
+// Free  — 1: Free Plan  | 2: Limit Reached | 3: 1 Used, 1 Left
+// Premium — 1: Premium Plan | 2: Sent Proposal
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ProposalType = "CMO" | "RFQ";
@@ -378,13 +378,23 @@ function FileUploadZone({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ─── Demo switcher ────────────────────────────────────────────────────────────
-function DrawerDemoSwitcher({ current, onChange }: { current: DrawerDemo; onChange: (s: DrawerDemo) => void }) {
-  const labels: Record<DrawerDemo, string> = { 1: "Trial Active", 2: "Limit Reached", 3: "Trial Expired" };
+function DrawerDemoSwitcher({
+  current, onChange, planMode,
+}: {
+  current: DrawerDemo;
+  onChange: (s: DrawerDemo) => void;
+  planMode: DrawerPlanMode;
+}) {
+  const freeLabels: Record<DrawerDemo, string>            = { 1: "Free Plan", 2: "Limit Reached", 3: "1 Used, 1 Left" };
+  const premiumLabels: Partial<Record<DrawerDemo, string>> = { 1: "Premium Plan", 2: "Sent Proposal" };
+  const states = planMode === "premium" ? ([1, 2] as const) : ([1, 2, 3] as const);
+  const labels = planMode === "premium" ? premiumLabels : freeLabels;
+
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#e4e4e7] bg-[#fafafa]">
       <span className="text-[9.5px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
       <div className="flex items-center gap-1">
-        {([1, 2, 3] as const).map(s => (
+        {states.map(s => (
           <button key={s} onClick={() => onChange(s)}
             className={cn(
               "px-2.5 py-[3px] rounded-[5px] text-[11px] font-semibold transition-all duration-150",
@@ -399,62 +409,115 @@ function DrawerDemoSwitcher({ current, onChange }: { current: DrawerDemo; onChan
 }
 
 // ─── State banners ────────────────────────────────────────────────────────────
-function TrialActiveBanner({ proposalsRemaining = 1, total = 1 }: { proposalsRemaining?: number; total?: number }) {
+// State 1 — 2 proposals available, none used
+function FreePlanBanner() {
   return (
-    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#f0fdf4] border border-[#86efac]/50">
-      <div className="w-6 h-6 rounded-full bg-[#1F6F54]/15 flex items-center justify-center shrink-0 mt-0.5">
-        <CheckCircle2 size={13} className="text-[#1F6F54]" />
+    <div className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-[#c9a227]/40">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.40)" }}>
+        <Crown size={13} style={{ color: "#f5c842" }} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12.5px] font-semibold text-[#1F6F54]">Your free trial is active</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1F6F54] text-white">
-            Free Trial Active
+          <span className="text-[12.5px] font-semibold text-white">Free Plan Active</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-[#020202]"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+            2 Proposals Included
           </span>
         </div>
-        <p className="text-[12px] text-[#15803d] mt-0.5 leading-[18px]">
-          <span className="font-bold">{proposalsRemaining} of {total} proposal</span> remaining.
-          Submit before your trial expires.
+        <p className="text-[12px] text-white/60 mt-0.5 leading-[18px]">
+          <span className="font-bold text-[#f5c842]">2 free proposals</span> available on Open Projects.
+          Upgrade for unlimited submissions.
         </p>
       </div>
     </div>
   );
 }
 
+// State 3 — 1 used, 1 remaining
+function OneUsedBanner() {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-[#c9a227]/40">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.40)" }}>
+        <Crown size={13} style={{ color: "#f5c842" }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold text-white">1 of 2 proposals used</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+            style={{ background: "rgba(245,200,66,0.15)", color: "#f5c842", border: "1px solid rgba(201,162,39,0.40)" }}>
+            1 Remaining
+          </span>
+        </div>
+        <p className="text-[12px] text-white/60 mt-0.5 leading-[18px]">
+          You have <span className="font-bold text-[#f5c842]">1 free proposal</span> left on your free plan.
+          Upgrade for unlimited submissions.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// State 2 — both proposals used
 function LimitReachedBanner() {
   return (
-    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#fff7ed] border border-[#fed7aa]/60">
-      <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0 mt-0.5">
-        <AlertTriangle size={13} className="text-orange-500" />
+    <div className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-red-800/50">
+      <div className="w-7 h-7 rounded-full bg-red-900/40 border border-red-700/40 flex items-center justify-center shrink-0">
+        <AlertTriangle size={13} className="text-red-400" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12.5px] font-semibold text-orange-700">Free trial proposal limit reached</span>
-        </div>
-        <p className="text-[12px] text-orange-600 mt-0.5 leading-[18px]">
-          You've used your 1 free proposal.
-          Upgrade to continue participating in buyer opportunities.
+        <span className="text-[12.5px] font-semibold text-white">Free proposal limit reached</span>
+        <p className="text-[12px] text-white/55 mt-0.5 leading-[18px]">
+          You have used your <span className="font-bold text-white">2 free proposals</span>. Upgrade to continue submitting.
         </p>
       </div>
     </div>
   );
 }
 
-function TrialExpiredBanner() {
+// State P1 — Premium Plan active (unlimited)
+function PremiumBanner() {
   return (
-    <div className="flex items-start gap-3 px-4 py-3 rounded-[10px] bg-[#fff1f2] border border-[#fecdd3]/60">
-      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-        <ShieldAlert size={13} className="text-red-500" />
+    <div className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-[#c9a227]/40">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.40)" }}>
+        <Crown size={13} style={{ color: "#f5c842" }} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12.5px] font-semibold text-red-700">Your 14-day free trial has expired</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
-            Trial Expired
+          <span className="text-[12.5px] font-semibold text-white">Premium Plan Active</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-[#020202]"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+            Unlimited Proposals
           </span>
         </div>
-        <p className="text-[12px] text-red-600 mt-0.5 leading-[18px]">
-          Upgrade your plan to continue submitting proposals and accessing exclusive buyer opportunities.
+        <p className="text-[12px] text-white/60 mt-0.5 leading-[18px]">
+          Submit proposals on all <span className="font-bold text-[#f5c842]">Open and Exclusive</span> projects with no limits.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// State P2 — Premium, proposal just sent
+function PremiumSentBanner() {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-[#c9a227]/40">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.40)" }}>
+        <CheckCircle2 size={13} style={{ color: "#f5c842" }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[12.5px] font-semibold text-white">Proposal Submitted</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-[#020202]"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+            Premium Plan
+          </span>
+        </div>
+        <p className="text-[12px] text-white/60 mt-0.5 leading-[18px]">
+          You're on Premium — <span className="font-bold text-[#f5c842]">unlimited proposals</span> available. Submit as many as you need.
         </p>
       </div>
     </div>
@@ -481,7 +544,11 @@ function ConfettiPiece({ x, color, delay, size }: { x: number; color: string; de
 const CONFETTI_COLORS = ["#2ACB83","#1F6F54","#f5c842","#0077CC","#E36389","#6237C7","#FD4923","#10b981"];
 
 // ─── Success overlay (State 2 transition) ─────────────────────────────────────
-function SuccessOverlay({ onDone }: { onDone: () => void }) {
+function SuccessOverlay({ onDone, fromState, planMode }: {
+  onDone: () => void;
+  fromState?: DrawerDemo;
+  planMode?: DrawerPlanMode;
+}) {
   const pieces = React.useMemo(() =>
     Array.from({ length: 28 }, (_, i) => ({
       x: Math.random() * 100,
@@ -510,25 +577,137 @@ function SuccessOverlay({ onDone }: { onDone: () => void }) {
         </div>
         <p className="text-[17px] font-bold text-[#020202] mt-1">Proposal submitted!</p>
         <p className="text-[13px] text-[#62748e] leading-[20px] max-w-[260px]">
-          You've used your free trial proposal. Upgrade to submit unlimited proposals.
+          {planMode === "premium"
+            ? "Proposal submitted on your Premium plan. Submit unlimited proposals with no restrictions."
+            : fromState === 3
+            ? "You have used your 2 free proposals. Upgrade to continue submitting."
+            : "1 of 2 free proposals used — you have 1 remaining."}
         </p>
       </div>
     </div>
   );
 }
 
-// ─── Locked form overlay (State 3) ────────────────────────────────────────────
-function LockedFormOverlay() {
+
+// ─── Submitted Summary Card (State 2) ────────────────────────────────────────
+function SubmittedSummaryCard({
+  form,
+  proposalType,
+  projectId,
+  email = "sathi.m@scimplify.com",
+}: {
+  form: FormState;
+  proposalType: ProposalType;
+  projectId: string;
+  email?: string;
+}) {
+  const rows =
+    proposalType === "RFQ"
+      ? [
+          {
+            label: "Proposed Quantity",
+            value: form.proposedQtyValue
+              ? `${form.proposedQtyValue} ${form.proposedQtyUnit}`
+              : "25 kg",
+          },
+          {
+            label: "Cost Per Unit",
+            value: form.costValue
+              ? `${form.currency} ${form.costValue} / ${form.costUnit}`
+              : "USD 120 / kg",
+          },
+          { label: "Timeline", value: form.timeline || "4–8 weeks" },
+          {
+            label: "Shipment Terms",
+            value: form.shipmentTerms || "FOB (Free On Board)",
+          },
+          {
+            label: "Packaging",
+            value: form.packaging || "HDPE Bags (25 kg)",
+          },
+          ...(form.paymentTerms
+            ? [{ label: "Payment Terms", value: form.paymentTerms }]
+            : []),
+        ]
+      : [
+          {
+            label: "Proposed Quantity",
+            value: form.proposedQtyValue
+              ? `${form.proposedQtyValue} ${form.proposedQtyUnit}`
+              : "25 kg",
+          },
+          {
+            label: "Product Specification",
+            value: form.productSpec
+              ? form.productSpec.slice(0, 90) +
+                (form.productSpec.length > 90 ? "…" : "")
+              : "Purity ≥ 99%, white powder, D90 < 100 μm",
+          },
+          ...(form.processNotes
+            ? [
+                {
+                  label: "Process Notes",
+                  value:
+                    form.processNotes.slice(0, 90) +
+                    (form.processNotes.length > 90 ? "…" : ""),
+                },
+              ]
+            : []),
+          {
+            label: "Why Good Fit",
+            value: form.whyGoodFit
+              ? form.whyGoodFit.slice(0, 90) +
+                (form.whyGoodFit.length > 90 ? "…" : "")
+              : "ISO 9001 certified, 5+ yrs CDMO experience, existing API capacity",
+          },
+        ];
+
   return (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[14px]"
-      style={{ background: "rgba(249,250,251,0.82)", backdropFilter: "blur(3px)" }}>
-      <div className="flex flex-col items-center gap-3 text-center px-6">
-        <div className="w-12 h-12 rounded-full bg-[#f3f4f6] border border-[#e4e4e7] flex items-center justify-center">
-          <Lock size={20} className="text-[#9ca3af]" />
+    <div className="flex flex-col gap-4">
+      {/* Success header */}
+      <div className="flex flex-col items-center gap-2 py-4">
+        <div className="w-14 h-14 rounded-full bg-[#e8faf2] flex items-center justify-center">
+          <CheckCircle2 size={32} className="text-[#1F6F54]" />
         </div>
-        <p className="text-[13.5px] font-semibold text-[#374151]">Proposal submissions locked</p>
-        <p className="text-[12px] text-[#9ca3af] max-w-[220px] leading-[18px]">
-          Locked after trial expiry. Upgrade to unlock.
+        <p className="text-[15px] font-bold text-[#020202] text-center mt-1">
+          Proposal Submitted Successfully
+        </p>
+        <p className="text-[12.5px] text-[#62748e] text-center leading-[18px] max-w-[300px]">
+          You have successfully submitted your proposal for{" "}
+          <span className="font-semibold text-[#020202]">{projectId}</span>.
+        </p>
+      </div>
+
+      {/* Details card */}
+      <div className="bg-white rounded-[12px] border border-[#e4e4e7] overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-[#f3f4f6] bg-[#f9fafb]">
+          <span className="text-[11px] font-bold text-[#6b7280] uppercase tracking-wider">
+            Submitted Proposal Details
+          </span>
+        </div>
+        <div className="divide-y divide-[#f3f4f6]">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-start justify-between gap-4 px-4 py-3"
+            >
+              <span className="text-[12px] text-[#6b7280] shrink-0 pt-0.5 min-w-[110px]">
+                {row.label}
+              </span>
+              <span className="text-[13px] font-bold text-[#1F6F54] text-right leading-[18px]">
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Email confirmation note */}
+      <div className="flex items-start gap-2.5 px-4 py-3 rounded-[10px] bg-[#f0faf5] border border-[#bbf7d0]">
+        <CheckCircle2 size={14} className="text-[#1F6F54] mt-0.5 shrink-0" />
+        <p className="text-[12px] text-[#4b5563] leading-[18px]">
+          These same details have been sent to your email:{" "}
+          <span className="font-semibold text-[#020202]">{email}</span>
         </p>
       </div>
     </div>
@@ -779,10 +958,14 @@ export function ProposalDrawer({
   open,
   onClose,
   project,
+  onUpgrade,
+  planMode = "free",
 }: {
   open: boolean;
   onClose: () => void;
   project: ProjectDetail;
+  onUpgrade?: () => void;
+  planMode?: DrawerPlanMode;
 }) {
   const router = useRouter();
   const addProposal = useProposalStore((s) => s.addProposal);
@@ -792,9 +975,10 @@ export function ProposalDrawer({
   // ── Demo state ─────────────────────────────────────────────────────────────
   const [drawerDemo, setDrawerDemo] = useState<DrawerDemo>(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const submittedFromStateRef = useRef<DrawerDemo>(1);
 
   // Derived from demo state
-  const isFormLocked = drawerDemo === 3;
+  const isFormLocked = false;
   const isLimitReached = drawerDemo === 2;
 
   // ── Form state ─────────────────────────────────────────────────────────────
@@ -816,6 +1000,13 @@ export function ProposalDrawer({
     setForm((prev) => ({ ...prev, [k]: v }));
     setSaved(false);
   }, []);
+
+  // ── Reset demo state when plan mode changes ────────────────────────────────
+  useEffect(() => {
+    setDrawerDemo(1);
+    setSubmitted(false);
+    setShowSuccess(false);
+  }, [planMode]);
 
   // ── Restore from localStorage on open ─────────────────────────────────────
   useEffect(() => {
@@ -901,25 +1092,56 @@ export function ProposalDrawer({
       revisions: [],
     });
     localStorage.removeItem(storageKey);
-    // Show confetti success overlay, then advance demo to state 2
+    // Record which state submitted from, then show success overlay
+    submittedFromStateRef.current = drawerDemo;
     setShowSuccess(true);
     setSubmitted(true);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  // Footer CTAs — derived from demo state
+  // Footer CTAs — derived from plan mode + demo state
   const renderFooter = () => {
-    // After real submit (confetti done) → same as state 2
+    // ════ PREMIUM MODE ════════════════════════════════════════════════════════
+    if (planMode === "premium") {
+      // State P2: proposal sent → offer "Submit Another"
+      if (submitted || isLimitReached) {
+        return (
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => { setSubmitted(false); setDrawerDemo(1); setShowSuccess(false); }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13.5px] font-semibold transition-colors shadow-sm"
+            >
+              <Send className="w-4 h-4" /> Submit Another Proposal
+            </button>
+            <p className="text-[11.5px] text-[#9ca3af] text-center">
+              Unlimited submissions on your Premium plan.
+            </p>
+          </div>
+        );
+      }
+      // State P1: form open → just submit
+      return (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleSubmit}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13.5px] font-semibold transition-colors shadow-sm"
+          >
+            <Send className="w-4 h-4" /> Submit Proposal
+          </button>
+          <p className="text-[11.5px] text-[#9ca3af] text-center">
+            Unlimited proposals on Open and Exclusive projects.
+          </p>
+        </div>
+      );
+    }
+
+    // ════ FREE MODE ═══════════════════════════════════════════════════════════
+    // ── State 2: limit reached or just submitted ───────────────────────────
     if (submitted || isLimitReached) {
       return (
         <div className="flex flex-col gap-2.5">
           <button
-            onClick={() => { onClose(); router.push("/dashboard/proposals"); }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[13.5px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
-          >
-            <ClipboardList className="w-4 h-4" /> View Submitted Proposal
-          </button>
-          <button
+            onClick={onUpgrade}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13.5px] font-bold text-[#020202] transition-all hover:brightness-110"
             style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 14px rgba(245,200,66,0.45)" }}
           >
@@ -931,45 +1153,21 @@ export function ProposalDrawer({
         </div>
       );
     }
-    if (isFormLocked) {
-      return (
-        <div className="flex flex-col gap-2.5">
-          <button
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13.5px] font-bold text-[#020202] transition-all hover:brightness-110"
-            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 14px rgba(245,200,66,0.45)" }}
-          >
-            <Zap size={14} /> Upgrade to Send Proposal
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-[10px] border border-[#e4e4e7] text-[13px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
-          >
-            View Plans
-          </button>
-        </div>
-      );
-    }
-    // State 1 — normal
+    // ── State 1 & 3: form accessible — Submit + Upgrade CTAs ─────────────
     return (
       <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-[10px] border border-[#e4e4e7] text-[13.5px] font-semibold text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-[2] flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13.5px] font-semibold transition-colors shadow-sm"
-          >
-            <Send className="w-4 h-4" /> Submit Proposal
-          </button>
-        </div>
         <button
-          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[10px] border border-[#e4e4e7] text-[12.5px] font-medium text-[#62748e] hover:bg-[#f7f7f7] transition-colors"
+          onClick={handleSubmit}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-[#1F6F54] hover:bg-[#185C45] text-white text-[13.5px] font-semibold transition-colors shadow-sm"
         >
-          <ArrowRight size={13} /> Upgrade to Premium
+          <Send className="w-4 h-4" /> Submit Proposal
+        </button>
+        <button
+          onClick={onUpgrade}
+          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-[10px] text-[13.5px] font-bold text-[#020202] transition-all hover:brightness-110"
+          style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 14px rgba(245,200,66,0.45)" }}
+        >
+          <Zap size={14} /> Upgrade to Premium
         </button>
         <p className="text-[11.5px] text-[#9ca3af] text-center">
           Unlock more proposals and exclusive projects with Growth Access.
@@ -1012,7 +1210,7 @@ export function ProposalDrawer({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {!submitted && !isLimitReached && !isFormLocked && (
+              {!submitted && !isLimitReached && (
                 <span className={cn(
                   "flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full",
                   saved ? "bg-[#f0faf5] text-[#1F6F54]" : "bg-[#fef3c7] text-[#92400e]",
@@ -1048,11 +1246,17 @@ export function ProposalDrawer({
 
           {/* Demo switcher */}
           <div className="px-5 pb-3">
-            <DrawerDemoSwitcher current={drawerDemo} onChange={(s) => {
-              setDrawerDemo(s);
-              if (s !== 2) { setSubmitted(false); setShowSuccess(false); }
-              if (s === 2) { setSubmitted(true); }
-            }} />
+            <DrawerDemoSwitcher
+              current={drawerDemo}
+              planMode={planMode}
+              onChange={(s) => {
+                setDrawerDemo(s);
+                setShowSuccess(false);
+                // State 2 in both modes = "submitted/sent" preview
+                if (s === 2) { setSubmitted(true); }
+                else         { setSubmitted(false); }
+              }}
+            />
           </div>
         </div>
 
@@ -1060,47 +1264,62 @@ export function ProposalDrawer({
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
 
           {/* ── State banner ── */}
-          {drawerDemo === 1 && !submitted && <TrialActiveBanner />}
-          {(drawerDemo === 2 || (drawerDemo === 1 && submitted)) && <LimitReachedBanner />}
-          {drawerDemo === 3 && <TrialExpiredBanner />}
+          {planMode === "premium" ? (
+            <>
+              {drawerDemo === 1 && !submitted && <PremiumBanner />}
+              {(drawerDemo === 2 || submitted) && <PremiumSentBanner />}
+            </>
+          ) : (
+            <>
+              {drawerDemo === 1 && !submitted && <FreePlanBanner />}
+              {drawerDemo === 3 && !submitted && <OneUsedBanner />}
+              {(drawerDemo === 2 || submitted) && <LimitReachedBanner />}
+            </>
+          )}
 
-          {/* Type badge */}
-          <div className="flex items-center gap-2">
-            <span className={cn(
-              "inline-flex items-center px-3 py-1 rounded-full text-[12px] font-semibold border",
-              proposalType === "RFQ"
-                ? "bg-[#e3f4ff] text-[#0077CC] border-[#bae6fd]"
-                : "bg-[#f0faf5] text-[#1F6F54] border-[#bbf7d0]",
-            )}>
-              {proposalType} Proposal
-            </span>
-            <span className="text-[12px] text-[#9ca3af]">
-              {isFormLocked ? "Form locked — trial expired" : isLimitReached || submitted ? "Read-only — proposal submitted" : "Fill all required fields to submit"}
-            </span>
-          </div>
-
-          {/* Form with optional overlays */}
-          <div className="relative bg-white rounded-[14px] border border-[#e4e4e7] p-5 shadow-[0px_1px_4px_rgba(0,0,0,0.06)]">
-            {/* Confetti success overlay (state 1 → 2 transition) */}
-            {showSuccess && (
-              <SuccessOverlay onDone={() => {
-                setShowSuccess(false);
-                setDrawerDemo(2);
-              }} />
-            )}
-            {/* Locked overlay (state 3) */}
-            {isFormLocked && <LockedFormOverlay />}
-
-            {proposalType === "RFQ" ? (
-              <RFQForm form={form} set={set} files={files}
-                onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile}
-                disabled={isFormLocked || isLimitReached || submitted} />
-            ) : (
-              <CMOForm form={form} set={set} files={files}
-                onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile}
-                disabled={isFormLocked || isLimitReached || submitted} />
-            )}
-          </div>
+          {/* Form / Summary area */}
+          {(isLimitReached || submitted) ? (
+            /* ── State 2: submitted summary ── */
+            <div className="relative">
+              {showSuccess && (
+                <div className="absolute inset-0 z-20 rounded-[14px] overflow-hidden">
+                  <SuccessOverlay
+                    fromState={submittedFromStateRef.current}
+                    planMode={planMode}
+                    onDone={() => {
+                      setShowSuccess(false);
+                      if (planMode === "premium") {
+                        // Premium: always land on state 2 (Sent Proposal)
+                        setDrawerDemo(2);
+                        setSubmitted(false);
+                      } else {
+                        // Free: State 1 → 3 (1 used, 1 left); State 3 → 2 (both used)
+                        setDrawerDemo(submittedFromStateRef.current === 1 ? 3 : 2);
+                        setSubmitted(false);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+              <SubmittedSummaryCard
+                form={form}
+                proposalType={proposalType}
+                projectId={project.projectId}
+                email="sathi.m@scimplify.com"
+              />
+            </div>
+          ) : (
+            /* ── State 1 & 3: editable form ── */
+            <div className="relative bg-white rounded-[14px] border border-[#e4e4e7] p-5 shadow-[0px_1px_4px_rgba(0,0,0,0.06)]">
+              {proposalType === "RFQ" ? (
+                <RFQForm form={form} set={set} files={files}
+                  onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile} />
+              ) : (
+                <CMOForm form={form} set={set} files={files}
+                  onAddFiles={handleAddFiles} onRemoveFile={handleRemoveFile} />
+              )}
+            </div>
+          )}
 
           <div className="h-2" />
         </div>

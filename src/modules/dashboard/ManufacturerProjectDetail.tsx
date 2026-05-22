@@ -10,10 +10,10 @@ import {
 import { getProjectDetail } from "@/lib/projectsData";
 import { cn } from "@/lib/utils";
 import { ProposalDrawer } from "./ProposalDrawer";
+import { UpgradePremiumModal } from "./UpgradePremiumModal";
 
 // ─── Demo config ───────────────────────────────────────────────────────────────
-type DetailDemoState = "trial-active" | "trial-expired";
-const TRIAL_DAYS_LEFT   = 11;
+type DetailDemoState    = "free" | "premium";
 const DETAIL_MATCH_TYPE = "Capability-Based" as const;  // or "Product Catalogue-Based"
 const DETAIL_CAP_TYPE   = "Co-Development";             // RFQ | Co-Development | Contract Manufacturing
 
@@ -76,7 +76,7 @@ function DetailDemoSwitcher({ current, onChange }: { current: DetailDemoState; o
     <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa] mb-4">
       <span className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
       <div className="flex items-center gap-1">
-        {(["trial-active", "trial-expired"] as const).map(s => (
+        {(["free", "premium"] as const).map(s => (
           <button
             key={s}
             onClick={() => onChange(s)}
@@ -85,21 +85,30 @@ function DetailDemoSwitcher({ current, onChange }: { current: DetailDemoState; o
               current === s ? "bg-[#020202] text-white" : "text-[#6b7280] hover:bg-[#f0f0f0]",
             )}
           >
-            {s === "trial-active" ? "Trial Active" : "Trial Expired"}
+            {s === "free" ? "Free Plan" : "Premium"}
           </button>
         ))}
       </div>
       <span className="text-[10.5px] text-[#9ca3af] italic hidden sm:block">
-        {current === "trial-active" ? "14-day trial running — 1 proposal included" : "Trial ended — locked content visible"}
+        {current === "free" ? "Free plan — 2 proposals on Open Projects" : "Premium — unlimited access"}
       </span>
     </div>
   );
 }
 
 // ─── Gold glow upgrade button (shared across locked overlay + trial card) ───────
-function GoldGlowButton({ label = "Upgrade to Premium", className = "" }: { label?: string; className?: string }) {
+function GoldGlowButton({
+  label = "Upgrade to Premium",
+  className = "",
+  onClick,
+}: {
+  label?: string;
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
     <button
+      onClick={onClick}
       className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[12.5px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98] ${className}`}
       style={{
         background: "linear-gradient(90deg,#f5c842,#c9a227)",
@@ -112,7 +121,7 @@ function GoldGlowButton({ label = "Upgrade to Premium", className = "" }: { labe
 }
 
 // ─── Locked section overlay ────────────────────────────────────────────────────
-function LockedSection({ children }: { children: React.ReactNode }) {
+function LockedSection({ children, onUpgrade }: { children: React.ReactNode; onUpgrade?: () => void }) {
   return (
     <div className="relative rounded-[14px] overflow-hidden">
       {/* Blurred card content */}
@@ -134,7 +143,7 @@ function LockedSection({ children }: { children: React.ReactNode }) {
         <p className="text-[11.5px] text-slate-400 leading-relaxed mb-4 max-w-[260px]">
           Upgrade to Premium to unlock manufacturing requirements, technical specifications, and documentation.
         </p>
-        <GoldGlowButton />
+        <GoldGlowButton onClick={onUpgrade} />
       </div>
     </div>
   );
@@ -198,28 +207,28 @@ function ScinodeConnectCard() {
 }
 
 // ─── Trial state sidebar card ──────────────────────────────────────────────────
-function TrialStateCard({ demo, isExclusive }: { demo: DetailDemoState; isExclusive: boolean }) {
-  if (demo === "trial-active") {
+function TrialStateCard({ demo, isExclusive, onUpgrade }: { demo: DetailDemoState; isExclusive: boolean; onUpgrade?: () => void }) {
+  if (demo === "free") {
     return (
       <div className="rounded-[14px] border bg-[#0e0e0e] p-4 flex flex-col gap-3"
         style={{ borderColor: "rgba(201,162,39,0.30)" }}>
 
-        {/* Header — white label, gold only on icon + days badge */}
+        {/* Header */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Clock size={13} style={{ color: "#c9a227" }} />
-            <span className="text-[13px] font-semibold text-white">Free Trial Active</span>
+            <span className="text-[13px] font-semibold text-white">Free Plan</span>
           </div>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
             style={{ background: "rgba(245,200,66,0.10)", color: "#f5c842", border: "1px solid rgba(201,162,39,0.35)" }}>
-            {TRIAL_DAYS_LEFT} days left
+            2 proposals
           </span>
         </div>
 
         {/* Divider */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
 
-        {/* Hero — "1 Proposal Included" gold pill (sole gold accent) */}
+        {/* Hero — "2 Proposals Included" gold pill */}
         <div className="flex items-center gap-2.5">
           <span
             className="inline-flex items-center gap-1 px-2.5 py-[5px] rounded-[6px] text-[11.5px] font-bold text-[#020202] shrink-0"
@@ -228,23 +237,22 @@ function TrialStateCard({ demo, isExclusive }: { demo: DetailDemoState; isExclus
               boxShadow: "0 0 10px rgba(245,200,66,0.35)",
             }}
           >
-            <Zap size={10} /> 1 Proposal Included
+            <Zap size={10} /> 2 Proposals Included
           </span>
-          <span className="text-[11px] text-white/40">in your 14-day trial</span>
+          <span className="text-[11px] text-white/40">on Open Projects</span>
         </div>
 
-        {/* Body — white text, no gold */}
+        {/* Body */}
         <p className="text-[12px] text-white/60 leading-[19px]">
           {isExclusive
-            ? "This exclusive project locks when your trial ends. Use your proposal now."
-            : "Submit your included proposal before the trial window closes."}{" "}
-          <span className="font-bold text-white">Don't wait.</span>
+            ? "Exclusive Projects are reserved for Premium members. Upgrade to access this project."
+            : "Use your 2 free proposals on Open Projects. Upgrade to Premium for unlimited submissions."}{" "}
         </p>
 
-        {/* Primary CTA — gold glow button */}
-        <GoldGlowButton label="Upgrade to Premium" className="w-full py-2.5 text-[13px]" />
+        {/* Primary CTA */}
+        <GoldGlowButton label="Upgrade to Premium" className="w-full py-2.5 text-[13px]" onClick={onUpgrade} />
 
-        {/* Secondary — white ghost */}
+        {/* Secondary */}
         <button className="w-full py-2 rounded-[8px] text-[12px] font-medium text-white/55 border transition-colors hover:text-white hover:border-white/30"
           style={{ borderColor: "rgba(255,255,255,0.14)" }}>
           Compare Plans
@@ -253,42 +261,43 @@ function TrialStateCard({ demo, isExclusive }: { demo: DetailDemoState; isExclus
     );
   }
 
-  // Trial expired — dark card, red accent only in status row, gold CTA on black bg (no clash)
+  // Premium — green accent card
   return (
-    <div className="rounded-[14px] border bg-[#0e0e0e] p-4 flex flex-col gap-3"
-      style={{ borderColor: "rgba(220,38,38,0.30)" }}>
+    <div className="rounded-[14px] border bg-[#f0faf5] p-4 flex flex-col gap-3"
+      style={{ borderColor: "rgba(31,111,84,0.30)" }}>
 
-      {/* Header — red status only */}
+      {/* Header */}
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.30)" }}>
-          <Lock size={11} className="text-red-500" />
+          style={{ background: "rgba(31,111,84,0.12)", border: "1px solid rgba(31,111,84,0.25)" }}>
+          <CheckCircle2 size={11} style={{ color: "#1F6F54" }} />
         </div>
-        <span className="text-[13px] font-semibold text-red-400">Trial Expired</span>
-        <span className="text-[13px] text-white/40">— Content Locked</span>
+        <span className="text-[13px] font-semibold" style={{ color: "#1F6F54" }}>Premium Active</span>
+        <span className="text-[13px] text-[#62748e]">— Full Access</span>
       </div>
 
       {/* Divider */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+      <div style={{ borderTop: "1px solid rgba(31,111,84,0.10)" }} />
 
-      {/* Callout — white on dark, highlight "1 proposal" */}
-      <div className="px-3 py-2.5 rounded-[8px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-        <p className="text-[12px] text-white/70 leading-[19px]">
-          You missed your{" "}
-          <span className="font-bold text-white">1 proposal</span>{" "}
-          window.{" "}
-          <span className="font-bold text-white">Upgrade now</span>{" "}
-          to unlock full access and submit unlimited proposals.
+      {/* Callout */}
+      <div className="px-3 py-2.5 rounded-[8px]" style={{ background: "rgba(31,111,84,0.06)", border: "1px solid rgba(31,111,84,0.12)" }}>
+        <p className="text-[12px] text-[#374151] leading-[19px]">
+          You have{" "}
+          <span className="font-bold text-[#1F6F54]">unlimited proposals</span>{" "}
+          and full access to{" "}
+          <span className="font-bold text-[#1F6F54]">Exclusive Projects</span>{" "}
+          and Market Intelligence.
         </p>
       </div>
 
-      {/* Primary CTA — same gold glow (on black bg, no clash) */}
-      <GoldGlowButton label="Upgrade to Premium" className="w-full py-2.5 text-[13px]" />
-
-      {/* Secondary — white ghost */}
-      <button className="w-full py-2 rounded-[8px] text-[12px] font-medium text-white/55 border transition-colors hover:text-white hover:border-white/30"
-        style={{ borderColor: "rgba(255,255,255,0.14)" }}>
-        Talk to Scinode Team
+      {/* CTA — submit proposal directly */}
+      <button
+        className="w-full py-2.5 rounded-[8px] text-[13px] font-semibold text-white transition-colors"
+        style={{ background: "#1F6F54" }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
+      >
+        Submit Proposal
       </button>
     </div>
   );
@@ -298,18 +307,22 @@ function TrialStateCard({ demo, isExclusive }: { demo: DetailDemoState; isExclus
 export function ManufacturerProjectDetail({ id }: { id: number }) {
   const router  = useRouter();
   const p       = getProjectDetail(id);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [demo, setDemo]             = useState<DetailDemoState>("trial-active");
+  const [drawerOpen, setDrawerOpen]   = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [demo, setDemo]               = useState<DetailDemoState>("free");
 
-  const isExpired   = demo === "trial-expired";
+  const isLocked    = false;  // all project details visible on both free and premium plans
   const isExclusive = p.badge === "Exclusive";
 
   // Match type derived from project ID (odd = Capability, even = Catalogue)
   const matchType = id % 2 !== 0 ? DETAIL_MATCH_TYPE : "Product Catalogue-Based";
 
+  const openUpgrade = () => setUpgradeOpen(true);
+
   return (
     <>
-      <ProposalDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} project={p} />
+      <ProposalDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} project={p} onUpgrade={openUpgrade} planMode={demo} />
+      <UpgradePremiumModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
       <div className="flex flex-col gap-0 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
 
@@ -451,8 +464,8 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
             </SectionCard>
 
             {/* CARD 4 — Manufacturing Scope (locked if expired) */}
-            {isExpired ? (
-              <LockedSection>
+            {isLocked ? (
+              <LockedSection onUpgrade={openUpgrade}>
                 <SectionCard
                   icon={<Factory className="w-[18px] h-[18px]" />}
                   iconBg="bg-[#ede9fe]" iconColor="text-[#7C3AED]"
@@ -490,8 +503,8 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
             )}
 
             {/* CARD 5 — Required Facility Capabilities (locked if expired) */}
-            {isExpired ? (
-              <LockedSection>
+            {isLocked ? (
+              <LockedSection onUpgrade={openUpgrade}>
                 <SectionCard
                   icon={<Building2 className="w-[18px] h-[18px]" />}
                   iconBg="bg-[#fce7f3]" iconColor="text-[#be185d]"
@@ -539,8 +552,8 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
             )}
 
             {/* CARD 6 — Technical Documents (locked if expired) */}
-            {isExpired ? (
-              <LockedSection>
+            {isLocked ? (
+              <LockedSection onUpgrade={openUpgrade}>
                 <SectionCard
                   icon={<FileCheck className="w-[18px] h-[18px]" />}
                   iconBg="bg-[#f3f4f6]" iconColor="text-[#62748e]"
@@ -617,7 +630,7 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
             </div>
 
             {/* Trial / Upgrade state card */}
-            <TrialStateCard demo={demo} isExclusive={isExclusive} />
+            <TrialStateCard demo={demo} isExclusive={isExclusive} onUpgrade={openUpgrade} />
 
             {/* Scinode Connect */}
             <ScinodeConnectCard />

@@ -11,6 +11,7 @@ import {
   Send,
   TrendingUp,
   CircleUser,
+  Activity,
   ArrowRight,
   Mail,
   Phone,
@@ -34,11 +35,12 @@ const BADGE_ICON_SRC =
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { label: "Dashboard",       href: "/dashboard",           icon: LayoutDashboard },
-  { label: "Projects",        href: "/dashboard/projects",  icon: FolderOpen },
-  { label: "Proposals",       href: "/dashboard/proposals", icon: Send },
-  { label: "Active Projects", href: "/dashboard/orders",    icon: TrendingUp },
-  { label: "Profile",         href: "/dashboard/profile",   icon: CircleUser },
+  { label: "Dashboard",       href: "/dashboard",              icon: LayoutDashboard },
+  { label: "Projects",        href: "/dashboard/projects",     icon: FolderOpen },
+  { label: "Proposals",       href: "/dashboard/proposals",    icon: Send },
+  { label: "Active Projects", href: "/dashboard/orders",       icon: TrendingUp },
+  { label: "Market Pulse",    href: "/dashboard/market-pulse", icon: Activity },
+  { label: "Profile",         href: "/dashboard/profile",      icon: CircleUser },
 ] as const;
 
 const W_COLLAPSED = 56;

@@ -1,50 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronRight, Crown } from "lucide-react";
-import { useTrial } from "@/hooks/useTrial";
+import { X, ChevronRight, Crown, Lock } from "lucide-react";
 import { PricingModal } from "./PricingModal";
 
 const BANNER_BG     = "#0a0a0a";
 const GOLD_GRADIENT = "linear-gradient(90deg, #b8860b 0%, #f5c842 40%, #ffd700 60%, #c8960c 100%)";
 
-// ─── Animated countdown digit ─────────────────────────────────────────────────
-function FlipUnit({ value, unit, gold = false }: { value: number; unit: string; gold?: boolean }) {
-  const display = String(value).padStart(2, "0");
-  return (
-    <span className="flex items-end gap-[3px]">
-      <span
-        key={value}
-        className="tabular-nums text-[13px] font-bold inline-block"
-        style={{
-          minWidth: "1.6ch",
-          textAlign: "right",
-          animation: "trialDigitDrop 0.28s cubic-bezier(0.22,1,0.36,1) both",
-          ...(gold
-            ? { background: GOLD_GRADIENT, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
-            : { color: "#ffffff" }
-          ),
-        }}
-      >
-        {display}
-      </span>
-      <span className="text-[10px] pb-[1px]" style={{ color: "rgba(255,255,255,0.38)" }}>
-        {unit}
-      </span>
-    </span>
-  );
-}
-
 export function TrialBanner() {
-  const trial = useTrial();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen,  setModalOpen]  = useState(false);
+  const [dismissed,  setDismissed]  = useState(false);
 
   // ── Collapsed pill ──────────────────────────────────────────────────────────
-  if (trial.dismissed) {
+  if (dismissed) {
     return (
       <>
         <button
-          onClick={trial.expand}
+          onClick={() => setDismissed(false)}
           className="fixed top-3 right-4 z-[9996] flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
           style={{
             background: "#0a0a0a",
@@ -54,13 +26,11 @@ export function TrialBanner() {
         >
           <span className="text-[13px]">👑</span>
           <span style={{ background: GOLD_GRADIENT, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            {trial.isExpired ? "Trial Expired" : `${trial.daysLeft}d Left`}
+            Free Plan
           </span>
           <ChevronRight size={11} style={{ color: "#f5c842" }} />
         </button>
-        {modalOpen && (
-          <PricingModal onClose={() => setModalOpen(false)} daysLeft={trial.daysLeft} />
-        )}
+        {modalOpen && <PricingModal onClose={() => setModalOpen(false)} />}
       </>
     );
   }
@@ -115,7 +85,7 @@ export function TrialBanner() {
         {/* ── LEFT — badge + copy ── */}
         <div className="relative z-10 flex items-center gap-3 min-w-0">
 
-          {/* Premium badge */}
+          {/* Free Plan badge */}
           <div
             className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full"
             style={{
@@ -128,45 +98,24 @@ export function TrialBanner() {
               className="text-[10px] font-bold tracking-[0.12em] whitespace-nowrap"
               style={{ background: GOLD_GRADIENT, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
             >
-              {trial.isExpired ? "TRIAL EXPIRED" : "FREE TRIAL ACTIVE"}
+              FREE PLAN
             </span>
           </div>
 
           {/* Copy */}
           <div className="hidden sm:flex items-center gap-2.5 min-w-0">
             <p className="text-white text-[13px] font-semibold leading-none whitespace-nowrap">
-              {trial.isExpired
-                ? "Your trial has ended."
-                : `Your free trial ends in ${trial.daysLeft} day${trial.daysLeft !== 1 ? "s" : ""}.`}
+              2 proposals included in your free plan.
             </p>
             <span className="text-white/25 text-[13px] hidden md:block select-none">·</span>
-            <p className="text-white/55 text-[12px] leading-none hidden md:block truncate">
-              {trial.isExpired
-                ? "Upgrade to continue accessing Exclusive Projects and Market Pulse."
-                : "Explore Exclusive Projects and Market Pulse before access is locked."}
-            </p>
+            <div className="hidden md:flex items-center gap-1.5">
+              <Lock size={11} className="shrink-0" style={{ color: "rgba(255,255,255,0.40)" }} />
+              <p className="text-white/55 text-[12px] leading-none truncate">
+                Exclusive Projects and Market Pulse locked — upgrade to unlock.
+              </p>
+            </div>
           </div>
         </div>
-
-        {/* ── CENTER — live countdown with flip animation ── */}
-        {!trial.isExpired && (
-          <div
-            className="relative z-10 flex-shrink-0 hidden lg:flex items-center gap-2 px-4 py-[7px] rounded-full"
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(245,200,66,0.22)",
-            }}
-          >
-            <FlipUnit value={trial.daysLeft}    unit="d" />
-            <span className="text-[11px] font-bold pb-[1px]" style={{ color: "rgba(255,255,255,0.20)" }}>:</span>
-            <FlipUnit value={trial.hoursLeft}   unit="h" />
-            <span className="text-[11px] font-bold pb-[1px]" style={{ color: "rgba(255,255,255,0.20)" }}>:</span>
-            <FlipUnit value={trial.minutesLeft} unit="m" />
-            <span className="text-[11px] font-bold pb-[1px]" style={{ color: "rgba(255,255,255,0.20)" }}>:</span>
-            <FlipUnit value={trial.secondsLeft} unit="s" gold />
-            <span className="text-[10px] ml-1" style={{ color: "rgba(255,255,255,0.28)" }}>left</span>
-          </div>
-        )}
 
         {/* ── RIGHT — CTA + dismiss ── */}
         <div className="relative z-10 flex-shrink-0 flex items-center gap-2.5">
@@ -179,12 +128,12 @@ export function TrialBanner() {
               boxShadow: "0 0 10px rgba(245,200,66,0.25)",
             }}
           >
-            {trial.isExpired ? "Unlock Access" : "Upgrade Now"}
+            Upgrade Now
             <ChevronRight size={12} strokeWidth={2.5} />
           </button>
 
           <button
-            onClick={trial.dismiss}
+            onClick={() => setDismissed(true)}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:bg-white/08"
             style={{ color: "rgba(255,255,255,0.35)" }}
             aria-label="Minimize banner"
@@ -194,9 +143,7 @@ export function TrialBanner() {
         </div>
       </div>
 
-      {modalOpen && (
-        <PricingModal onClose={() => setModalOpen(false)} daysLeft={trial.daysLeft} />
-      )}
+      {modalOpen && <PricingModal onClose={() => setModalOpen(false)} />}
     </>
   );
 }
