@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Upload, Eye, EyeOff, Edit3 } from "lucide-react";
+import { useEffect } from "react";
+import { Upload } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useProfileStore } from "@/store/useProfileStore";
 import {
@@ -10,17 +10,14 @@ import {
 } from "../SharedUI";
 import { INDUSTRIES, REACTION_TYPES, AUTOMATION_TYPES } from "../constants";
 
-interface Props { onNext: () => void; isFirst?: boolean; }
+interface Props { onNext: () => void; isFirst?: boolean; viewAsCustomer?: boolean; }
 
-export function CompanyProfile({ onNext, isFirst }: Props) {
+export function CompanyProfile({ onNext, isFirst, viewAsCustomer = false }: Props) {
   const signupData = useAppStore((s) => s.signup.formData) as Record<string, unknown>;
   const user       = useAppStore((s) => s.user);
 
   const company    = useProfileStore((s) => s.company);
   const setCompany = useProfileStore((s) => s.setCompany);
-
-  // UI-only local state (no persistence needed)
-  const [viewAsCustomer, setViewAsCustomer] = useState(false);
 
   // Seed from signup data on first load only (when store values are still empty)
   useEffect(() => {
@@ -35,35 +32,6 @@ export function CompanyProfile({ onNext, isFirst }: Props) {
 
   return (
     <div className="flex flex-col">
-
-      {/* ── View as Customer toggle + Edit Profile CTA ─────────────────────── */}
-      <div className="px-4 sm:px-5 pt-4 pb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#f3f4f6]">
-        <label className="flex items-center gap-2.5 cursor-pointer">
-          <div
-            onClick={() => setViewAsCustomer((v) => !v)}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-              viewAsCustomer ? "bg-[#1F6F54]" : "bg-[#cbd5e1]"
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                viewAsCustomer ? "translate-x-4" : "translate-x-0.5"
-              }`}
-            />
-          </div>
-          <span className="flex items-center gap-1.5 text-sm text-[#62748e]">
-            {viewAsCustomer ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            {viewAsCustomer ? "Viewing as Customer" : "View as Customer"}
-          </span>
-        </label>
-
-        {!viewAsCustomer && (
-          <button className="flex items-center gap-1.5 text-sm font-medium text-[#1F6F54] hover:underline">
-            <Edit3 className="w-3.5 h-3.5" />
-            Edit Profile
-          </button>
-        )}
-      </div>
 
       {/* ── Customer view ────────────────────────────────────────────────────── */}
       {viewAsCustomer && (

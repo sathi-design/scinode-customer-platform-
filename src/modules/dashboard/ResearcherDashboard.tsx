@@ -22,7 +22,6 @@ import {
   MessageSquare,
   Plus,
   Newspaper,
-  FlaskConical,
   Globe,
   ChevronDown,
   Microscope,
@@ -1372,6 +1371,29 @@ export function Testimonials() {
   );
 }
 
+// ─── Helper: Container SVG icon ───────────────────────────────────────────────
+function ExpertContainerIcon() {
+  return (
+    <svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <mask id="res-expert-mask" fill="white">
+        <path d="M0 96C0 42.9807 42.9807 0 96 0C149.019 0 192 42.9807 192 96C192 149.019 149.019 192 96 192C42.9807 192 0 149.019 0 96Z"/>
+      </mask>
+      <path d="M0 96C0 42.9807 42.9807 0 96 0C149.019 0 192 42.9807 192 96C192 149.019 149.019 192 96 192C42.9807 192 0 149.019 0 96Z" fill="url(#res-expert-grad)"/>
+      <path d="M0 96M192 96M192 96M0 96M96 0M192 96M96 192M0 96M96 192V191C43.533 191 1 148.467 1 96H0H-1C-1 149.572 42.4284 193 96 193V192ZM192 96H191C191 148.467 148.467 191 96 191V192V193C149.572 193 193 149.572 193 96H192ZM96 0V1C148.467 1 191 43.533 191 96H192H193C193 42.4284 149.572 -1 96 -1V0ZM96 0V-1C42.4284 -1 -1 42.4284 -1 96H0H1C1 43.533 43.533 1 96 1V0Z" fill="white" fillOpacity="0.1" mask="url(#res-expert-mask)"/>
+      <path d="M109.333 126V119.333C109.333 115.797 107.929 112.406 105.428 109.905C102.928 107.405 99.5362 106 96 106H76C72.4637 106 69.0724 107.405 66.5719 109.905C64.0714 112.406 62.6666 115.797 62.6666 119.333V126" stroke="white" strokeOpacity="0.2" strokeWidth="6.66667" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M109.333 66.4268C112.193 67.168 114.725 68.8376 116.532 71.1736C118.34 73.5096 119.321 76.3797 119.321 79.3334C119.321 82.2871 118.34 85.1572 116.532 87.4932C114.725 89.8292 112.193 91.4989 109.333 92.2401" stroke="white" strokeOpacity="0.2" strokeWidth="6.66667" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M129.333 126V119.334C129.331 116.379 128.348 113.51 126.538 111.175C124.728 108.84 122.194 107.172 119.333 106.434" stroke="white" strokeOpacity="0.2" strokeWidth="6.66667" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M86 92.6667C93.3638 92.6667 99.3333 86.6971 99.3333 79.3333C99.3333 71.9695 93.3638 66 86 66C78.6362 66 72.6666 71.9695 72.6666 79.3333C72.6666 86.6971 78.6362 92.6667 86 92.6667Z" stroke="white" strokeOpacity="0.2" strokeWidth="6.66667" strokeLinecap="round" strokeLinejoin="round"/>
+      <defs>
+        <linearGradient id="res-expert-grad" x1="37.5" y1="40" x2="155" y2="165.5" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0172E7" stopOpacity="0.2"/>
+          <stop offset="1" stopColor="#2DD17C" stopOpacity="0.2"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 // ─── 9. Talk to Expert ────────────────────────────────────────────────────────
 export function TalkToExpert() {
   return (
@@ -1418,11 +1440,8 @@ export function TalkToExpert() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center justify-center shrink-0 w-[192px] h-[192px] rounded-full border border-white/10"
-          style={{ background: "linear-gradient(136.89deg, rgba(1,114,231,0.20) 20.20%, rgba(45,209,124,0.20) 83.55%)" }}>
-          <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
-            <FlaskConical size={40} className="text-emerald-300" />
-          </div>
+        <div className="hidden md:block shrink-0">
+          <ExpertContainerIcon />
         </div>
       </div>
     </section>
