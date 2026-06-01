@@ -59,7 +59,8 @@ export default function LoginPage() {
         setUser({ ...loggedIn, role: "manufacturing" });
       }
       setSuccess(true);
-      setTimeout(() => router.push("/dashboard"), 1800);
+      // Navigate immediately — don't rely on setTimeout which can be dropped
+      router.push("/dashboard");
     } catch {
       setErrors({ server: "Invalid email or password. Please try again." });
     }

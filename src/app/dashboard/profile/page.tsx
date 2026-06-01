@@ -1,6 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHydration } from "@/hooks/useHydration";
 import { ProfileSetup } from "@/modules/profile/ProfileSetup";
@@ -13,9 +14,21 @@ const RESEARCHER_PROFILE_ROLES = new Set(["cro", "scientist", "researcher"]);
 function ProfileGate() {
   const { user } = useAuth();
   const hydrated = useHydration();
+  const router = useRouter();
 
-  // Wait for hydration so role is accurate from persisted store
-  if (!hydrated || !user) return null;
+  // Redirect to login if hydrated and still no user
+  useEffect(() => {
+    if (hydrated && !user) {
+      router.replace("/login");
+    }
+  }, [hydrated, user, router]);
+
+  // Show nothing while hydrating or redirecting
+  if (!hydrated || !user) return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="w-6 h-6 rounded-full border-2 border-[#2ACB83] border-t-transparent animate-spin" />
+    </div>
+  );
 
   // profileSubtype wins: "pi" = Independent CRO profile module
   if (user.profileSubtype === "pi" || user.role === "pi") {

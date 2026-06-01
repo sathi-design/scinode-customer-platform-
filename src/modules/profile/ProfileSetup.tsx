@@ -517,56 +517,58 @@ export function ProfileSetup() {
       <div ref={stickyRef} className="sticky top-[-16px] md:top-[-24px] z-30 pb-3 pt-2" style={{ background: "#f9fafb" }}>
 
         {/* Title row + View as Customer toggle */}
-        <div className="pt-0 pb-3 flex items-start justify-between gap-4">
+        <div className="pt-0 pb-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
           <div className="min-w-0">
             <h1
-              className="text-[28px] font-semibold leading-[34px] tracking-[-0.02em] text-[#18181b]"
+              className="text-[22px] sm:text-[28px] font-semibold leading-[30px] sm:leading-[34px] tracking-[-0.02em] text-[#18181b]"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Profile
             </h1>
-            <p className="text-[14px] text-[#62748e] mt-0.5 leading-[22px]">
+            <p className="text-[13px] sm:text-[14px] text-[#62748e] mt-0.5 leading-[20px] sm:leading-[22px] hidden sm:block">
               Manage your supplier information, technical capabilities, and customer-facing profile visibility.
             </p>
           </div>
 
           {/* Edit / View toggle */}
-          <div className="flex items-center shrink-0 mt-2 rounded-[8px] overflow-hidden border border-slate-200 shadow-sm">
+          <div className="flex items-center self-start sm:self-auto sm:mt-2 rounded-[8px] overflow-hidden border border-slate-200 shadow-sm shrink-0">
             <button
               onClick={() => setViewAsCustomer(false)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-[7px] text-[12px] font-medium transition-all whitespace-nowrap",
+                "flex items-center gap-1.5 px-2.5 sm:px-3 py-[7px] text-[12px] font-medium transition-all whitespace-nowrap",
                 !viewAsCustomer
                   ? "bg-[#018e7e] text-white"
                   : "bg-white text-slate-500 hover:bg-slate-50"
               )}
             >
               <Pencil className="w-3 h-3" />
-              Edit your profile
+              <span className="hidden sm:inline">Edit your profile</span>
+              <span className="sm:hidden">Edit</span>
             </button>
             <div className="w-px h-5 bg-slate-200 shrink-0" />
             <button
               onClick={() => setViewAsCustomer(true)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-[7px] text-[12px] font-medium transition-all whitespace-nowrap",
+                "flex items-center gap-1.5 px-2.5 sm:px-3 py-[7px] text-[12px] font-medium transition-all whitespace-nowrap",
                 viewAsCustomer
                   ? "bg-[#018e7e] text-white"
                   : "bg-white text-slate-500 hover:bg-slate-50"
               )}
             >
               <Eye className="w-3 h-3" />
-              View your profile as a customer
+              <span className="hidden sm:inline">View your profile as a customer</span>
+              <span className="sm:hidden">Preview</span>
             </button>
           </div>
         </div>
 
         {/* ── Two separate group containers — wrapped in one card with shadow ── */}
-        <div className="flex items-stretch gap-0 rounded-xl border border-slate-200 bg-white w-full"
+        <div className="flex flex-col sm:flex-row items-stretch gap-0 rounded-xl border border-slate-200 bg-white w-full"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)" }}>
 
           {/* Onboarding box */}
           <div className={cn(
-            "flex flex-col flex-1 min-w-0 transition-all duration-200 p-3 rounded-l-xl",
+            "flex flex-col min-w-0 transition-all duration-200 p-3 rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none sm:flex-1",
             ctx.group === "onboarding" ? "bg-[#E8FBF2]" : "bg-white"
           )}>
             {/* Box header */}
@@ -589,8 +591,8 @@ export function ProfileSetup() {
                   : `${ONBOARDING_TABS.length} steps`}
               </span>
             </div>
-            {/* Tabs */}
-            <div className="flex items-center gap-1">
+            {/* Tabs — horizontally scrollable on small screens */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
               {ONBOARDING_TABS.map(({ id, label }, localIdx) => {
                 const isActive = activeIndex === localIdx;
                 const isDone   = localIdx < activeIndex;
@@ -599,7 +601,7 @@ export function ProfileSetup() {
                     key={id}
                     onClick={() => setActiveIndex(localIdx)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-[13px] font-medium whitespace-nowrap transition-all duration-200",
+                      "flex items-center gap-1.5 px-2.5 sm:px-3 py-[7px] rounded-lg text-[12px] sm:text-[13px] font-medium whitespace-nowrap transition-all duration-200 shrink-0",
                       isActive ? "bg-[#018e7e] text-white"
                       : isDone  ? "bg-white text-[#018e7e] border border-[#018e7e]/30"
                       : ctx.group === "onboarding" ? "bg-white/70 text-[#334155] border border-slate-200" : "text-slate-400 hover:bg-white/60"
@@ -617,12 +619,13 @@ export function ProfileSetup() {
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="w-px self-stretch bg-slate-200 shrink-0" />
+          {/* Divider — horizontal on mobile, vertical on sm+ */}
+          <div className="h-px w-full bg-slate-200 sm:hidden" />
+          <div className="hidden sm:block w-px self-stretch bg-slate-200 shrink-0" />
 
           {/* Enrichment box */}
           <div className={cn(
-            "flex flex-col flex-1 min-w-0 transition-all duration-200 p-3 rounded-r-xl",
+            "flex flex-col min-w-0 transition-all duration-200 p-3 rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none sm:flex-1",
             ctx.group === "enrichment" ? "bg-amber-50" : "bg-white"
           )}>
             {/* Box header */}
@@ -643,8 +646,8 @@ export function ProfileSetup() {
                   : `${ENRICHMENT_TABS.length} steps`}
               </span>
             </div>
-            {/* Tabs */}
-            <div className="flex items-center gap-1">
+            {/* Tabs — horizontally scrollable on small screens */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
               {ENRICHMENT_TABS.map(({ id, label }, localIdx) => {
                 const globalIdx = ONBOARDING_TABS.length + localIdx;
                 const isActive  = activeIndex === globalIdx;
@@ -654,7 +657,7 @@ export function ProfileSetup() {
                     key={id}
                     onClick={() => setActiveIndex(globalIdx)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-[13px] font-medium whitespace-nowrap transition-all duration-200",
+                      "flex items-center gap-1.5 px-2.5 sm:px-3 py-[7px] rounded-lg text-[12px] sm:text-[13px] font-medium whitespace-nowrap transition-all duration-200 shrink-0",
                       isActive ? "bg-amber-500 text-white"
                       : isDone  ? "bg-white text-amber-700 border border-amber-300/60"
                       : ctx.group === "enrichment" ? "bg-white/70 text-[#334155] border border-slate-200" : "text-slate-400 hover:bg-white/60"
@@ -674,7 +677,7 @@ export function ProfileSetup() {
         </div>
 
         {/* Active section label strip — within-group step counter */}
-        <div className="flex items-center gap-2 mt-2 px-0.5">
+        <div className="flex items-center flex-wrap gap-1.5 mt-2 px-0.5">
           <span className={cn(
             "text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-0.5 rounded-full",
             ctx.group === "onboarding" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"

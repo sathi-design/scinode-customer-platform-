@@ -18,12 +18,14 @@ export function DropdownSelect({
   onChange,
   options,
   placeholder,
+  prefix,
   className,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: readonly string[] | string[];
   placeholder?: string;
+  prefix?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,7 +50,11 @@ export function DropdownSelect({
           !value && "text-[#9ca3af]",
         )}
       >
-        <span className="flex-1 truncate text-left">{value || placeholder || "Select…"}</span>
+        <span className="flex-1 truncate text-left">
+          {value
+            ? prefix ? <><span className="text-[#9CA3AF] font-normal">{prefix}</span><span className="font-semibold">{value}</span></> : value
+            : placeholder || "Select…"}
+        </span>
         <ChevronDown
           className={cn(
             "w-4 h-4 text-[#94a3b8] flex-shrink-0 ml-2 transition-transform duration-150",
