@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import {
   Plus, Package, Trash2, Upload, FileSpreadsheet, CheckCircle2, X, Download,
   AlertCircle, FileText, Image as ImageIcon, Search, ChevronDown, ChevronUp,
-  Clock, SlidersHorizontal, Check, Info, Sparkles, Edit3, Loader2,
+  Clock, SlidersHorizontal, Check, Info, Sparkles, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormField, inputCls, DropdownSelect, EmptyState, DrawerFooter } from "../SharedUI";
@@ -1007,6 +1007,53 @@ function CollapsibleCardGrid<T extends { id: string }>({
   );
 }
 
+// ─── Pure filter / sort helper (module-level — no closure issues) ─────────────
+
+function filterAndSort<T extends Product>(
+  items: T[],
+  src: "manual" | "catalogue",
+  search: string,
+  sort: string,
+  filters: Record<"inventory" | "source" | "readiness", string[]>,
+): T[] {
+  let result = [...items];
+
+  if (search.trim()) {
+    const q = search.toLowerCase();
+    result = result.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.casNo.toLowerCase().includes(q),
+    );
+  }
+
+  if (filters.inventory.length > 0) {
+    result = result.filter((p) => {
+      if (filters.inventory.includes("In Inventory") && p.inventoryStatus === "In inventory") return true;
+      if (filters.inventory.includes("Made to Order") && p.inventoryStatus === "Made to order") return true;
+      return false;
+    });
+  }
+
+  if (filters.source.length > 0) {
+    if (src === "catalogue" && !filters.source.includes("Catalogue Generated")) return [];
+    if (src === "manual" && !filters.source.includes("Manually Added")) return [];
+  }
+
+  if (filters.readiness.length > 0) {
+    result = result.filter((p) => {
+      const ok = isProductComplete(p);
+      if (filters.readiness.includes("Complete") && ok) return true;
+      if (filters.readiness.includes("Incomplete") && !ok) return true;
+      return false;
+    });
+  }
+
+  if (sort === "A–Z") result.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sort === "Z–A") result.sort((a, b) => b.name.localeCompare(a.name));
+  else if (sort === "Oldest Added") result.reverse();
+
+  return result;
+}
+
 // ─── Group header ──────────────────────────────────────────────────────────────
 
 function GroupHeader({ label, badge, badgeCls }: { label: string; badge: string; badgeCls: string }) {
@@ -1068,60 +1115,9 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
     setMissingBannerDismissed(false);
   };
 
-  // Filtering helpers
-  const applyFiltersAndSort = <T extends Product>(items: T[], src: "manual" | "catalogue"): T[] => {
-    let result = [...items];
-
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) => p.name.toLowerCase().includes(q) || p.casNo.toLowerCase().includes(q)
-      );
-    }
-
-    // Inventory filter
-    if (filters.inventory.length > 0) {
-      result = result.filter((p) => {
-        if (filters.inventory.includes("In Inventory") && p.inventoryStatus === "In inventory") return true;
-        if (filters.inventory.includes("Made to Order") && p.inventoryStatus === "Made to order") return true;
-        return false;
-      });
-    }
-
-    // Source filter
-    if (filters.source.length > 0) {
-      if (src === "catalogue" && !filters.source.includes("Catalogue Generated")) return [];
-      if (src === "manual" && !filters.source.includes("Manually Added")) return [];
-    }
-
-    // Readiness filter
-    if (filters.readiness.length > 0) {
-      result = result.filter((p) => {
-        const complete = isProductComplete(p);
-        if (filters.readiness.includes("Complete") && complete) return true;
-        if (filters.readiness.includes("Incomplete") && !complete) return true;
-        return false;
-      });
-    }
-
-    // Sort
-    if (sort === "A–Z") result.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sort === "Z–A") result.sort((a, b) => b.name.localeCompare(a.name));
-    else if (sort === "Oldest Added") result.reverse();
-    // "Latest Added" — default order
-
-    return result;
-  };
-
-  const filteredCatalogueProducts = useMemo(
-    () => applyFiltersAndSort(catalogueProducts, "catalogue"),
-    [catalogueProducts, search, sort, filters]
-  );
-  const filteredManualProducts = useMemo(
-    () => applyFiltersAndSort(products as Product[], "manual") as Product[],
-    [products, search, sort, filters]
-  );
+  // Pure derived data — filter/sort via module-level function (no closure risk)
+  const filteredCatalogueProducts = filterAndSort(catalogueProducts, "catalogue", search, sort, filters);
+  const filteredManualProducts    = filterAndSort(products as Product[], "manual", search, sort, filters) as Product[];
 
   const hasAnyProducts = products.length > 0 || (cataloguePhase === "complete" && catalogueProducts.length > 0);
   const missingDataProducts = catalogueProducts.filter((p) => p.needsUpdate);
