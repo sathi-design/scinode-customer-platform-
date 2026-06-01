@@ -174,7 +174,7 @@ function UploadCatalogueModal({
   const STEPS: {
     n: string; title: string; body: string;
     chips?: string[]; note?: string; bullets?: string[];
-    fieldChips?: string[]; productPreview?: boolean;
+    productPreview?: boolean;
   }[] = [
     {
       n: "1", title: "Upload Existing Files",
@@ -188,8 +188,7 @@ function UploadCatalogueModal({
     },
     {
       n: "3", title: "Products Become Searchable",
-      body: "Your catalogue is converted into structured product cards.",
-      fieldChips: ["Product Name", "CAS Number", "Purity", "MOQ", "Grade", "Applications", "Inventory Status"],
+      body: "Each product gets a structured, buyer-facing card — discoverable via search, RFQ matching, and industry filters.",
       productPreview: true,
     },
     {
@@ -275,68 +274,71 @@ function UploadCatalogueModal({
                         </div>
                       )}
 
-                      {/* Step 3 — horizontal field chips + product card preview */}
-                      {step.fieldChips && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {step.fieldChips.map((f) => (
-                            <span key={f} className="text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-[#E5E7EB] bg-white text-[#4B5563]">
-                              {f}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {step.productPreview && (
-                        <div className="mt-3">
-                          {/* Mini product card preview */}
-                          <div className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden">
-                            {/* Card header */}
-                            <div className="p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <p className="text-[12px] font-bold text-[#020202]">Sodium Bromide</p>
-                                  <p className="text-[10.5px] font-medium text-[#018e7e] mt-0.5">Flavors & Fragrances</p>
-                                  <div className="flex flex-wrap gap-1 mt-1.5">
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#B2F3B7] text-[#0F7614]">
-                                      IN INVENTORY
-                                    </span>
+                      {/* Step 3 — 4-card peek carousel */}
+                      {step.productPreview && (() => {
+                        const MINI = [
+                          { name: "Naproxen Sodium",   industry: "Pharmaceuticals",     inv: false, cas: "26159-34-2", purity: "99.0%", moq: "50 kg",  grade: "API"        },
+                          { name: "Sodium Bromide",    industry: "Flavors & Frag.",     inv: true,  cas: "7647-15-6",  purity: "99.5%", moq: "56 MT",  grade: "Industrial" },
+                          { name: "Ibuprofen API",     industry: "Pharmaceuticals",     inv: true,  cas: "15687-27-1", purity: "99.5%", moq: "100 kg", grade: "Pharma"     },
+                          { name: "Paracetamol",       industry: "Pharmaceuticals",     inv: true,  cas: "103-90-2",   purity: "99.8%", moq: "200 kg", grade: "IP Grade"   },
+                        ];
+                        return (
+                          <div className="mt-2.5">
+                            {/* Carousel — cards 1 & 4 peek with fade */}
+                            <div className="relative overflow-hidden">
+                              <div
+                                className="flex gap-2"
+                                style={{ transform: "translateX(-56px)", width: "calc(100% + 112px)" }}
+                              >
+                                {MINI.map((c, i) => (
+                                  <div
+                                    key={i}
+                                    className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden flex-shrink-0"
+                                    style={{ width: 118 }}
+                                  >
+                                    {/* Header */}
+                                    <div className="p-2.5 pb-2">
+                                      <p className="text-[11px] font-bold text-[#020202] leading-tight line-clamp-2">{c.name}</p>
+                                      <p className="text-[9px] font-medium text-[#018e7e] mt-0.5 truncate">{c.industry}</p>
+                                      <span className={cn(
+                                        "inline-block mt-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full",
+                                        c.inv ? "bg-[#B2F3B7] text-[#0F7614]" : "bg-[#F3F4F6] text-[#4B5563]"
+                                      )}>
+                                        {c.inv ? "IN INVENTORY" : "Made to Order"}
+                                      </span>
+                                    </div>
+                                    {/* Specs */}
+                                    <div className="px-2.5 pb-2 border-t border-[#F3F4F6] pt-1.5 flex flex-col gap-[3px]">
+                                      {[["CAS", c.cas], ["Purity", c.purity], ["MOQ", c.moq], ["Grade", c.grade]].map(([l, v]) => (
+                                        <div key={l} className="flex items-center justify-between">
+                                          <span className="text-[8.5px] text-[#9CA3AF]">{l}</span>
+                                          <span className="text-[8.5px] font-semibold text-[#020202] truncate max-w-[60px] text-right">{v}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Badge */}
+                                    <div className="px-2.5 pb-2">
+                                      <span className="text-[7.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#E6F3FB] text-[#0077CC] flex items-center gap-0.5 w-fit">
+                                        <Sparkles size={6} /> Catalogue
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="w-6 h-6 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
-                                  <Trash2 size={11} className="text-[#D1D5DB]" />
-                                </div>
+                                ))}
                               </div>
+                              {/* Left fade (card 1) */}
+                              <div className="absolute inset-y-0 left-0 w-16 pointer-events-none z-10"
+                                style={{ background: "linear-gradient(to right, #F9FAFB 30%, transparent)" }} />
+                              {/* Right fade (card 4) */}
+                              <div className="absolute inset-y-0 right-0 w-16 pointer-events-none z-10"
+                                style={{ background: "linear-gradient(to left, #F9FAFB 30%, transparent)" }} />
                             </div>
-                            {/* Specs */}
-                            <div className="px-3 pb-2 border-t border-[#F3F4F6] pt-2">
-                              {[
-                                { l: "CAS", v: "7647-15-6" },
-                                { l: "Purity", v: "99.5%" },
-                                { l: "MOQ", v: "56 MT" },
-                                { l: "Grade", v: "Industrial" },
-                                { l: "Available", v: "3 MT" },
-                              ].map(({ l, v }) => (
-                                <div key={l} className="flex items-center justify-between py-1 border-b border-[#F3F4F6] last:border-0">
-                                  <span className="text-[10px] text-[#9CA3AF]">{l}</span>
-                                  <span className="text-[10px] font-semibold text-[#020202]">{v}</span>
-                                </div>
-                              ))}
-                            </div>
-                            {/* Footer badges */}
-                            <div className="px-3 pb-3 flex flex-wrap gap-1">
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#E6F3FB] text-[#0077CC] flex items-center gap-1">
-                                <Sparkles size={7} /> Generated from Catalogue
-                              </span>
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
-                                ⚡ Chemistry Cracked
-                              </span>
-                            </div>
+                            {/* Caption */}
+                            <p className="text-[11px] text-[#6B7280] leading-[16px] mt-2.5 italic">
+                              Your cards will look like this after our intelligence team reviews and structures your catalogue.
+                            </p>
                           </div>
-                          {/* Caption */}
-                          <p className="text-[11px] text-[#6B7280] leading-[16px] mt-2 italic">
-                            Your card will be visible like this after the intelligence team reviews and structures your catalogue.
-                          </p>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}
