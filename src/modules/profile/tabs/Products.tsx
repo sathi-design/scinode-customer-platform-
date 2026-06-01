@@ -171,7 +171,11 @@ function UploadCatalogueModal({
 
   const handleClose = () => { setSelectedFiles([]); onClose(); };
 
-  const STEPS = [
+  const STEPS: {
+    n: string; title: string; body: string;
+    chips?: string[]; note?: string; bullets?: string[];
+    fieldChips?: string[]; productPreview?: boolean;
+  }[] = [
     {
       n: "1", title: "Upload Existing Files",
       body: "Supported formats: Excel (.xlsx, .xls, .csv), PDF, Word (.doc, .docx), PowerPoint, JPG, PNG. Upload one or multiple files.",
@@ -185,7 +189,8 @@ function UploadCatalogueModal({
     {
       n: "3", title: "Products Become Searchable",
       body: "Your catalogue is converted into structured product cards.",
-      bullets: ["Product Name", "CAS Number", "Purity", "MOQ", "Grade", "Applications", "Inventory Status"],
+      fieldChips: ["Product Name", "CAS Number", "Purity", "MOQ", "Grade", "Applications", "Inventory Status"],
+      productPreview: true,
     },
     {
       n: "4", title: "Get Better Buyer Matches",
@@ -258,6 +263,7 @@ function UploadCatalogueModal({
                           })}
                         </div>
                       )}
+                      {/* Standard bullet list (Step 4) */}
                       {step.bullets && (
                         <div className="flex flex-col gap-1 mt-1.5">
                           {step.bullets.map((b) => (
@@ -266,6 +272,69 @@ function UploadCatalogueModal({
                               <span className="text-[11.5px] text-[#4B5563]">{b}</span>
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {/* Step 3 — horizontal field chips + product card preview */}
+                      {step.fieldChips && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {step.fieldChips.map((f) => (
+                            <span key={f} className="text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-[#E5E7EB] bg-white text-[#4B5563]">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {step.productPreview && (
+                        <div className="mt-3">
+                          {/* Mini product card preview */}
+                          <div className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden">
+                            {/* Card header */}
+                            <div className="p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-[12px] font-bold text-[#020202]">Sodium Bromide</p>
+                                  <p className="text-[10.5px] font-medium text-[#018e7e] mt-0.5">Flavors & Fragrances</p>
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#B2F3B7] text-[#0F7614]">
+                                      IN INVENTORY
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="w-6 h-6 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center flex-shrink-0">
+                                  <Trash2 size={11} className="text-[#D1D5DB]" />
+                                </div>
+                              </div>
+                            </div>
+                            {/* Specs */}
+                            <div className="px-3 pb-2 border-t border-[#F3F4F6] pt-2">
+                              {[
+                                { l: "CAS", v: "7647-15-6" },
+                                { l: "Purity", v: "99.5%" },
+                                { l: "MOQ", v: "56 MT" },
+                                { l: "Grade", v: "Industrial" },
+                                { l: "Available", v: "3 MT" },
+                              ].map(({ l, v }) => (
+                                <div key={l} className="flex items-center justify-between py-1 border-b border-[#F3F4F6] last:border-0">
+                                  <span className="text-[10px] text-[#9CA3AF]">{l}</span>
+                                  <span className="text-[10px] font-semibold text-[#020202]">{v}</span>
+                                </div>
+                              ))}
+                            </div>
+                            {/* Footer badges */}
+                            <div className="px-3 pb-3 flex flex-wrap gap-1">
+                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#E6F3FB] text-[#0077CC] flex items-center gap-1">
+                                <Sparkles size={7} /> Generated from Catalogue
+                              </span>
+                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
+                                ⚡ Chemistry Cracked
+                              </span>
+                            </div>
+                          </div>
+                          {/* Caption */}
+                          <p className="text-[11px] text-[#6B7280] leading-[16px] mt-2 italic">
+                            Your card will be visible like this after the intelligence team reviews and structures your catalogue.
+                          </p>
                         </div>
                       )}
                     </div>
