@@ -348,16 +348,11 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
         {/* ── Header ───────────────────────────────────────────────── */}
         <div className="flex items-start sm:items-center justify-between gap-3 mb-5 flex-wrap">
           <div>
-            <h2 className="text-[17px] font-bold text-slate-900 leading-tight">Profile Performance</h2>
+            <h2 className="text-[17px] font-bold text-slate-900 leading-tight">Profile Activation</h2>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Complete onboarding to activate buyer matching —{" "}
-              <span className="font-semibold" style={{ color: "#f59e0b" }}>3 steps remaining</span>
+              Complete onboarding to activate proposal submissions and make your profile visible to customers.
             </p>
           </div>
-          <button onClick={onOpenProfile}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] font-medium text-slate-500 hover:bg-slate-50 transition-colors shrink-0">
-            <Eye size={12} /> View as Buyer
-          </button>
         </div>
 
         {/* ── Stepper Timeline ─────────────────────────────────────── */}
@@ -449,15 +444,24 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
 
             {/* KPI list */}
             <div className="w-full flex flex-col gap-2.5 pt-3 border-t border-slate-100">
+              {/* Score Impact table header */}
+              <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                <span className="text-[9px] font-bold uppercase tracking-[0.10em]" style={{ color: "#6B7280" }}>Profile Section</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.10em]" style={{ color: "#6B7280" }}>Score Impact</span>
+              </div>
               {[
-                { label: "Buyer visibility", value: "Limited",       valueColor: "#D97706" },
-                { label: "RFQ delivery",     value: "Inactive",      valueColor: "#DC2626" },
-                { label: "Plan",             value: "Free",          valueColor: "#6B7280" },
-                { label: "Onboarding",       value: `${coreDone}/3`, valueColor: coreDone > 0 ? "#1F6F54" : "#D97706" },
-              ].map((kpi, i) => (
+                { label: "Company Profile",   value: "+10%", done: true  },
+                { label: "Product Catalogue", value: "+25%", done: false },
+                { label: "Terms & Activation",value: "+35%", done: false },
+              ].map((row, i) => (
                 <div key={i} className="flex items-center justify-between gap-2">
-                  <span className="text-[9.5px]" style={{ color: "#6B7280" }}>{kpi.label}</span>
-                  <span className="text-[10px] font-bold" style={{ color: kpi.valueColor }}>{kpi.value}</span>
+                  <span className="text-[10px] font-medium" style={{ color: row.done ? "#1F6F54" : "#374151" }}>
+                    {row.label}
+                  </span>
+                  <span className="text-[11px] font-bold tabular-nums"
+                    style={{ color: row.done ? "#2ACB83" : "#9CA3AF" }}>
+                    {row.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -597,42 +601,6 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
           </div>
         </div>
 
-        {/* ── Bottom impact metric strip ────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 pt-5 border-t border-slate-100">
-          {[
-            {
-              icon: "✅", stepLabel: "Company Profile — Done",
-              metric: "2,400+", unit: "buyers can discover you right now",
-              bg: "rgba(42,203,131,0.06)", border: "rgba(42,203,131,0.22)",
-              labelColor: "#1F6F54", metricColor: "#0a5c30",
-            },
-            {
-              icon: "⏳", stepLabel: "Products — Add to unlock",
-              metric: "96",     unit: "buyers searched your category this week",
-              bg: "#fff7ed",    border: "rgba(249,115,22,0.22)",
-              labelColor: "#c2410c", metricColor: "#ea580c",
-            },
-            {
-              icon: "⏳", stepLabel: "Terms — Accept to receive RFQs",
-              metric: "50+",    unit: "live enquiries waiting for activated suppliers",
-              bg: "#eff7ff",    border: "rgba(0,119,204,0.20)",
-              labelColor: "#0077CC", metricColor: "#0369a1",
-            },
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col gap-1.5 p-4 rounded-xl"
-              style={{ background: item.bg, border: `1px solid ${item.border}` }}>
-              <span className="text-[9px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: item.labelColor }}>
-                {item.icon} {item.stepLabel}
-              </span>
-              <span className="text-[24px] font-black tabular-nums leading-none"
-                style={{ color: item.metricColor }}>
-                {item.metric}
-              </span>
-              <span className="text-[10px] text-slate-500 leading-snug">{item.unit}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -687,92 +655,99 @@ const JOURNEY_COMPACT = [
 
 function OnboardingJourneyPanel({ onStartOnboarding }: { onStartOnboarding?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col w-full h-full">
-      {/* Header */}
-      <div className="mb-3 shrink-0">
-        <p className="text-[9px] font-bold tracking-[0.15em] text-slate-400 uppercase mb-0.5">YOUR GROWTH JOURNEY</p>
-        <h3 className="text-[14px] font-bold text-slate-900 leading-tight">What You Unlock</h3>
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col w-full h-full overflow-hidden">
+
+      {/* ── Header ───────────────────────────────────────────── */}
+      <div className="p-4 border-b border-slate-100 shrink-0">
+        <h3 className="text-sm font-bold text-slate-900">Your Access Level</h3>
+        <p className="text-xs text-slate-400 mt-0.5">Complete onboarding to unlock more</p>
       </div>
 
-      {/* Stage cards — flex-1 so they share remaining height equally */}
-      <div className="flex flex-col gap-2 flex-1 min-h-0">
-        {JOURNEY_COMPACT.map((stage, idx) => (
-          <div key={idx} className="flex flex-col gap-1.5 flex-1">
-            {/* Stage card */}
-            <div className="rounded-xl border p-3 flex flex-col gap-2 flex-1"
-              style={{ background: stage.bg, borderColor: stage.border }}>
+      <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
 
-              {/* Stage header */}
-              <div className="flex items-start justify-between gap-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[17px] leading-none">{stage.icon}</span>
-                  <div>
-                    <h4 className="text-[11.5px] font-bold leading-tight" style={{ color: stage.color }}>
-                      {stage.title}
-                    </h4>
-                    <p className="text-[9px] mt-[1px]"
-                      style={{ color: idx === 2 ? "#C9A84C" : "#9ca3af" }}>
-                      {stage.subtitle}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[7.5px] font-bold px-1.5 py-[3px] rounded-full"
-                    style={{ background: stage.statusBg, color: stage.statusText }}>
-                    {stage.status}
-                  </span>
-                  {idx === 2 && <ChevronRight size={12} style={{ color: "rgba(212,175,55,0.60)" }} />}
-                </div>
-              </div>
-
-              {/* Features */}
-              <div className="flex flex-col gap-1 flex-1">
-                {stage.features.map((f, i) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    <span className="text-[9px] shrink-0 mt-[2px]"
-                      style={{ color: idx === 2 ? "#D4AF37" : stage.color }}>
-                      {idx === 2 ? "🔒" : "✓"}
-                    </span>
-                    <span className="text-[10.5px] leading-snug"
-                      style={{ color: idx === 2 ? "#ffffff" : "#374151" }}>
-                      {f}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA */}
-              {stage.cta && (
-                <button
-                  onClick={idx === 1 ? onStartOnboarding : undefined}
-                  className="mt-auto w-full py-1.5 rounded-lg text-[10px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
-                  style={idx === 2
-                    ? { background: "linear-gradient(135deg,#B8962E 0%,#D4AF37 50%,#B8962E 100%)", color: "#0F0F0A", border: "1px solid rgba(212,175,55,0.50)" }
-                    : { background: stage.cta.color, color: "white" }
-                  }>
-                  {stage.cta.label}
-                </button>
-              )}
+        {/* ── TIER 1: Current plan — Starter ───────────────── */}
+        <div className="rounded-xl border p-3 flex flex-col gap-2"
+          style={{ background: "#f0fdf4", borderColor: "rgba(42,203,131,0.30)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ background: "#2ACB83" }} />
+              <span className="text-xs font-bold" style={{ color: "#1F6F54" }}>Scinode Starter</span>
             </div>
-
-            {/* Free plan activation pill — shown after "After Onboarding" card */}
-            {stage.planActivation && (
-              <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg shrink-0"
-                style={{ background: "#fef9f0", border: "1px dashed rgba(234,179,8,0.50)" }}>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[12px]">🔓</span>
-                  <span className="text-[10px] font-semibold" style={{ color: "#92400e" }}>
-                    {stage.planActivation.label}
-                  </span>
-                </div>
-                <span className="text-[7.5px] font-bold px-2 py-[3px] rounded-full shrink-0"
-                  style={{ background: "#fef3c7", color: "#92400e", border: "1px solid rgba(234,179,8,0.38)" }}>
-                  {stage.planActivation.status}
-                </span>
-              </div>
-            )}
+            <span className="text-[10px] font-bold px-2 py-[3px] rounded-full"
+              style={{ background: "rgba(42,203,131,0.15)", color: "#1F6F54" }}>ACTIVE</span>
           </div>
-        ))}
+          <div className="flex flex-col gap-1.5 pt-0.5">
+            {["View all Open Projects", "Explore Market Pulse & modules"].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Check size={11} strokeWidth={3} style={{ color: "#2ACB83" }} />
+                <span className="text-[11px]" style={{ color: "#374151" }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── TIER 2: Unlock after onboarding ──────────────── */}
+        <div className="rounded-xl border p-3 flex flex-col gap-2"
+          style={{ background: "#f5faff", borderColor: "rgba(0,119,204,0.22)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Lock size={11} style={{ color: "#93c5fd" }} />
+              <span className="text-xs font-bold text-slate-700">After Onboarding</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-[3px] rounded-full"
+              style={{ background: "#fef3c7", color: "#92400e" }}>PENDING</span>
+          </div>
+          <p className="text-[11px] text-slate-400">Free. Complete your profile to activate.</p>
+          <div className="flex flex-col gap-1.5">
+            {[
+              "Send proposals to Open Projects",
+              "Activate Market Pulse reports",
+              "Get discovered by buyers",
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Lock size={10} style={{ color: "#93c5fd" }} className="shrink-0" />
+                <span className="text-[11px] leading-snug text-slate-500">{item}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={onStartOnboarding}
+            className="w-full mt-1 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: "#0077CC", color: "white" }}>
+            Complete Profile to Unlock →
+          </button>
+        </div>
+
+        {/* ── TIER 3: Scinode Pro ───────────────────────────── */}
+        <div className="rounded-xl border p-3 flex flex-col gap-2"
+          style={{ background: "#fffbeb", borderColor: "rgba(212,175,55,0.28)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">👑</span>
+              <span className="text-xs font-bold" style={{ color: "#92400e" }}>Scinode Pro</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-[3px] rounded-full"
+              style={{ background: "rgba(212,175,55,0.18)", color: "#B8962E" }}>UPGRADE</span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {[
+              "Send unlimited proposals",
+              "Exclusive Projects for your plant",
+              "10 intelligence reports / year",
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-[10px] shrink-0" style={{ color: "#D4AF37" }}>★</span>
+                <span className="text-[11px] leading-snug text-slate-500">{item}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            className="w-full mt-1 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg,#B8962E 0%,#D4AF37 60%,#B8962E 100%)", color: "#0F0F0A" }}>
+            Upgrade to Scinode Pro ↗
+          </button>
+        </div>
+
       </div>
     </div>
   );
@@ -977,7 +952,7 @@ function WelcomeBanner() {
                 </span>
               </h1>
               <p className="text-[#8faabb] text-[13px] sm:text-[14px] leading-relaxed max-w-[520px]">
-                2,400+ verified buyers sourcing right now — complete 3 steps to receive live RFQs and enquiries.
+                Manufacturers with completed profiles receive 3X more aligned buyer inquiries within their first 30 days.
               </p>
             </div>
 
@@ -995,9 +970,6 @@ function WelcomeBanner() {
                 <span className="text-[12px] font-bold" style={{ color: "#4ade80" }}>6% Complete</span>
                 <span className="text-[11px] text-white/35 font-medium">Profile Setup In Progress</span>
               </div>
-              <p className="text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.60)" }}>
-                Complete your manufacturing profile to start receiving verified buyer enquiries.
-              </p>
             </div>
 
             {/* CTAs */}
@@ -1283,7 +1255,7 @@ function ProductShowcase() {
             {demoState === 2 ? "How Your Products Are Performing" : "Showcase Your Products to Get Noticed"}
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-            {demoState === 0 && "Add your catalogue so buyers can find you when sourcing."}
+            {demoState === 0 && "Add your product catalogue to unlock the right demand."}
             {demoState === 1 && "Your catalogue is indexed — performance intel coming within 24–48 hrs."}
             {demoState === 2 && "Buyer activity across your listed products this week."}
           </p>
@@ -1312,9 +1284,9 @@ function ProductShowcase() {
             <p className="text-[10px] font-bold text-[#1F6F54] mb-2.5">📦 Why your product catalogue matters</p>
             <div className="grid grid-cols-3 gap-3 text-center">
               {[
-                { metric: "3×",  label: "more RFQ matches with a complete catalogue" },
-                { metric: "96",  label: "buyers searched your category this week"    },
-                { metric: "50+", label: "live enquiries waiting for listed suppliers" },
+                { metric: "3×",  label: "more RFQ matches with a complete catalogue"                    },
+                { metric: "96",  label: "buyers searched your category this week"                         },
+                { metric: "65%", label: "of matched opportunities rely on product-level information"      },
               ].map((b, i) => (
                 <div key={i} className="flex flex-col gap-0.5">
                   <span className="text-[22px] font-black leading-none" style={{ color: "#1F6F54" }}>{b.metric}</span>
@@ -1332,7 +1304,7 @@ function ProductShowcase() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
               <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                Live buyer searches in your industry — this week
+                Live Demand Activity In Your Industry – This Week
               </p>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -1372,11 +1344,11 @@ function ProductShowcase() {
               </div>
               <p className="text-[13px] font-bold text-slate-700 mb-1">No products listed yet</p>
               <p className="text-[11px] text-slate-400 mb-2 max-w-[240px] leading-snug">
-                Without a product catalogue, we can&apos;t match you to live RFQs or show buyer interest signals.
+                Add your product catalogue to unlock relevant projects and demand visibility.
               </p>
               <span className="text-[10px] font-bold px-3 py-1 rounded-full mb-4 inline-block"
                 style={{ background: "#fef3c7", color: "#92400e" }}>
-                ⚡ Add min. 5 products to complete onboarding
+                ⚡ Add min. 1 product to complete onboarding
               </span>
               <button className="flex items-center gap-2 px-5 py-2.5 text-white text-[13px] font-bold rounded-xl transition-all hover:brightness-110"
                 style={{ background: "#1F6F54" }}>
@@ -1563,7 +1535,7 @@ function MarketPulsePanel() {
           Market Pulse 🚀
         </h3>
         <p className="text-[11px] leading-relaxed" style={{ color: "#2d6a4f" }}>
-          Intelligence on buyer demand, pricing shifts, trade flows, and export opportunities — matched to your category.
+          Identify relevant demand, pricing movement, activity trends, and export signals for your product.
         </p>
       </div>
 
@@ -1585,28 +1557,23 @@ function MarketPulsePanel() {
         </div>
       </div>
 
-      {/* This Week */}
+      {/* Bottom Insights */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(42,203,131,0.18)" }}>
         <p className="text-[8.5px] font-bold uppercase tracking-[0.18em] mb-2.5" style={{ color: "#2d6a4f" }}>
           THIS WEEK ON MARKET PULSE
         </p>
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-full"
-            style={{ background: "rgba(42,203,131,0.1)", border: "1px solid rgba(42,203,131,0.25)" }}>
-            <span className="text-[13px] shrink-0">📸</span>
-            <span className="text-[10.5px] font-semibold flex-1 leading-tight" style={{ color: "#0e3d24" }}>Snapshots Generated</span>
-            <span className="text-[11px] font-black tabular-nums shrink-0" style={{ color: "#0e3d24", fontFamily: "Poppins,sans-serif" }}>0 / 5</span>
-            <span className="text-[7.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
-              style={{ background: "rgba(42,203,131,0.2)", color: "#1F6F54" }}>FREE</span>
-          </div>
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-full"
-            style={{ background: "rgba(0,119,204,0.07)", border: "1px solid rgba(0,119,204,0.2)" }}>
-            <span className="text-[13px] shrink-0">📄</span>
-            <span className="text-[10.5px] font-semibold flex-1 leading-tight" style={{ color: "#0c3460" }}>Detailed Reports</span>
-            <span className="text-[11px] font-black tabular-nums shrink-0" style={{ color: "#0c3460", fontFamily: "Poppins,sans-serif" }}>0 / 1</span>
-            <span className="text-[7.5px] font-bold px-2 py-0.5 rounded-full shrink-0"
-              style={{ background: "rgba(0,119,204,0.12)", color: "#0077CC" }}>FREE</span>
-          </div>
+          {[
+            { icon: "📸", text: "124 market snapshots generated this week",                            color: "rgba(42,203,131,0.10)",  border: "rgba(42,203,131,0.25)", textColor: "#0e3d24" },
+            { icon: "📊", text: "18 manufacturers analyzed pricing trends today",                       color: "rgba(0,119,204,0.07)",   border: "rgba(0,119,204,0.20)",  textColor: "#0c3460" },
+            { icon: "🌍", text: "72% of manufacturers used Market Pulse to evaluate export opportunities", color: "rgba(98,55,199,0.07)", border: "rgba(98,55,199,0.20)",  textColor: "#3d1e7a" },
+          ].map((row, i) => (
+            <div key={i} className="flex items-start gap-2.5 px-3 py-2 rounded-xl"
+              style={{ background: row.color, border: `1px solid ${row.border}` }}>
+              <span className="text-[13px] shrink-0 mt-[1px]">{row.icon}</span>
+              <span className="text-[10px] font-medium leading-snug" style={{ color: row.textColor }}>{row.text}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -1626,9 +1593,10 @@ function MarketPulsePanel() {
 // 4. GLOBAL OPPORTUNITY MAP
 // ═══════════════════════════════════════════════════════════════════════════════
 function GlobalOpportunityMap() {
-  const [hovered,  setHovered]  = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [filter,   setFilter]   = useState<"capability" | "catalogue">("capability");
+  const [hovered,   setHovered]   = useState<string | null>(null);
+  const [selected,  setSelected]  = useState<string | null>(null);
+  const [filter,    setFilter]    = useState<"capability" | "catalogue">("capability");
+  const [mapState,  setMapState]  = useState<"no-products" | "mapping" | "active">("no-products");
   const mounted = useMounted(200);
 
   const getVal    = (pin: typeof MAP_PINS[0]) => filter === "capability" ? pin.rfqs + pin.contractMfg + pin.cdmo : pin.catalogueLeads;
@@ -1648,20 +1616,100 @@ function GlobalOpportunityMap() {
           <p className="text-[9px] font-bold tracking-[0.12em] text-slate-400 mb-0.5">GLOBAL INTELLIGENCE</p>
           <h3 className="text-[16px] font-bold text-slate-900 leading-snug">Your Global Opportunity Map</h3>
           <p className="text-[11px] text-slate-400 mt-0.5">
-            Global buyers are actively sourcing from manufacturers in your category. Add products to get matched.
+            {mapState === "no-products" && "Add products to unlock your global opportunity map and start tracking where demand is emerging for your offerings."}
+            {mapState === "mapping"     && "Identifying and routing relevant demand signals for your products. Your opportunity map will update as activity starts flowing. ⏳"}
+            {mapState === "active"      && "Global buyers are actively sourcing from manufacturers in your category."}
           </p>
         </div>
-        <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5 self-center">
-          {(["capability", "catalogue"] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={cn("px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap",
-                filter === f ? "bg-white shadow-sm text-[#1e293b]" : "text-slate-500 hover:text-slate-700")}>
-              {f === "capability" ? "Capability Based" : "Catalogue Based"}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Demo state switcher */}
+          <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
+            {(["no-products", "mapping", "active"] as const).map(s => (
+              <button key={s} onClick={() => setMapState(s)}
+                className={cn("px-2.5 py-1.5 rounded-md text-[9.5px] font-semibold transition-all whitespace-nowrap",
+                  mapState === s ? "bg-white shadow-sm text-[#1e293b]" : "text-slate-500 hover:text-slate-700")}>
+                {s === "no-products" ? "No Products" : s === "mapping" ? "Mapping" : "Active"}
+              </button>
+            ))}
+          </div>
+          {mapState === "active" && (
+            <div className="flex gap-0.5 bg-slate-100 rounded-lg p-0.5">
+              {(["capability", "catalogue"] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)}
+                  className={cn("px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap",
+                    filter === f ? "bg-white shadow-sm text-[#1e293b]" : "text-slate-500 hover:text-slate-700")}>
+                  {f === "capability" ? "Capability Based" : "Catalogue Based"}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ── State 1: No products — blurred map + CTA overlay ── */}
+      {mapState === "no-products" && (
+        <div className="relative overflow-hidden" style={{ minHeight: 280 }}>
+          {/* Map (blurred) */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #eef2f8 0%, #e8edf5 60%, #eaf0f7 100%)" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/world-map.svg" alt="" draggable={false}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+            style={{ opacity: 0.55, filter: "brightness(0.68) saturate(0) blur(6px)", objectPosition: "center 40%" }} />
+          {/* Frost overlay */}
+          <div className="absolute inset-0" style={{ backdropFilter: "blur(8px)", background: "rgba(241,245,249,0.65)" }} />
+          {/* CTA */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "#dff3ee" }}>
+              <Globe size={24} style={{ color: "#1F6F54" }} />
+            </div>
+            <div>
+              <p className="text-[14px] font-bold text-slate-800 mb-1">No Products Added Yet</p>
+              <p className="text-[11px] text-slate-500 max-w-[340px] leading-relaxed">
+                Add products to unlock your global opportunity map and start tracking where demand is emerging for your offerings.
+              </p>
+            </div>
+            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110"
+              style={{ background: "#1F6F54" }}>
+              <Plus size={14} /> Add Products
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── State 2: Mapping in progress — soft blur + skeleton ── */}
+      {mapState === "mapping" && (
+        <div className="relative overflow-hidden" style={{ minHeight: 280 }}>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, #eef2f8 0%, #e8edf5 60%, #eaf0f7 100%)" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/world-map.svg" alt="" draggable={false}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+            style={{ opacity: 0.55, filter: "brightness(0.68) saturate(0)", objectPosition: "center 40%" }} />
+          <div className="absolute inset-0" style={{ backdropFilter: "blur(3px)", background: "rgba(241,245,249,0.45)" }} />
+          {/* Skeleton demand indicators */}
+          {[{ left: "67%", top: "48%" }, { left: "49%", top: "26%" }, { left: "18%", top: "37%" }, { left: "74%", top: "40%" }].map((pos, i) => (
+            <div key={i} className="absolute" style={{ left: pos.left, top: pos.top, transform: "translate(-50%,-50%)" }}>
+              <div className="w-5 h-5 rounded-full animate-pulse" style={{ background: "rgba(148,163,184,0.45)", border: "2px solid rgba(148,163,184,0.30)" }} />
+            </div>
+          ))}
+          {/* Status badge */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-center px-6">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-full"
+              style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(0,119,204,0.25)", backdropFilter: "blur(8px)" }}>
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#0077CC" }} />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#0077CC" }} />
+              </span>
+              <span className="text-[11px] font-semibold" style={{ color: "#0077CC" }}>Demand mapping in progress…</span>
+            </div>
+            <p className="text-[10px] text-slate-500 max-w-[280px] leading-relaxed bg-white/80 px-3 py-1.5 rounded-lg">
+              Identifying and routing demand signals for your products. Map updates as activity flows in.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── State 3: Active — full live map ── */}
+      {mapState === "active" && (
       <div className="flex">
         {/* Map */}
         <div className="flex-1 relative" style={{ minHeight: 280 }}>
@@ -1819,6 +1867,7 @@ function GlobalOpportunityMap() {
           </div>
         </div>
       </div>
+      )} {/* end mapState === "active" */}
     </section>
   );
 }

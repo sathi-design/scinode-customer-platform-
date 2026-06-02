@@ -312,7 +312,8 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
   const [demo, setDemo]               = useState<DetailDemoState>("free");
 
   const isLocked    = false;  // all project details visible on both free and premium plans
-  const isExclusive = p.badge === "Exclusive";
+  // IDs 200+ come from the EXCLUSIVE_PROJECTS list in ProjectsListing — always exclusive
+  const isExclusive = id >= 200 || p.badge === "Exclusive";
 
   // Match type derived from project ID (odd = Capability, even = Catalogue)
   const matchType = id % 2 !== 0 ? DETAIL_MATCH_TYPE : "Product Catalogue-Based";
@@ -355,6 +356,12 @@ export function ManufacturerProjectDetail({ id }: { id: number }) {
           <div className="flex-1 min-w-0">
             {/* Badge row */}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {/* Exclusive badge — only shown when project is exclusive */}
+              {isExclusive && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-[2px] rounded-[4px] text-[11px] font-bold leading-[20px] bg-[#020202] text-[#f5c842] border border-[#f5c842]/30">
+                  ★ Exclusive
+                </span>
+              )}
               {/* Badge 1 — match type */}
               <span className={cn(
                 "inline-flex items-center px-2.5 py-[2px] rounded-[4px] text-[11px] font-semibold leading-[20px]",

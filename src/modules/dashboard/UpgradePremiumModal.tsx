@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type ModalView = "plans" | "momentum" | "form" | "success";
+type ModalView = "plans" | "momentum" | "form" | "success" | "intent";
 
 interface Feature {
   label:     string;
@@ -48,18 +48,20 @@ const STARTER_BULLETS = [
 const ACCELERATOR_BULLETS = [
   "Unlimited proposal submissions",
   "Open + Exclusive project access",
-  "Unlimited Market Pulse & advanced insights",
-  "Up to 10 in-depth MI reports / year",
+  "Unlimited Market Pulse Quick Snapshots",
+  "Up to 10 in-depth Product MI reports / year",
   "Digital Marketing Insights — leads & trends",
   "Research Vault — up to 20 compounds",
-  "QA/QC & Compliance as a Service",
+  "Research Module — Receive R&D project opportunities + expertise",
+  "QA/QC as a Service",
+  "Compliance as a Service",
   "Priority support — WhatsApp, email & 1-on-1",
 ];
 
 const OUTCOMES = [
-  { icon: TrendingUp, value: "3×",    label: "buyer enquiries" },
-  { icon: Globe2,     value: "130+",  label: "countries"       },
-  { icon: Clock3,     value: "24 hr", label: "setup time"      },
+  { icon: TrendingUp, value: "3×",    label: "leads"              },
+  { icon: Globe2,     value: "10×",   label: "deeper Product MI"  },
+  { icon: Clock3,     value: "24 hr", label: "priority support"   },
 ];
 
 const GOALS = [
@@ -510,6 +512,44 @@ function SuccessScreen({ email, onClose }: { email: string; onClose: () => void 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// INTENT CONFIRMATION — instant thank-you (no form)
+// ═══════════════════════════════════════════════════════════════════════════════
+function IntentScreen({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex flex-col items-center text-center px-10 py-12 gap-6">
+      {/* Icon */}
+      <div className="relative">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center"
+          style={{ background: "linear-gradient(135deg,#f5c842,#c9a227)", boxShadow: "0 0 40px rgba(245,200,66,0.35), 0 0 80px rgba(245,200,66,0.12)" }}>
+          <CheckCircle2 size={30} className="text-[#020202]" strokeWidth={2.5} />
+        </div>
+        <div className="absolute inset-0 rounded-full animate-ping opacity-20"
+          style={{ background: "rgba(245,200,66,0.4)" }} />
+      </div>
+
+      {/* Message */}
+      <div className="flex flex-col gap-2 max-w-[360px]">
+        <h2 className="text-[20px] font-black text-white leading-tight">
+          Thank you for your interest!
+        </h2>
+        <p className="text-[13.5px] text-white/55 leading-[20px]">
+          Thank you for submitting your intent to upgrade. Our team will get in touch with you soon.
+        </p>
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={onClose}
+        className="w-full max-w-[280px] py-3 rounded-[12px] text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.99]"
+        style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+        Got it
+      </button>
+      <p className="text-[11px] text-white/25">No payment required. No commitment.</p>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // MAIN MODAL
 // ═══════════════════════════════════════════════════════════════════════════════
 export function UpgradePremiumModal({
@@ -577,6 +617,10 @@ export function UpgradePremiumModal({
             </button>
           )}
 
+          {view === "intent" && (
+            <IntentScreen onClose={onClose} />
+          )}
+
           {view === "momentum" && (
             <MomentumScreen
               onContinue={() => setView("form")}
@@ -602,10 +646,10 @@ export function UpgradePremiumModal({
               <div className="flex-shrink-0 flex items-center justify-between gap-6 px-6 py-3.5 border-b border-[#181818]">
                 <div>
                   <h2 className="text-[16px] font-bold text-white leading-tight tracking-[-0.01em]">
-                    Unlock More Buyer Demand
+                    Expand Beyond Your Existing Buyer Network
                   </h2>
                   <p className="text-[11.5px] text-white/40 leading-tight">
-                    Exclusive projects · Market intelligence · Unlimited proposals
+                    Global opportunities · Market intelligence · Priority access
                   </p>
                 </div>
                 <button onClick={onClose}
@@ -633,9 +677,12 @@ export function UpgradePremiumModal({
                       CURRENT PLAN
                     </span>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[30px] font-black text-white leading-none tracking-tight">Free</span>
-                    <span className="text-[11px] text-white/40">always</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-[30px] font-black text-white leading-none tracking-tight">Free</span>
+                      <span className="text-[11px] text-white/40">always</span>
+                    </div>
+                    <span className="text-[11px] text-white/40 leading-tight">Start generating demand beyond your network.</span>
                   </div>
                   <button disabled className="w-full py-2 rounded-[10px] text-[12.5px] font-semibold text-[#b0b0b0] bg-[#1e1e1e] border border-[#333] cursor-not-allowed">
                     Current Plan
@@ -651,10 +698,8 @@ export function UpgradePremiumModal({
                     ))}
                     {["Exclusive Projects", "Research Vault", "QA/QC & Compliance"].map(f => (
                       <div key={f} className="flex items-center gap-2">
-                        <div className="w-3.5 h-3.5 rounded-full bg-[#1e1e1e] border border-[#2a2a2a] flex items-center justify-center shrink-0">
-                          <Lock size={7} className="text-[#6b7280]" />
-                        </div>
-                        <span className="text-[12px] text-white/40 line-through decoration-white/25 leading-tight">{f}</span>
+                        <Crown size={11} className="shrink-0" style={{ color: "#c9a227" }} />
+                        <span className="text-[12px] text-white/35 leading-tight">{f}</span>
                       </div>
                     ))}
                   </div>
@@ -681,7 +726,7 @@ export function UpgradePremiumModal({
                       </div>
                       <div>
                         <p className="text-[14px] font-bold text-white leading-tight">Scinode Accelerator</p>
-                        <p className="text-[11px] text-white/50">Deep access & business enablement</p>
+                        <p className="text-[11px] text-white/50">Full Access to Manufacturing Intelligence</p>
                       </div>
                     </div>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold text-[#020202]"
@@ -694,7 +739,7 @@ export function UpgradePremiumModal({
                   <div className="flex flex-col gap-0.5 relative">
                     <span className="text-[24px] font-black text-white leading-none tracking-tight">Custom Pricing</span>
                     <span className="text-[11px] text-white/40 leading-tight">
-                      Tailored to your scale — no generic tiers, no surprises.
+                      For manufacturers seeking deeper market access, consistent high-value demand, and end-to-end business enablement.
                     </span>
                   </div>
 
@@ -711,18 +756,17 @@ export function UpgradePremiumModal({
                   </div>
 
                   {/* PRIMARY CTA — Upgrade to Premium */}
-                  <div className="flex flex-col gap-2 relative">
+                  <div className="flex gap-2 relative">
                     <button
-                      onClick={() => setView("momentum")}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98]"
+                      onClick={() => setView("intent")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-[13px] font-bold text-[#020202] transition-all hover:brightness-110 active:scale-[0.98]"
                       style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", boxShadow: "0 0 18px rgba(245,200,66,0.38)" }}
                     >
                       <Zap size={13} /> Upgrade to Premium
-                      <ArrowRight size={13} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={() => setView("form")}
-                      className="w-full flex items-center justify-center gap-1.5 py-2 rounded-[10px] text-[12px] font-medium text-white/50 border border-[#2a2a2a] hover:text-white hover:border-[#3a3a3a] transition-colors">
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-[10px] text-[12px] font-medium text-white/50 border border-[#2a2a2a] hover:text-white hover:border-[#3a3a3a] transition-colors">
                       <Building2 size={11} /> Talk to Sales
                     </button>
                   </div>
@@ -748,15 +792,15 @@ export function UpgradePremiumModal({
                   style={{ background: "linear-gradient(135deg, #141008 0%, #100d04 100%)", border: "1px solid rgba(201,162,39,0.20)" }}>
                   <div className="flex items-center gap-2">
                     <span className="text-[13px]">🌟</span>
-                    <span className="text-[11px] font-bold text-[#c9a227] uppercase tracking-widest">Customer Success Snapshot</span>
+                    <span className="text-[11px] font-bold text-[#c9a227] uppercase tracking-widest">What Our Partners Say</span>
                   </div>
                   <div className="relative pl-4">
                     <div className="absolute left-0 top-0 bottom-0 w-[2px] rounded-full"
                       style={{ background: "linear-gradient(180deg,#f5c842,#c9a227)" }} />
                     <p className="text-[12.5px] text-white/70 leading-[19px] italic">
-                      "Scinode helped us unlock multiple new customer conversations and improve visibility
-                      for our specialty intermediates portfolio. The market intelligence and project access
-                      created opportunities we previously had no visibility into."
+                      "Our collaboration with Scinode has unlocked new opportunities for operational
+                      efficiency and business growth. Their strategic support has enhanced productivity,
+                      optimized costs, and expanded our market reach."
                     </p>
                   </div>
                   <p className="text-[11px] text-white/40 font-medium">
@@ -774,7 +818,7 @@ export function UpgradePremiumModal({
                     <MessageCircle size={18} className="text-[#2ACB83]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-white mb-0.5">📞 Not sure where to start? Call us.</p>
+                    <p className="text-[13px] font-bold text-white mb-0.5">Not sure where to start? Call us.</p>
                     <p className="text-[11.5px] text-white/50 leading-[17px]">
                       Every manufacturer has different growth priorities. Speak with the Scinode team to understand
                       how the platform aligns with your products, capacity utilization goals, market expansion strategy, and R&D ambitions.

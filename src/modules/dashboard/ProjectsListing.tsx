@@ -678,7 +678,7 @@ function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
           We&apos;re actively mapping exclusive projects tailored to your manufacturing capabilities and catalogue.
         </p>
         <p className="text-[13.5px] text-[#4b5563] leading-relaxed mb-8">
-          Meanwhile, explore capability-based opportunities to improve your matching score.
+          Meanwhile, explore generic capability-based open projects.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -728,8 +728,8 @@ function ExclusiveLockedOverlay({ onUpgrade }: { onUpgrade?: () => void }) {
           Exclusive Access Locked
         </h3>
         <p className="text-[13px] text-slate-400 leading-relaxed mb-1.5">
-          Exclusive Projects are reserved for Premium members — matched specifically to your
-          capabilities and product catalogue with no competing bids.
+          Exclusive Projects are reserved for Premium members and matched specifically to your
+          capabilities and product portfolio for more relevant, high-fit opportunities.
         </p>
         <p className="text-[12px] text-slate-500 mb-6">
           Free plan includes 2 proposals on Open Projects only.

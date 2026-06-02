@@ -401,8 +401,7 @@ function Gauge({ pct, mounted }: { pct: number; mounted: boolean }) {
 }
 
 // ─── Funnel bars ──────────────────────────────────────────────────────────────
-function FunnelView({ mounted }: { mounted: boolean }) {
-  const [hovIdx, setHovIdx] = useState<number | null>(null);
+function FunnelView({ mounted, hovIdx, setHovIdx }: { mounted: boolean; hovIdx: number | null; setHovIdx: (i: number | null) => void }) {
   const max = 186;
 
   const hoverGradients = [
@@ -674,8 +673,9 @@ function HeroSection() {
 // PIPELINE SECTION (left column — no right panel)
 // ═══════════════════════════════════════════════════════════════════════════════
 function PipelineSection() {
-  const [period,   setPeriod]   = useState<"week" | "month">("month");
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [period,      setPeriod]      = useState<"week" | "month">("month");
+  const [hoverIdx,    setHoverIdx]    = useState<number | null>(null);
+  const [funnelHovIdx, setFunnelHovIdx] = useState<number | null>(null);
   const mounted = useMounted(500);
 
   return (
@@ -772,9 +772,23 @@ function PipelineSection() {
       </div>
 
       {/* Funnel */}
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-2">
         <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400 mb-2">PROPOSAL CONVERSION FLOW</p>
-        <FunnelView mounted={mounted} />
+        <FunnelView mounted={mounted} hovIdx={funnelHovIdx} setHovIdx={setFunnelHovIdx} />
+      </div>
+
+      {/* Pipeline indicator row */}
+      <div className="px-4 pb-3 flex items-center justify-end gap-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm shrink-0"
+            style={{ background: "linear-gradient(90deg,#1a6b4f,#2F66D0)" }} />
+          <span className="text-[9.5px] font-medium text-slate-400">Total pipeline</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm shrink-0"
+            style={{ backgroundImage: "repeating-linear-gradient(-45deg,#b8c8d2 0px,#b8c8d2 2px,#d4dde3 2px,#d4dde3 8px)" }} />
+          <span className="text-[9.5px] font-medium text-slate-400">Hover to explore</span>
+        </div>
       </div>
 
       {/* Recent Proposals */}
@@ -1346,7 +1360,7 @@ function ProductPerformanceSection() {
               {demoState === 2 ? "How Your Products Are Performing" : "Showcase Your Products to Get Noticed"}
             </h2>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              {demoState === 0 && "Add your catalogue so buyers can find you when sourcing."}
+              {demoState === 0 && "Add your product catalogue to unlock the right demand."}
               {demoState === 1 && "Your catalogue is indexed — performance intel coming within 24–48 hrs."}
               {demoState === 2 && "Buyer activity across your listed products this week. Add more catalogue depth to improve discovery."}
             </p>
@@ -1374,9 +1388,9 @@ function ProductPerformanceSection() {
               <p className="text-[10px] font-bold text-[#1F6F54] mb-2.5">📦 Why your product catalogue matters</p>
               <div className="grid grid-cols-3 gap-3 text-center">
                 {[
-                  { metric: "3×",  label: "more RFQ matches with a complete catalogue" },
-                  { metric: "96",  label: "buyers searched your category this week"    },
-                  { metric: "50+", label: "live enquiries waiting for listed suppliers" },
+                  { metric: "3×",  label: "more RFQ matches with a complete catalogue"               },
+                  { metric: "96",  label: "buyers searched your category this week"                  },
+                  { metric: "65%", label: "of matched opportunities rely on product-level information"},
                 ].map((b, i) => (
                   <div key={i} className="flex flex-col gap-0.5">
                     <span className="text-[22px] font-black leading-none" style={{ color: "#1F6F54" }}>{b.metric}</span>
@@ -1392,7 +1406,7 @@ function ProductPerformanceSection() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                 </span>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-400">Live buyer searches — this week</p>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-400">Live Demand Activity In Your Industry – This Week</p>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {ACTIVE_SEARCHES_D1.map(s => (
@@ -1423,8 +1437,8 @@ function ProductPerformanceSection() {
                   <Package size={22} style={{ color: "#1f6f54" }} />
                 </div>
                 <p className="text-[13px] font-bold text-slate-700 mb-1">No products listed yet</p>
-                <p className="text-[11px] text-slate-400 mb-2 max-w-[240px] leading-snug">Without a catalogue, we can&apos;t match you to live RFQs or show buyer interest signals.</p>
-                <span className="text-[10px] font-bold px-3 py-1 rounded-full mb-4 inline-block" style={{ background: "#fef3c7", color: "#92400e" }}>⚡ Add min. 5 products to complete onboarding</span>
+                <p className="text-[11px] text-slate-400 mb-2 max-w-[240px] leading-snug">Add your product catalogue to unlock relevant projects and demand visibility.</p>
+                <span className="text-[10px] font-bold px-3 py-1 rounded-full mb-4 inline-block" style={{ background: "#fef3c7", color: "#92400e" }}>⚡ Add min. 1 product to complete onboarding</span>
                 <button className="flex items-center gap-2 px-5 py-2.5 text-white text-[13px] font-bold rounded-xl hover:brightness-110 transition-all" style={{ background: "#1F6F54" }}>
                   <Plus size={15} /> Add Your Products
                 </button>
@@ -1763,16 +1777,16 @@ function ProfilePerformanceCard({ onOpen }: { onOpen?: () => void }) {
       </div>
 
       {/* Opportunity value CTA */}
-      <div className="mt-3 rounded-xl p-3" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
-        <p className="text-[9px] font-bold tracking-[0.10em] text-slate-400 mb-1">OPPORTUNITY VALUE</p>
-        <p className="text-[11px] text-slate-300 leading-snug">Incomplete profile may be costing an estimated</p>
-        <p className="text-[28px] font-black text-white leading-none mb-0.5">
+      <div className="mt-3 rounded-xl px-4 py-4" style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.20)" }}>
+        <p className="text-[9px] font-bold tracking-[0.10em] text-slate-400 mb-2.5">OPPORTUNITY VALUE</p>
+        <p className="text-[11px] text-slate-300 leading-snug mb-2">Incomplete profile may be costing an estimated</p>
+        <p className="text-[30px] font-black text-white leading-none mb-1">
           $50,000<span className="text-[13px] font-semibold text-slate-400">/mo</span>
         </p>
-        <p className="text-[10px] text-slate-500 mb-2">in missed buyer opportunities.</p>
+        <p className="text-[10px] text-slate-500 mb-3.5">in missed buyer opportunities.</p>
         <button
           onClick={() => router.push("/dashboard/profile")}
-          className="w-full py-2 rounded-xl text-white text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
+          className="w-full py-2.5 rounded-xl text-white text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
           style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}>
           Complete Profile Now →
         </button>
