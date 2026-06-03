@@ -7,7 +7,7 @@ import {
   Clock, SlidersHorizontal, Check, Sparkles, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FormField, inputCls, DropdownSelect, EmptyState, DrawerFooter } from "@/modules/profile/SharedUI";
+import { FormField, inputCls, DropdownSelect, EmptyState, DrawerFooter, TabFooter } from "@/modules/profile/SharedUI";
 import { DrawerBase } from "@/modules/profile/DrawerBase";
 import { useIndependentCROProfileStore } from "@/store/useIndependentCROProfileStore";
 import type { CROProduct } from "../types";
@@ -912,8 +912,6 @@ function filterAndSort<T extends CROProduct>(
 }
 
 // ─── Main Tab2Products ─────────────────────────────────────────────────────────
-
-import { TabFooter } from "@/modules/profile/SharedUI";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
