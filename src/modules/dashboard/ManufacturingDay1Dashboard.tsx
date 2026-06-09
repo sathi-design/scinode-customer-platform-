@@ -280,10 +280,10 @@ const PRODUCT_DATA: {
 ];
 
 const ACTIVE_SEARCHES_D1 = [
-  { label: "Specialty Chemicals",  count: 34, color: "#0077CC" },
-  { label: "Industrial Chemicals", count: 28, color: "#1F6F54" },
-  { label: "Agrochemicals",        count: 19, color: "#7C3AED" },
-  { label: "Pharmaceutical APIs",  count: 15, color: "#E36389" },
+  { label: "Specialty Chemicals",  count: 34 },
+  { label: "Industrial Chemicals", count: 28 },
+  { label: "Agrochemicals",        count: 19 },
+  { label: "Pharmaceutical APIs",  count: 15 },
 ];
 
 const WISDOM_SLIDES = [
@@ -1410,10 +1410,11 @@ function ProductPerformanceSection() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {ACTIVE_SEARCHES_D1.map(s => (
-                  <div key={s.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-[10.5px] font-semibold"
-                    style={{ background: s.color }}>
+                  <div key={s.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold"
+                    style={{ background: "#1F6F54", color: "#ffffff" }}>
                     <span>{s.label}</span>
-                    <span className="bg-white/25 px-1.5 py-0.5 rounded-full text-[9px] font-bold">{s.count}</span>
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                      style={{ background: "rgba(255,255,255,0.20)" }}>{s.count}</span>
                   </div>
                 ))}
               </div>
@@ -1450,13 +1451,13 @@ function ProductPerformanceSection() {
         {/* ══ STATE 1 — Catalogue added, indexing ════════════════════ */}
         {demoState === 1 && (
           <div className="p-5 flex flex-col gap-4">
-            <div className="rounded-xl p-3.5 flex items-start gap-3" style={{ background: "rgba(0,119,204,0.06)", border: "1px solid rgba(0,119,204,0.20)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(0,119,204,0.12)" }}>
+            <div className="rounded-xl p-3.5 flex items-start gap-3" style={{ background: "#FBF0C5", border: "1px solid rgba(156,80,34,0.25)" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(156,80,34,0.12)" }}>
                 <span className="text-[17px]">⏳</span>
               </div>
               <div>
-                <p className="text-[12px] font-bold text-[#0077CC] mb-0.5">Catalogue indexing in progress</p>
-                <p className="text-[11px] text-slate-500 leading-snug">Our team is reviewing your products. Buyer matching and performance intel will be live within <span className="font-semibold">24–48 hrs</span>.</p>
+                <p className="text-[12px] font-bold mb-0.5" style={{ color: "#9C5022" }}>Catalogue indexing in progress</p>
+                <p className="text-[11px] leading-snug" style={{ color: "#92400e" }}>Our team is reviewing your products. Buyer matching and performance intel will be live within <span className="font-semibold">24–48 hrs</span>.</p>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -1783,13 +1784,7 @@ function ProfilePerformanceCard({ onOpen }: { onOpen?: () => void }) {
         <p className="text-[30px] font-black text-white leading-none mb-1">
           $50,000<span className="text-[13px] font-semibold text-slate-400">/mo</span>
         </p>
-        <p className="text-[10px] text-slate-500 mb-3.5">in missed buyer opportunities.</p>
-        <button
-          onClick={() => router.push("/dashboard/profile")}
-          className="w-full py-2.5 rounded-xl text-white text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
-          style={{ background: "linear-gradient(90deg,#1F6F54,#27915e)" }}>
-          Complete Profile Now →
-        </button>
+        <p className="text-[10px] text-slate-500">in missed buyer opportunities.</p>
       </div>
     </div>
   );

@@ -19,6 +19,7 @@ import {
   X,
   Crown,
   Check,
+  FlaskConical,
 } from "lucide-react";
 import { useAuth, RESEARCHER_ROLES } from "@/hooks/useAuth";
 
@@ -35,12 +36,13 @@ const BADGE_ICON_SRC =
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { label: "Dashboard",       href: "/dashboard",              icon: LayoutDashboard },
-  { label: "Projects",        href: "/dashboard/projects",     icon: FolderOpen },
-  { label: "Proposals",       href: "/dashboard/proposals",    icon: Send },
-  { label: "Active Projects", href: "/dashboard/orders",       icon: TrendingUp },
-  { label: "Market Pulse",    href: "/dashboard/market-pulse", icon: Activity },
-  { label: "Profile",         href: "/dashboard/profile",      icon: CircleUser },
+  { label: "Dashboard",       href: "/dashboard",                        icon: LayoutDashboard },
+  { label: "Projects",        href: "/dashboard/projects",               icon: FolderOpen },
+  { label: "Proposals",       href: "/dashboard/proposals",              icon: Send },
+  { label: "Active Projects", href: "/dashboard/orders",                 icon: TrendingUp },
+  { label: "Market Pulse",    href: "/dashboard/market-pulse",           icon: Activity },
+  { label: "Deep Research",   href: "/dashboard/research-repository",    icon: FlaskConical },
+  { label: "Profile",         href: "/dashboard/profile",                icon: CircleUser },
 ] as const;
 
 const W_COLLAPSED = 56;

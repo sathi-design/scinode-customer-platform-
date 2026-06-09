@@ -320,6 +320,7 @@ export function ManufacturingDashboard() {
 function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void }) {
   const [enrichOpen, setEnrichOpen] = useState(false);
   const mounted = useMounted(350);
+  const router  = useRouter();
 
   const coreItems = PROFILE_SECTIONS.filter(s => s.group === "core");
   const advItems  = PROFILE_SECTIONS.filter(s => s.group === "advanced");
@@ -466,11 +467,6 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
               ))}
             </div>
 
-            <button onClick={onOpenProfile}
-              className="w-full py-2 rounded-xl text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.97]"
-              style={{ background: "#2ACB83", color: "#020202" }}>
-              Complete Profile →
-            </button>
           </div>
 
           {/* RIGHT: Section rows */}
@@ -543,7 +539,9 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
                         <span className="text-[10px] font-bold">Done</span>
                       </div>
                     ) : (
-                      <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[10px] font-bold transition-all hover:brightness-110 whitespace-nowrap"
+                      <button
+                        onClick={() => router.push(`/dashboard/profile?tab=${SECTION_TO_PROFILE_TAB[sec.id]}`)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[10px] font-bold transition-all hover:brightness-110 whitespace-nowrap"
                         style={{ background: "#1F6F54" }}>
                         Add <ArrowRight size={9} />
                       </button>
@@ -553,51 +551,6 @@ function ProfilePerformanceCard({ onOpenProfile }: { onOpenProfile?: () => void 
               );
             })}
 
-            {/* Enrichment accordion */}
-            <button
-              onClick={() => setEnrichOpen(v => !v)}
-              className="flex items-center justify-between px-3 py-2.5 rounded-xl mt-1 transition-all hover:bg-amber-50/50 group"
-              style={{ background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.24)" }}>
-              <div className="flex items-center gap-2">
-                <span className="text-[12px]">✨</span>
-                <span className="text-[10.5px] font-bold uppercase tracking-[0.11em] text-amber-700">
-                  Profile Enrichment
-                </span>
-                <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold text-amber-600"
-                  style={{ background: "rgba(251,191,36,0.16)" }}>
-                  Optional · 0 / {advItems.length}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9.5px] font-medium text-amber-500 hidden sm:block">
-                  Boosts score to 100%
-                </span>
-                <ChevronRight size={13}
-                  className={cn("text-amber-500 transition-transform duration-200", enrichOpen && "rotate-90")} />
-              </div>
-            </button>
-
-            {enrichOpen && advItems.map(sec => (
-              <div key={sec.id}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-white cursor-pointer transition-all"
-                onClick={onOpenProfile}>
-                <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[15px]"
-                  style={{ background: "#f4f4f5" }}>
-                  {sec.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-slate-600">{sec.label}</span>
-                    <span className="text-[8.5px] font-bold px-1.5 py-[2px] rounded"
-                      style={{ background: "#eff7ff", color: "#0077CC" }}>{sec.scoreImpact}</span>
-                  </div>
-                  <p className="text-[9.5px] text-slate-400 mt-0.5 truncate">
-                    {sec.description.substring(0, 70)}…
-                  </p>
-                </div>
-                <ArrowRight size={12} className="text-slate-300 shrink-0 group-hover:text-[#0077CC] transition-colors" />
-              </div>
-            ))}
           </div>
         </div>
 
@@ -710,42 +663,37 @@ function OnboardingJourneyPanel({ onStartOnboarding }: { onStartOnboarding?: () 
               </div>
             ))}
           </div>
-          <button
-            onClick={onStartOnboarding}
-            className="w-full mt-1 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{ background: "#0077CC", color: "white" }}>
-            Complete Profile to Unlock →
-          </button>
         </div>
 
-        {/* ── TIER 3: Scinode Pro ───────────────────────────── */}
-        <div className="rounded-xl border p-3 flex flex-col gap-2"
-          style={{ background: "#fffbeb", borderColor: "rgba(212,175,55,0.28)" }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs">👑</span>
-              <span className="text-xs font-bold" style={{ color: "#92400e" }}>Scinode Pro</span>
-            </div>
-            <span className="text-[10px] font-bold px-2 py-[3px] rounded-full"
-              style={{ background: "rgba(212,175,55,0.18)", color: "#B8962E" }}>UPGRADE</span>
+        {/* ── Opportunity Value — informative, onboarding emphasis ── */}
+        <div className="rounded-xl overflow-hidden"
+          style={{ background: "#0d1117", border: "1px solid rgba(245,200,66,0.22)" }}>
+
+          {/* Top urgency bar */}
+          <div className="flex items-center gap-2 px-3.5 py-2 border-b"
+            style={{ borderColor: "rgba(245,200,66,0.14)", background: "rgba(245,200,66,0.05)" }}>
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-70"
+                style={{ background: "#f5c842" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#f5c842" }} />
+            </span>
+            <span className="text-[9px] font-bold tracking-[0.12em] uppercase"
+              style={{ color: "#c9a227" }}>Onboarding Required</span>
+            <span className="ml-auto text-[9px] font-bold px-1.5 py-[2px] rounded-full"
+              style={{ background: "rgba(245,200,66,0.12)", color: "#c9a227" }}>2 steps left</span>
           </div>
-          <div className="flex flex-col gap-1.5">
-            {[
-              "Send unlimited proposals",
-              "Exclusive Projects for your plant",
-              "10 intelligence reports / year",
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-[10px] shrink-0" style={{ color: "#D4AF37" }}>★</span>
-                <span className="text-[11px] leading-snug text-slate-500">{item}</span>
-              </div>
-            ))}
+
+          {/* Body */}
+          <div className="px-3.5 py-3 flex flex-col gap-1.5">
+            <p className="text-[9px] font-bold tracking-[0.10em]" style={{ color: "#4b5563" }}>OPPORTUNITY VALUE</p>
+            <p className="text-[28px] font-black leading-none" style={{ color: "#ffffff" }}>
+              $50,000<span className="text-[12px] font-semibold ml-0.5" style={{ color: "#6b7280" }}>/mo</span>
+            </p>
+            <p className="text-[11px] leading-relaxed" style={{ color: "#9ca3af" }}>
+              Manufacturers who skip onboarding miss this much in verified buyer demand every month.
+              <span className="font-semibold" style={{ color: "#e5e7eb" }}> Complete all 3 onboarding steps</span> to unlock your full earning potential.
+            </p>
           </div>
-          <button
-            className="w-full mt-1 py-2 rounded-lg text-[11px] font-bold transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{ background: "linear-gradient(135deg,#B8962E 0%,#D4AF37 60%,#B8962E 100%)", color: "#0F0F0A" }}>
-            Upgrade to Scinode Pro ↗
-          </button>
         </div>
 
       </div>
@@ -1221,10 +1169,10 @@ function OnboardingChecklist({ onOpenProfile }: { onOpenProfile?: () => void }) 
 // 3A. PRODUCT SHOWCASE (left 70%)
 // ═══════════════════════════════════════════════════════════════════════════════
 const ACTIVE_SEARCHES = [
-  { label: "Specialty Chemicals",  count: 34, color: "#0077CC" },
-  { label: "Industrial Chemicals", count: 28, color: "#1F6F54" },
-  { label: "Agrochemicals",        count: 19, color: "#7C3AED" },
-  { label: "Pharmaceutical APIs",  count: 15, color: "#E36389" },
+  { label: "Specialty Chemicals",  count: 34 },
+  { label: "Industrial Chemicals", count: 28 },
+  { label: "Agrochemicals",        count: 19 },
+  { label: "Pharmaceutical APIs",  count: 15 },
 ];
 
 const DEMO_PRODUCTS = [
@@ -1309,10 +1257,11 @@ function ProductShowcase() {
             </div>
             <div className="flex flex-wrap gap-1.5">
               {ACTIVE_SEARCHES.map(s => (
-                <div key={s.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-[10.5px] font-semibold"
-                  style={{ background: s.color }}>
+                <div key={s.label} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold"
+                  style={{ background: "#1F6F54", color: "#ffffff" }}>
                   <span>{s.label}</span>
-                  <span className="bg-white/25 px-1.5 py-0.5 rounded-full text-[9px] font-bold">{s.count}</span>
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
+                    style={{ background: "rgba(255,255,255,0.20)" }}>{s.count}</span>
                 </div>
               ))}
             </div>
@@ -1364,14 +1313,14 @@ function ProductShowcase() {
         <>
           {/* Indexing banner */}
           <div className="rounded-xl p-3.5 flex items-start gap-3"
-            style={{ background: "rgba(0,119,204,0.06)", border: "1px solid rgba(0,119,204,0.20)" }}>
+            style={{ background: "#FBF0C5", border: "1px solid rgba(156,80,34,0.25)" }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "rgba(0,119,204,0.12)" }}>
+              style={{ background: "rgba(156,80,34,0.12)" }}>
               <span className="text-[17px]">⏳</span>
             </div>
             <div>
-              <p className="text-[12px] font-bold text-[#0077CC] mb-0.5">Catalogue indexing in progress</p>
-              <p className="text-[11px] text-slate-500 leading-snug">
+              <p className="text-[12px] font-bold mb-0.5" style={{ color: "#9C5022" }}>Catalogue indexing in progress</p>
+              <p className="text-[11px] leading-snug" style={{ color: "#92400e" }}>
                 Our team is reviewing your products. Buyer matching and performance intel will be live within <span className="font-semibold">24–48 hrs</span>.
               </p>
             </div>
@@ -1598,6 +1547,7 @@ function GlobalOpportunityMap() {
   const [filter,    setFilter]    = useState<"capability" | "catalogue">("capability");
   const [mapState,  setMapState]  = useState<"no-products" | "mapping" | "active">("no-products");
   const mounted = useMounted(200);
+  const router  = useRouter();
 
   const getVal    = (pin: typeof MAP_PINS[0]) => filter === "capability" ? pin.rfqs + pin.contractMfg + pin.cdmo : pin.catalogueLeads;
   const sortedPins = [...MAP_PINS].sort((a, b) => getVal(b) - getVal(a));
@@ -1668,7 +1618,9 @@ function GlobalOpportunityMap() {
                 Add products to unlock your global opportunity map and start tracking where demand is emerging for your offerings.
               </p>
             </div>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110"
+            <button
+              onClick={() => router.push("/dashboard/profile?tab=products")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-[12px] font-bold transition-all hover:brightness-110"
               style={{ background: "#1F6F54" }}>
               <Plus size={14} /> Add Products
             </button>
@@ -1694,12 +1646,12 @@ function GlobalOpportunityMap() {
           {/* Status badge */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-center px-6">
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(0,119,204,0.25)", backdropFilter: "blur(8px)" }}>
+              style={{ background: "#FBF0C5", border: "1px solid rgba(156,80,34,0.30)", backdropFilter: "blur(8px)" }}>
               <span className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#0077CC" }} />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#0077CC" }} />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "#9C5022" }} />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#9C5022" }} />
               </span>
-              <span className="text-[11px] font-semibold" style={{ color: "#0077CC" }}>Demand mapping in progress…</span>
+              <span className="text-[11px] font-semibold" style={{ color: "#9C5022" }}>Demand mapping in progress…</span>
             </div>
             <p className="text-[10px] text-slate-500 max-w-[280px] leading-relaxed bg-white/80 px-3 py-1.5 rounded-lg">
               Identifying and routing demand signals for your products. Map updates as activity flows in.

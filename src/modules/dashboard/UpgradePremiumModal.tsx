@@ -50,9 +50,12 @@ const ACCELERATOR_BULLETS = [
   "Open + Exclusive project access",
   "Unlimited Market Pulse Quick Snapshots",
   "Up to 10 in-depth Product MI reports / year",
-  "Digital Marketing Insights — leads & trends",
+  "Lead Generation for catalogue products",
   "Research Vault — up to 20 compounds",
   "Research Module — Receive R&D project opportunities + expertise",
+];
+
+const ACCELERATOR_FOOTER_BULLETS = [
   "QA/QC as a Service",
   "Compliance as a Service",
   "Priority support — WhatsApp, email & 1-on-1",
@@ -158,7 +161,7 @@ function MomentumScreen({ onContinue, onBack }: { onContinue: () => void; onBack
         <div className="flex flex-col gap-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full w-fit text-[10.5px] font-bold"
             style={{ background: "rgba(245,200,66,0.08)", border: "1px solid rgba(245,200,66,0.25)", color: "#f5c842" }}>
-            <Zap size={10} /> Scinode Accelerator
+            <Zap size={10} /> Priority Partner
           </div>
           <h2 className="text-[22px] font-black text-white leading-tight tracking-[-0.02em]">
             You're one step away<br />from full platform access.
@@ -443,7 +446,7 @@ function SuccessScreen({ email, onClose }: { email: string; onClose: () => void 
               We'll reach out to{" "}
               <span className="font-semibold text-white">{email}</span>
               {" "}within <span className="font-bold text-[#f5c842]">24 hours</span> to
-              get you set up on Scinode Accelerator.
+              get you set up on Priority Partner.
             </p>
           </div>
         </div>
@@ -661,7 +664,7 @@ export function UpgradePremiumModal({
               {/* ══ PLAN CARDS ══ */}
               <div className="px-5 pt-4 pb-3 grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                {/* Scinode Starter */}
+                {/* Access Partner */}
                 <div className="rounded-[16px] border border-[#2a2a2a] bg-[#141414] p-5 flex flex-col gap-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -669,7 +672,7 @@ export function UpgradePremiumModal({
                         <Rocket size={15} className="text-[#9ca3af]" />
                       </div>
                       <div>
-                        <p className="text-[14px] font-bold text-white leading-tight">Scinode Starter</p>
+                        <p className="text-[14px] font-bold text-white leading-tight">Access Partner</p>
                         <p className="text-[11px] text-white/55">Free forever · No expiry</p>
                       </div>
                     </div>
@@ -705,7 +708,7 @@ export function UpgradePremiumModal({
                   </div>
                 </div>
 
-                {/* Scinode Accelerator */}
+                {/* Priority Partner */}
                 <div
                   className="rounded-[16px] p-5 flex flex-col gap-4 relative overflow-hidden"
                   style={{
@@ -725,7 +728,7 @@ export function UpgradePremiumModal({
                         <Zap size={15} style={{ color: "#f5c842" }} />
                       </div>
                       <div>
-                        <p className="text-[14px] font-bold text-white leading-tight">Scinode Accelerator</p>
+                        <p className="text-[14px] font-bold text-white leading-tight">Priority Partner</p>
                         <p className="text-[11px] text-white/50">Full Access to Manufacturing Intelligence</p>
                       </div>
                     </div>
@@ -781,6 +784,17 @@ export function UpgradePremiumModal({
                         </div>
                         <span className="text-[12px] text-white/65 leading-tight">{f}</span>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Footer bullets — italic, no tick, visually separated */}
+                  <div className="flex flex-col gap-1.5 pt-2 border-t"
+                    style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                    {ACCELERATOR_FOOTER_BULLETS.map(f => (
+                      <span key={f} className="text-[11.5px] italic leading-snug pl-0.5"
+                        style={{ color: "rgba(255,255,255,0.38)" }}>
+                        {f}
+                      </span>
                     ))}
                   </div>
                 </div>
