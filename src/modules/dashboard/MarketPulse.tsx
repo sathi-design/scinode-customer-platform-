@@ -1008,8 +1008,8 @@ export function MarketPulse() {
             <ChevronRight size={12} />
             <span className="text-[#020202] font-medium">Market Pulse</span>
           </nav>
-          <h1 className="text-[22px] font-semibold text-[#020202] flex items-center gap-2 mt-1">
-            <Activity size={20} className="text-[#2ACB83]" /> Market Pulse
+          <h1 className="text-[22px] font-semibold text-[#020202] mt-1">
+            Market Pulse
           </h1>
           <p className="text-[13px] text-[#6B7280] mt-0.5 max-w-[560px] leading-[19px]">
             Custom intelligence reports for your product. Select products and intelligence areas to generate market insights and opportunity snapshots.
