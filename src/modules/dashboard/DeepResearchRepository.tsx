@@ -86,6 +86,59 @@ const LITERATURE_PAPERS = [
 
 const ITEMS_PER_PAGE = 8;
 
+// ─── Grouped Literature (compound → papers) ───────────────────────────────────
+
+const GROUPED_LITERATURE = [
+  {
+    id: "grignard",
+    compoundName: "Grignard Reaction Mechanism",
+    cas: "Various",
+    formula: "RMgX",
+    pubchemCid: null as number | null,
+    lastAdded: "8 Jun",
+    defaultOpen: true,
+    papers: [
+      LITERATURE_PAPERS[2], // Mechanistic Insights
+      LITERATURE_PAPERS[3], // Chelation-Controlled
+      LITERATURE_PAPERS[4], // Solvent Effects
+      LITERATURE_PAPERS[5], // Flow Chemistry
+    ],
+  },
+  {
+    id: "biobased",
+    compoundName: "Biobased Furan Compounds",
+    cas: "4079-52-1",
+    formula: "C₆H₅ClO₂",
+    pubchemCid: 12674,
+    lastAdded: "6 Jun",
+    defaultOpen: false,
+    papers: [
+      LITERATURE_PAPERS[0],
+      LITERATURE_PAPERS[1],
+    ],
+  },
+  {
+    id: "paracetamol",
+    compoundName: "Paracetamol",
+    cas: "103-90-2",
+    formula: "C₈H₉NO₂",
+    pubchemCid: 1983,
+    lastAdded: "5 Jun",
+    defaultOpen: false,
+    papers: [LITERATURE_PAPERS[6]],
+  },
+  {
+    id: "ibuprofen",
+    compoundName: "Ibuprofen",
+    cas: "15687-27-1",
+    formula: "C₁₃H₁₈O₂",
+    pubchemCid: 3672,
+    lastAdded: "4 Jun",
+    defaultOpen: false,
+    papers: [LITERATURE_PAPERS[7]],
+  },
+] as const;
+
 // ─── Compound Detail Data ─────────────────────────────────────────────────────
 
 const DETAIL_ROUTES = [
@@ -558,9 +611,9 @@ function RecentCompoundsSection({ hasData }: { hasData: boolean }) {
     recent: "Most Recent", name: "Name (A–Z)", confidence: "Routes",
   };
 
-  const activeData = (tab === "research" ? [...RESEARCH_COMPOUNDS] : [...LITERATURE_COMPOUNDS]).sort((a, b) => {
+  const activeData = [...RESEARCH_COMPOUNDS].sort((a, b) => {
     if (sort === "name") return a.name.localeCompare(b.name);
-    if (sort === "confidence") return ("routes" in b ? b.routes : b.papers) - ("routes" in a ? a.routes : a.papers);
+    if (sort === "confidence") return b.routes - a.routes;
     return 0;
   });
 
@@ -657,8 +710,8 @@ function RecentCompoundsSection({ hasData }: { hasData: boolean }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {paged.map((item) => {
               const imgUrl = `https://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi?cid=${item.pubchemCid}&width=300&height=200`;
-              const count  = "routes" in item ? item.routes : item.papers;
-              const countLabel = "routes" in item ? "routes" : "papers";
+              const count  = item.routes;
+              const countLabel = "routes";
               return (
                 <div key={item.id}
                   className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden flex flex-col hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group">
@@ -799,6 +852,199 @@ function Day0State({ onLearnMore, onUpgrade, onOpenWorkspace, onOpenLiterature }
 const RESEARCH_PER_PAGE  = 6;
 const LITERATURE_PER_PAGE = 4;
 
+// ─── Grouped Literature Row ───────────────────────────────────────────────────
+
+type GroupedLitItem = typeof GROUPED_LITERATURE[number];
+type LitPaper = GroupedLitItem["papers"][number];
+
+function LiteratureGroupRow({ group }: { group: GroupedLitItem }) {
+  const [open, setOpen] = useState(group.defaultOpen);
+  const [expandedAbstract, setExpandedAbstract] = useState<number | null>(null);
+  const [hoveredPaper, setHoveredPaper] = useState<number | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  const imgUrl = group.pubchemCid
+    ? `https://pubchem.ncbi.nlm.nih.gov/image/imagefly.cgi?cid=${group.pubchemCid}&width=80&height=80`
+    : null;
+
+  return (
+    <div
+      className="rounded-2xl border border-[#e4e4e7] bg-white overflow-hidden transition-shadow duration-200"
+      style={{ boxShadow: open ? "0 2px 16px rgba(0,0,0,0.07)" : undefined }}
+    >
+      {/* ── Group Header ── */}
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#f9fafb] transition-colors duration-150 group"
+      >
+        {/* Molecule thumbnail */}
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+          style={{
+            background: "#f0fdf4",
+            backgroundImage:
+              "linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px)",
+            backgroundSize: "10px 10px",
+            border: "1px solid #d1fae5",
+          }}
+        >
+          {imgUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imgUrl} alt={group.compoundName} className="w-full h-full object-contain p-1"
+              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          ) : (
+            <Beaker size={16} style={{ color: "#1a5c3a" }} />
+          )}
+        </div>
+
+        {/* Name + meta */}
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-[13.5px] font-bold text-slate-900 leading-tight truncate">{group.compoundName}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">{group.cas !== "Various" ? `CAS ${group.cas} · ` : ""}{group.formula}</p>
+        </div>
+
+        {/* Right meta */}
+        <div className="flex items-center gap-3 shrink-0">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold"
+            style={{ background: "#e3f5ec", color: "#1a5c3a" }}
+          >
+            <BookOpen size={10} />
+            {group.papers.length} paper{group.papers.length !== 1 ? "s" : ""}
+          </span>
+          <span className="text-[11px] text-slate-400 hidden sm:block">{group.lastAdded}</span>
+          <div
+            className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors duration-150"
+            style={{ background: open ? "#1a5c3a" : "#f3f4f6" }}
+          >
+            <ChevronDown
+              size={13}
+              style={{ color: open ? "white" : "#6b7280" }}
+              className={cn("transition-transform duration-250", open ? "rotate-180" : "")}
+            />
+          </div>
+        </div>
+      </button>
+
+      {/* ── Expandable paper list ── */}
+      <div
+        ref={bodyRef}
+        style={{
+          maxHeight: open ? "2000px" : "0px",
+          overflow: "hidden",
+          transition: open
+            ? "max-height 0.36s cubic-bezier(0.22,1,0.36,1)"
+            : "max-height 0.22s cubic-bezier(0.4,0,1,1)",
+        }}
+      >
+        <div className="border-t border-[#f0f0f0]">
+          {(group.papers as readonly LitPaper[]).map((paper, i) => {
+            const isLast = i === group.papers.length - 1;
+            const isExpanded = expandedAbstract === paper.id;
+            const isHovered = hoveredPaper === paper.id;
+
+            return (
+              <div
+                key={paper.id}
+                className={cn(
+                  "px-4 transition-colors duration-100",
+                  !isLast && "border-b border-[#f4f4f5]",
+                  isHovered ? "bg-[#f9fdfb]" : "bg-white",
+                )}
+                onMouseEnter={() => setHoveredPaper(paper.id)}
+                onMouseLeave={() => setHoveredPaper(null)}
+              >
+                {/* Paper main row */}
+                <div
+                  className="flex items-start gap-2.5 py-3 cursor-pointer"
+                  onClick={() => setExpandedAbstract(isExpanded ? null : paper.id)}
+                >
+                  {/* Status dot */}
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1a5c3a] shrink-0 mt-[6px]" />
+
+                  {/* Title + meta */}
+                  <div className="flex-1 min-w-0">
+                    <p className={cn(
+                      "text-[12.5px] font-semibold text-slate-800 leading-snug transition-colors duration-100",
+                      isHovered && "text-[#1a5c3a]",
+                      !isExpanded && "line-clamp-2",
+                    )}>
+                      {paper.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[10.5px] font-semibold"
+                        style={{ background: "#f0fdf4", color: "#1a5c3a", border: "1px solid #bbf7d0" }}
+                      >
+                        {paper.source}
+                      </span>
+                      <span className="text-[10.5px] text-slate-400">{paper.year}</span>
+                      <span className="text-[10.5px] text-slate-300">·</span>
+                      <span className="text-[10.5px] text-slate-400 truncate max-w-[160px]">{paper.doi}</span>
+                    </div>
+                  </div>
+
+                  {/* Expand chevron */}
+                  <ChevronDown
+                    size={12}
+                    className={cn("shrink-0 mt-1 text-slate-300 transition-all duration-200", isExpanded && "rotate-180 text-[#1a5c3a]")}
+                  />
+                </div>
+
+                {/* Abstract expansion */}
+                <div
+                  style={{
+                    maxHeight: isExpanded ? "300px" : "0px",
+                    overflow: "hidden",
+                    transition: isExpanded
+                      ? "max-height 0.32s cubic-bezier(0.22,1,0.36,1)"
+                      : "max-height 0.18s cubic-bezier(0.4,0,1,1)",
+                  }}
+                >
+                  <p className="text-[11.5px] text-slate-600 leading-relaxed pb-3 pl-4 pr-1 border-l-2 border-[#d1fae5] ml-0.5">
+                    {paper.abstract}
+                  </p>
+                </div>
+
+                {/* Action bar — always visible on hover, always visible when expanded */}
+                <div
+                  className={cn(
+                    "flex items-center justify-between gap-3 pb-3 transition-all duration-150",
+                    isHovered || isExpanded ? "opacity-100" : "opacity-0 pointer-events-none h-0 pb-0 overflow-hidden",
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#e0e0e0] text-[11px] font-medium text-slate-600 hover:border-[#1a5c3a] hover:text-[#1a5c3a] hover:bg-[#f0fdf4] transition-all"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <BookOpen size={10} /> Read paper
+                    </button>
+                    <button
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#e0e0e0] text-[11px] font-medium text-slate-600 hover:border-[#1a5c3a] hover:text-[#1a5c3a] hover:bg-[#f0fdf4] transition-all"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <FlaskConical size={10} /> Extract conditions
+                    </button>
+                  </div>
+                  <button
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#e0e0e0] text-[11px] font-medium text-slate-600 hover:border-[#1a5c3a] hover:text-[#1a5c3a] hover:bg-[#f0fdf4] transition-all"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <Database size={10} /> Save to vault
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Recent Compounds Panel ───────────────────────────────────────────────────
+
 function RecentCompoundsPanel({
   onOpenWorkspace, onOpenLiterature, onViewDetails, onResume,
 }: {
@@ -811,8 +1057,6 @@ function RecentCompoundsPanel({
   const [sort, setSort]         = useState<SortKey>("recent");
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage]         = useState(1); // 1-indexed
-  const [expandedPapers, setExpandedPapers] = useState<Record<number, boolean>>({});
-
   const SORT_LABELS: Record<SortKey, string> = { recent: "Most Recent", name: "Name (A–Z)", confidence: "Routes" };
 
   // Research data sorted
@@ -822,10 +1066,10 @@ function RecentCompoundsPanel({
     return 0;
   });
 
-  const perPage    = tab === "research" ? RESEARCH_PER_PAGE : LITERATURE_PER_PAGE;
-  const activeData = tab === "research" ? researchData : LITERATURE_PAPERS;
-  const totalPages = Math.ceil(activeData.length / perPage);
-  const visible    = activeData.slice((page - 1) * perPage, page * perPage);
+  const perPage    = RESEARCH_PER_PAGE;
+  const activeData = researchData;
+  const totalPages = tab === "research" ? Math.ceil(activeData.length / perPage) : 0;
+  const visible    = tab === "research" ? activeData.slice((page - 1) * perPage, page * perPage) : [];
 
   const handleTab  = (t: WorkspaceTab) => { setTab(t); setPage(1); };
   const handleSort = (s: SortKey)      => { setSort(s); setSortOpen(false); setPage(1); };
@@ -951,63 +1195,22 @@ function RecentCompoundsPanel({
         </div>
       )}
 
-      {/* ── LITERATURE TAB: paper-style cards ── */}
+      {/* ── LITERATURE TAB: grouped by compound ── */}
       {tab === "literature" && (
-        <div className="flex flex-col gap-3">
-          {(visible as typeof LITERATURE_PAPERS).map(paper => (
-            <div key={paper.id} className="bg-white rounded-2xl border border-[#e4e4e7] p-4 flex flex-col gap-3 hover:shadow-[0_2px_16px_rgba(0,0,0,0.07)] transition-shadow">
+        <div className="flex flex-col gap-2.5">
+          {/* Summary strip */}
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[11px] text-slate-400">
+              {GROUPED_LITERATURE.reduce((acc, g) => acc + g.papers.length, 0)} papers saved across {GROUPED_LITERATURE.length} research topics
+            </span>
+            <span className="w-1 h-1 rounded-full bg-slate-300" />
+            <span className="text-[11px] text-[#1a5c3a] font-semibold cursor-pointer hover:underline">
+              Select all
+            </span>
+          </div>
 
-              {/* Top: checkbox + dot + title + external link */}
-              <div className="flex items-start gap-2.5">
-                <input type="checkbox" className="mt-[3px] shrink-0 accent-[#1a5c3a] w-3.5 h-3.5 cursor-pointer rounded" />
-                <span className="w-2 h-2 rounded-full bg-[#1a5c3a] shrink-0 mt-[5px]" />
-                <div className="flex-1 min-w-0 flex items-start gap-2">
-                  <p className="text-[13.5px] font-bold text-slate-900 leading-snug flex-1">{paper.title}</p>
-                  <button className="shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-[#1a5c3a] transition-colors mt-0.5">
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                      <path d="M6 2H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V8M9 1h4m0 0v4m0-4L6 8"
-                        stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Source pill + year/DOI */}
-              <div className="flex items-center gap-2 ml-[26px]">
-                <span className="px-2.5 py-0.5 rounded-full border border-[#1a5c3a]/25 text-[11px] font-semibold"
-                  style={{ background: "#f0fdf4", color: "#1a5c3a" }}>{paper.source}</span>
-                <span className="text-[11px] text-slate-400">{paper.doi}</span>
-              </div>
-
-              {/* Abstract */}
-              <div className="ml-[26px]">
-                <p className="text-[12px] text-slate-600 leading-relaxed">
-                  {expandedPapers[paper.id] ? paper.abstract : paper.abstract.slice(0, 200) + "..."}
-                </p>
-                <button
-                  onClick={() => setExpandedPapers(p => ({ ...p, [paper.id]: !p[paper.id] }))}
-                  className="flex items-center gap-1 mt-1.5 text-[11.5px] font-semibold transition-colors"
-                  style={{ color: "#1a5c3a" }}>
-                  <ChevronDown size={13} className={cn("transition-transform duration-200", expandedPapers[paper.id] ? "rotate-180" : "")} />
-                  {expandedPapers[paper.id] ? "Show less" : "Show more"}
-                </button>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-between gap-3 ml-[26px] pt-2 border-t border-[#f3f4f6]">
-                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-[11.5px] font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-all">
-                    <BookOpen size={12} /> Read paper
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-[11.5px] font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-all">
-                    <FlaskConical size={12} /> Extract conditions
-                  </button>
-                </div>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e0e0e0] text-[11.5px] font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50 transition-all">
-                  <Database size={12} /> Save to vault
-                </button>
-              </div>
-            </div>
+          {GROUPED_LITERATURE.map(group => (
+            <LiteratureGroupRow key={group.id} group={group} />
           ))}
         </div>
       )}
@@ -1984,7 +2187,7 @@ function ResearchResultCanvas() {
               </div>
             </div>
             {/* Scores row */}
-            <div className="flex items-stretch divide-x border-b" style={{ borderColor: "rgba(255,255,255,0.06)", divideColor: "rgba(255,255,255,0.06)" }}>
+            <div className="flex items-stretch divide-x border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               {[
                 { label: "Yield Score", value: "9.5/10", sub: "88–95% × 95–98% × 96–99% × 98–99%", color: "#6ee7b7" },
                 { label: "Feasibility", value: "7.5/10", sub: "Flow chemistry expertise required", color: "#93c5fd" },
@@ -2298,7 +2501,7 @@ function ResearchWorkspaceModal({
                 <button
                   onClick={() => setWorkspaceTab("literature")}
                   className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150"
-                  style={workspaceTab === "literature"
+                  style={(workspaceTab as string) === "literature"
                     ? { background: "linear-gradient(135deg,#1e50a2,#0d3266)", color: "white" }
                     : { color: "#64748b" }}
                 >
