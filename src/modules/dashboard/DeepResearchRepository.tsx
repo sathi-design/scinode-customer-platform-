@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type DemoState = "day0" | "searched";
+type DemoState = "day0" | "searched" | "exhausted";
 type PlanState = "free" | "premium";
 type WorkspaceTab = "research" | "literature";
 type SortKey = "recent" | "name" | "confidence";
@@ -556,14 +556,22 @@ function DeepResearchBannerCard({ onLearnMore }: { onLearnMore: () => void }) {
 
 // ─── Day 0 — No Research Done ─────────────────────────────────────────────────
 
-function WorkspaceCards({ onOpen, onOpenLiterature, vertical = false }: { onOpen: () => void; onOpenLiterature: () => void; vertical?: boolean }) {
+function WorkspaceCards({ onOpen, onOpenLiterature, vertical = false, isExhausted = false }: { onOpen: () => void; onOpenLiterature: () => void; vertical?: boolean; isExhausted?: boolean }) {
   return (
     <div className={vertical ? "flex flex-col gap-3" : "grid grid-cols-1 sm:grid-cols-2 gap-4 h-full"}>
       {WORKSPACE_CARDS.map((w) => {
         const Icon = w.icon;
+        const isResearch = w.id === "research";
+        // Literature is still accessible when exhausted; only new research is locked
+        const locked = isExhausted && isResearch;
         return (
           <div key={w.id}
-            className="bg-white rounded-2xl border border-[#e4e4e7] p-5 flex flex-col gap-4 cursor-pointer group transition-all duration-200 hover:border-[#1a5c3a] hover:shadow-[0_4px_20px_rgba(26,92,58,0.12)] hover:-translate-y-0.5">
+            className={cn(
+              "bg-white rounded-2xl border p-5 flex flex-col gap-4 transition-all duration-200",
+              locked
+                ? "border-[#e4e4e7] opacity-75"
+                : "cursor-pointer group border-[#e4e4e7] hover:border-[#1a5c3a] hover:shadow-[0_4px_20px_rgba(26,92,58,0.12)] hover:-translate-y-0.5"
+            )}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex flex-col gap-2">
                 <span className="text-[9.5px] font-bold tracking-[0.14em] text-slate-400">{w.tag}</span>
@@ -571,9 +579,16 @@ function WorkspaceCards({ onOpen, onOpenLiterature, vertical = false }: { onOpen
                   <Icon size={20} style={{ color: w.iconColor }} />
                 </div>
               </div>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center border border-slate-200 text-slate-300 group-hover:border-[#1a5c3a] group-hover:text-[#1a5c3a] transition-colors shrink-0">
-                <ArrowRight size={13} />
-              </div>
+              {locked ? (
+                <div className="w-7 h-7 rounded-full flex items-center justify-center border border-[#e85555]/40 shrink-0"
+                  style={{ background: "rgba(232,85,85,0.08)" }}>
+                  <Lock size={12} style={{ color: "#f87171" }} />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-full flex items-center justify-center border border-slate-200 text-slate-300 group-hover:border-[#1a5c3a] group-hover:text-[#1a5c3a] transition-colors shrink-0">
+                  <ArrowRight size={13} />
+                </div>
+              )}
             </div>
             <div>
               <h3 className="text-[15px] font-bold text-slate-900 mb-1.5 leading-tight">{w.title}</h3>
@@ -587,11 +602,20 @@ function WorkspaceCards({ onOpen, onOpenLiterature, vertical = false }: { onOpen
                 </span>
               ))}
             </div>
-            <button
-              onClick={w.id === "literature" ? onOpenLiterature : onOpen}
-              className="w-full py-2 rounded-lg text-[12.5px] font-bold border-2 border-[#1a5c3a] text-[#1a5c3a] transition-all duration-200 hover:bg-[#1a5c3a] hover:text-white mt-auto">
-              {w.cta}
-            </button>
+            {locked ? (
+              <button
+                onClick={onOpen}
+                className="w-full py-2 rounded-lg text-[12.5px] font-bold text-[#020202] flex items-center justify-center gap-1.5 transition-all hover:brightness-110 mt-auto"
+                style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+                <Zap size={12} /> Upgrade to unlock
+              </button>
+            ) : (
+              <button
+                onClick={w.id === "literature" ? onOpenLiterature : onOpen}
+                className="w-full py-2 rounded-lg text-[12.5px] font-bold border-2 border-[#1a5c3a] text-[#1a5c3a] transition-all duration-200 hover:bg-[#1a5c3a] hover:text-white mt-auto">
+                {w.cta}
+              </button>
+            )}
           </div>
         );
       })}
@@ -1724,7 +1748,7 @@ function CompoundDetailModal({
 
 // ─── State 2 — After First Search ────────────────────────────────────────────
 
-function SearchedState({ onLearnMore, onUpgrade, onOpenWorkspace, onOpenLiterature }: { onLearnMore: () => void; onUpgrade: () => void; onOpenWorkspace: () => void; onOpenLiterature: () => void }) {
+function SearchedState({ onLearnMore, onUpgrade, onOpenWorkspace, onOpenLiterature, isExhausted = false }: { onLearnMore: () => void; onUpgrade: () => void; onOpenWorkspace: () => void; onOpenLiterature: () => void; isExhausted?: boolean }) {
   const [detailCompound, setDetailCompound] = useState<typeof RESEARCH_COMPOUNDS[0] | null>(null);
   const [resumeOpen, setResumeOpen]         = useState(false);
   const [resumeMessages, setResumeMessages] = useState<{ role: "user" | "agent"; text: string }[]>([]);
@@ -1790,7 +1814,7 @@ function SearchedState({ onLearnMore, onUpgrade, onOpenWorkspace, onOpenLiteratu
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">WORKSPACES</p>
               <div className="flex-1 h-px bg-slate-100" />
             </div>
-            <WorkspaceCards onOpen={onOpenWorkspace} onOpenLiterature={onOpenLiterature} vertical={true} />
+            <WorkspaceCards onOpen={onOpenWorkspace} onOpenLiterature={onOpenLiterature} vertical={true} isExhausted={isExhausted} />
           </div>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -2976,18 +3000,28 @@ export function DeepResearchRepository() {
             </p>
           </div>
           <div className="shrink-0 sm:mt-7">
-            <button
-              onClick={() => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all whitespace-nowrap"
-              style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
-            >
-              Get started with new research <ArrowRight size={14} />
-            </button>
+            {demo === "exhausted" ? (
+              <button
+                onClick={() => setUpgradeOpen(true)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[#020202] text-[13px] font-bold hover:brightness-110 transition-all whitespace-nowrap"
+                style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}
+              >
+                <Zap size={14} /> Upgrade to research more
+              </button>
+            ) : (
+              <button
+                onClick={() => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all whitespace-nowrap"
+                style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+              >
+                Get started with new research <ArrowRight size={14} />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── Free plan banner ── */}
-        {plan === "free" && (
+        {/* ── Plan banner ── */}
+        {plan === "free" && demo !== "exhausted" && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border border-[#c9a227]/40">
             <div className="flex items-start gap-3">
               <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
@@ -3004,9 +3038,42 @@ export function DeepResearchRepository() {
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="text-[11.5px] text-white/60">
-                    Molecules researched: <span className="text-[#f5c842] font-semibold">0 / 20</span>
+                    Molecules researched: <span className="text-[#f5c842] font-semibold">{demo === "day0" ? "0" : "18"} / 20</span>
                   </span>
                 </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setUpgradeOpen(true)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-[12px] font-bold text-[#020202] whitespace-nowrap transition-all hover:brightness-110"
+              style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}
+            >
+              <Zap size={12} /> Upgrade to Premium
+            </button>
+          </div>
+        )}
+
+        {/* ── Exhausted plan banner ── */}
+        {demo === "exhausted" && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3.5 rounded-[10px] bg-[#0e0e0e] border border-[#e85555]/35"
+            style={{ boxShadow: "0 0 0 1px rgba(232,85,85,0.08)" }}>
+            <div className="flex items-start gap-3">
+              {/* Alert icon */}
+              <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: "rgba(232,85,85,0.12)", border: "1px solid rgba(232,85,85,0.35)" }}>
+                <AlertTriangle size={13} style={{ color: "#f87171" }} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-[12.5px] font-semibold text-white">Research Limit Reached</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    style={{ background: "rgba(232,85,85,0.18)", color: "#f87171", border: "1px solid rgba(232,85,85,0.30)" }}>
+                    20 / 20 used
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-white/55 max-w-[520px] leading-[16px]">
+                  You&apos;ve used all 20 free molecule research credits. Your saved repository is still fully accessible — upgrade to Premium for unlimited research, full route intelligence, and priority synthesis analysis.
+                </p>
               </div>
             </div>
             <button
@@ -3024,8 +3091,9 @@ export function DeepResearchRepository() {
           <span className="text-[9.5px] font-bold text-[#9ca3af] uppercase tracking-widest shrink-0">Demo</span>
           <div className="flex items-center gap-1 flex-wrap">
             {([
-              { key: "day0",     label: "Day 0 — No Research Done" },
-              { key: "searched", label: "After First Search" },
+              { key: "day0",      label: "Day 0 — No Research Done" },
+              { key: "searched",  label: "After First Search" },
+              { key: "exhausted", label: "Plan Limit Reached" },
             ] as { key: DemoState; label: string }[]).map(({ key, label }) => (
               <button
                 key={key}
@@ -3042,20 +3110,23 @@ export function DeepResearchRepository() {
         </div>
 
         {/* ── Content ── */}
-        {demo === "day0"
-          ? <Day0State
-              onLearnMore={() => setHowItWorksOpen(true)}
-              onUpgrade={() => setUpgradeOpen(true)}
-              onOpenWorkspace={() => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
-              onOpenLiterature={() => { setWorkspaceDefaultTab("literature"); setWorkspaceOpen(true); }}
-            />
-          : <SearchedState
-              onLearnMore={() => setHowItWorksOpen(true)}
-              onUpgrade={() => setUpgradeOpen(true)}
-              onOpenWorkspace={() => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
-              onOpenLiterature={() => { setWorkspaceDefaultTab("literature"); setWorkspaceOpen(true); }}
-            />
-        }
+        {demo === "day0" ? (
+          <Day0State
+            onLearnMore={() => setHowItWorksOpen(true)}
+            onUpgrade={() => setUpgradeOpen(true)}
+            onOpenWorkspace={() => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
+            onOpenLiterature={() => { setWorkspaceDefaultTab("literature"); setWorkspaceOpen(true); }}
+          />
+        ) : (
+          /* "searched" and "exhausted" both show the repository — exhausted locks new research */
+          <SearchedState
+            onLearnMore={() => setHowItWorksOpen(true)}
+            onUpgrade={() => setUpgradeOpen(true)}
+            onOpenWorkspace={demo === "exhausted" ? () => setUpgradeOpen(true) : () => { setWorkspaceDefaultTab("research"); setWorkspaceOpen(true); }}
+            onOpenLiterature={demo === "exhausted" ? () => setUpgradeOpen(true) : () => { setWorkspaceDefaultTab("literature"); setWorkspaceOpen(true); }}
+            isExhausted={demo === "exhausted"}
+          />
+        )}
 
       </div>
     </>
