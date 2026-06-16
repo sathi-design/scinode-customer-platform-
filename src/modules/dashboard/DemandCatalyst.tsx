@@ -1215,7 +1215,7 @@ export function DemandCatalyst() {
         {/* Hero */}
         <div className="flex items-start justify-between gap-8">
           {/* Left — heading + subtext */}
-          <div className="max-w-[560px]">
+          <div className="max-w-[780px]">
             <div
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest mb-3"
               style={{ background: "#e3f5ec", color: "#1a5c3a" }}
@@ -1223,10 +1223,10 @@ export function DemandCatalyst() {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               MANAGED B2B GROWTH SERVICE
             </div>
-            <h1 className="text-[26px] font-black text-slate-900 leading-tight mb-3">
-              Turn Your Products Into<br />Qualified Global Opportunities
+            <h1 className="text-[26px] font-black text-slate-900 leading-tight mb-3 whitespace-nowrap">
+              Turn Your Products Into Qualified Global Opportunities
             </h1>
-            <p className="text-[14px] text-slate-500 leading-relaxed max-w-[460px]">
+            <p className="text-[14px] text-slate-500 leading-relaxed max-w-[480px]">
               SCINODE&apos;s sales and marketing teams actively promote your selected products, generate buyer demand, and deliver exclusive opportunities directly to you.
             </p>
           </div>
