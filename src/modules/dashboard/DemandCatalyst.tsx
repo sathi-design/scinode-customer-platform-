@@ -978,39 +978,26 @@ function ProductSelectionPanel({ onContinue }: { onContinue: (ids: number[]) => 
                 )}
               </div>
 
-              {/* Vertical slots */}
-              <div className="flex flex-col gap-1.5">
+              {/* Horizontal pill row — side by side */}
+              <div className="flex gap-2">
                 {Array(5).fill(null).map((_, i) => {
                   const product = selectedProducts[i];
                   return product ? (
                     <div key={product.id}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 border-amber-200 bg-[#fffbeb] group">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-amber-700 bg-amber-100 shrink-0">
-                        {i + 1}
-                      </div>
-                      <Star size={12} style={{ color: "#ca8a04", fill: "#ca8a04" }} className="shrink-0" />
-                      <div className="flex-1 min-w-0 flex items-center gap-3">
-                        <p className="text-[12.5px] font-semibold text-slate-800 truncate">{product.name}</p>
-                        <p className="text-[10px] font-mono text-slate-400 shrink-0">CAS {product.cas}</p>
-                        <p className="text-[10.5px] italic text-amber-700 truncate hidden sm:block">{product.chemicalName}</p>
-                        <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0",
-                          product.missing.length === 0 ? "bg-[#e3f5ec] text-[#1a5c3a]" : "bg-[#fef9c3] text-[#92400e]")}>
-                          {product.missing.length === 0 ? "Campaign Ready" : "Needs Attention"}
-                        </span>
-                      </div>
-                      <button onClick={() => toggle(product.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex items-center gap-1 text-[11px] text-red-400 hover:text-red-600 shrink-0">
-                        <X size={12} /> Remove
+                      className="flex-1 flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-amber-300 bg-[#fffbeb] group min-w-0">
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black text-amber-700 bg-amber-100 shrink-0">{i + 1}</span>
+                      <Star size={10} style={{ color: "#ca8a04", fill: "#ca8a04" }} className="shrink-0" />
+                      <p className="text-[11px] font-semibold text-slate-800 truncate flex-1">{product.name.split(" ").slice(0, 2).join(" ")}</p>
+                      <button onClick={() => toggle(product.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <X size={10} className="text-red-400 hover:text-red-600" />
                       </button>
                     </div>
                   ) : (
                     <div key={i}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 border-dashed border-[#e2e8f0]"
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border-2 border-dashed border-[#e2e8f0] min-w-0"
                       style={{ background: "#f8fafc" }}>
-                      <div className="w-5 h-5 rounded-full border-2 border-[#e2e8f0] flex items-center justify-center text-[10px] font-bold text-slate-300 shrink-0">
-                        {i + 1}
-                      </div>
-                      <p className="text-[12px] text-slate-300">Empty — search and click ★ to fill</p>
+                      <span className="w-4 h-4 rounded-full border-2 border-[#e2e8f0] flex items-center justify-center text-[9px] font-bold text-slate-300 shrink-0">{i + 1}</span>
+                      <p className="text-[10.5px] text-slate-300 truncate">Empty</p>
                     </div>
                   );
                 })}
