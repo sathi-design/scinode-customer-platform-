@@ -513,17 +513,6 @@ function RightPanel({
     <div className="flex flex-col gap-5">
       {/* Section label */}
       <div className="flex items-center gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">HOW IT WORKS</p>
-        <div className="flex-1 h-px bg-slate-100" />
-      </div>
-
-      {/* Timeline */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
-        <VerticalTimeline activeStep={activeStep} />
-      </div>
-
-      {/* Banner */}
-      <div className="flex items-center gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">DEMAND CATALYST</p>
         <div className="flex-1 h-px bg-slate-100" />
       </div>
@@ -1236,6 +1225,42 @@ export function DemandCatalyst() {
 
         {/* KPI cards */}
         <KpiCards data={kpiData} />
+
+        {/* How It Works — horizontal flow */}
+        <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-4">HOW DEMAND CATALYST WORKS</p>
+          <div className="flex items-center overflow-x-auto pb-1">
+            {[
+              { icon: Package,   label: "Product Catalog",    sub: "Your products",          color: "#64748b", bg: "#f1f5f9" },
+              { icon: Star,      label: "Star Products",       sub: "Up to 5 selected",       color: "#1a5c3a", bg: "#e3f5ec" },
+              { icon: Layers,    label: "Campaign Planning",   sub: "SCINODE team prepares",  color: "#2563eb", bg: "#dbeafe" },
+              { icon: Megaphone, label: "Campaign Execution",  sub: "Multi-channel outreach", color: "#9333ea", bg: "#ede9fe" },
+              { icon: Target,    label: "Lead Finalization",   sub: "Buyer qualification",    color: "#ca8a04", bg: "#fef9c3" },
+              { icon: Award,     label: "Opportunities",       sub: "Delivered to you",       color: "#7c3aed", bg: "#ede9fe" },
+            ].map((s, i, arr) => {
+              const Icon = s.icon;
+              return (
+                <React.Fragment key={s.label}>
+                  <div className="flex flex-col items-center gap-2 min-w-[100px] flex-1">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: s.bg }}>
+                      <Icon size={16} style={{ color: s.color }} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[12px] font-semibold text-slate-800 leading-tight">{s.label}</p>
+                      <p className="text-[10.5px] text-slate-400 mt-0.5">{s.sub}</p>
+                    </div>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div className="flex-shrink-0 flex items-center pb-5">
+                      <div className="w-6 h-px" style={{ background: "repeating-linear-gradient(90deg,#cbd5e1 0,#cbd5e1 3px,transparent 3px,transparent 7px)" }} />
+                      <ChevronRight size={11} className="text-slate-300 -ml-1" />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
 
         {/* 70 / 30 layout */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
