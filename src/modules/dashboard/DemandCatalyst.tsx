@@ -1322,10 +1322,10 @@ export function DemandCatalyst() {
 
           {/* LEFT — 70% */}
           <div className="lg:col-span-7 flex flex-col">
-            {(demoState === "state1" || demoState === "state2") && (
+            {demoState === "state2" && (
               <EmptyStatePanel onGetStarted={() => setDemoState("state2")} />
             )}
-            {demoState === "state3" && (
+            {(demoState === "state1" || demoState === "state3") && (
               <ProductSelectionPanel onContinue={() => setDemoState("state4")} />
             )}
             {demoState === "state4" && (
