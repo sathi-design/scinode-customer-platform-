@@ -664,7 +664,7 @@ function NoCatalogCard({ onGoToCatalog }: { onGoToCatalog: () => void }) {
       <div className="flex items-stretch">
 
         {/* LEFT — H1 + subtext + CTAs */}
-        <div className="flex-1 p-7 flex flex-col justify-center gap-4">
+        <div className="flex-1 px-10 py-8 flex flex-col justify-center gap-4">
           {/* Warning pill */}
           <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-full text-[11px] font-bold"
             style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e" }}>
