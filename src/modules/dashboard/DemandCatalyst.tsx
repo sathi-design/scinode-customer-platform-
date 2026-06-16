@@ -737,7 +737,13 @@ function NoCatalogCard({ onGoToCatalog }: { onGoToCatalog: () => void }) {
                     {s.label}
                   </p>
                   {!s.done && i === 1 && (
-                    <p className="text-[11px] text-amber-600 font-medium mt-0.5">Required next</p>
+                    <button
+                      onClick={onGoToCatalog}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold mt-0.5 hover:underline transition-all"
+                      style={{ color: "#d97706" }}
+                    >
+                      Required next <ChevronRight size={10} />
+                    </button>
                   )}
                 </div>
               </div>
