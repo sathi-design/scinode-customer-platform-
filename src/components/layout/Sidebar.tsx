@@ -20,6 +20,7 @@ import {
   Crown,
   Check,
   FlaskConical,
+  Megaphone,
 } from "lucide-react";
 import { useAuth, RESEARCHER_ROLES } from "@/hooks/useAuth";
 
@@ -42,7 +43,8 @@ const NAV_ITEMS = [
   { label: "Active Projects", href: "/dashboard/orders",                 icon: TrendingUp },
   { label: "Market Pulse",    href: "/dashboard/market-pulse",           icon: Activity },
   { label: "Deep Research",   href: "/dashboard/research-repository",    icon: FlaskConical },
-  { label: "Profile",         href: "/dashboard/profile",                icon: CircleUser },
+  { label: "Demand Catalyst", href: "/dashboard/demand-catalyst",        icon: Megaphone    },
+  { label: "Profile",         href: "/dashboard/profile",                icon: CircleUser   },
 ] as const;
 
 const W_COLLAPSED = 56;
