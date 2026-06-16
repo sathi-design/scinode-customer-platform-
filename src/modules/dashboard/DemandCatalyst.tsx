@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Megaphone, Star, Package, Users, Globe, Target,
   ArrowRight, CheckCircle2, Circle, ChevronRight,
-  ChevronLeft, Play, Search, Zap, TrendingUp, Award,
-  AlertCircle, Check, Rocket, Building2, Activity,
-  BarChart3, Layers, Radio, Sparkles, ShieldCheck,
-  X, Eye, ChevronDown, Plus, Minus,
+  ChevronLeft, Play, Zap, TrendingUp, Award,
+  AlertCircle, Check, Rocket, Activity, BarChart3,
+  Layers, Radio, ShieldCheck, X, Plus, Minus,
+  Sparkles, Crown, Lock, Database, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,271 +15,139 @@ import { cn } from "@/lib/utils";
 
 type DemoState = "state1" | "state2" | "state3" | "state4";
 
-// ─── Mock product catalog data ────────────────────────────────────────────────
+// ─── Mock data ────────────────────────────────────────────────────────────────
 
 const CATALOG_PRODUCTS = [
-  { id: 1, name: "Metformin HCl 99.5%",       cas: "1115-70-4",   industry: "Pharmaceutical API",    readiness: 92, selected: false, missing: [] },
-  { id: 2, name: "Paracetamol DC Grade",        cas: "103-90-2",    industry: "Pharmaceutical API",    readiness: 85, selected: false, missing: ["MSDS", "Packaging"] },
-  { id: 3, name: "Ascorbic Acid USP",           cas: "50-81-7",     industry: "Nutraceuticals",        readiness: 78, selected: false, missing: ["Target Countries"] },
-  { id: 4, name: "Citric Acid Anhydrous",       cas: "77-92-9",     industry: "Food & Beverage",       readiness: 95, selected: false, missing: [] },
-  { id: 5, name: "Ibuprofen Micronised",        cas: "15687-27-1",  industry: "Pharmaceutical API",    readiness: 61, selected: false, missing: ["MSDS", "Packaging", "Target Countries"] },
-  { id: 6, name: "Caffeine Anhydrous EP",       cas: "58-08-2",     industry: "Nutraceuticals",        readiness: 88, selected: false, missing: [] },
-  { id: 7, name: "Benzyl Alcohol NF",           cas: "100-51-6",    industry: "Specialty Chemicals",   readiness: 73, selected: false, missing: ["Packaging"] },
-  { id: 8, name: "Acetylsalicylic Acid BP",     cas: "50-78-2",     industry: "Pharmaceutical API",    readiness: 90, selected: false, missing: [] },
+  { id: 1, name: "Metformin HCl 99.5%",        cas: "1115-70-4",  industry: "Pharmaceutical API",  readiness: 92, missing: []                                      },
+  { id: 2, name: "Paracetamol DC Grade",         cas: "103-90-2",   industry: "Pharmaceutical API",  readiness: 85, missing: ["MSDS", "Packaging"]                   },
+  { id: 3, name: "Ascorbic Acid USP",            cas: "50-81-7",    industry: "Nutraceuticals",      readiness: 78, missing: ["Target Countries"]                    },
+  { id: 4, name: "Citric Acid Anhydrous",        cas: "77-92-9",    industry: "Food & Beverage",     readiness: 95, missing: []                                      },
+  { id: 5, name: "Ibuprofen Micronised",         cas: "15687-27-1", industry: "Pharmaceutical API",  readiness: 61, missing: ["MSDS", "Packaging", "Target Countries"] },
+  { id: 6, name: "Caffeine Anhydrous EP",        cas: "58-08-2",    industry: "Nutraceuticals",      readiness: 88, missing: []                                      },
+  { id: 7, name: "Benzyl Alcohol NF",            cas: "100-51-6",   industry: "Specialty Chemicals", readiness: 73, missing: ["Packaging"]                           },
+  { id: 8, name: "Acetylsalicylic Acid BP",      cas: "50-78-2",    industry: "Pharmaceutical API",  readiness: 90, missing: []                                      },
 ];
 
-const STATE4_SELECTED = [
-  { id: 1, name: "Metformin HCl 99.5%",    industry: "Pharmaceutical API",  readiness: 92, campaignStatus: "Ready",           missing: [],                              includedInLaunch: true  },
-  { id: 2, name: "Paracetamol DC Grade",   industry: "Pharmaceutical API",  readiness: 85, campaignStatus: "Needs Attention", missing: ["MSDS", "Packaging"],           includedInLaunch: false },
-  { id: 6, name: "Caffeine Anhydrous EP",  industry: "Nutraceuticals",      readiness: 88, campaignStatus: "Ready",           missing: [],                              includedInLaunch: true  },
-  { id: 8, name: "Acetylsalicylic Acid BP",industry: "Pharmaceutical API",  readiness: 90, campaignStatus: "Ready",           missing: [],                              includedInLaunch: true  },
-  { id: 3, name: "Ascorbic Acid USP",      industry: "Nutraceuticals",      readiness: 78, campaignStatus: "Needs Attention", missing: ["Target Countries"],            includedInLaunch: false },
+const STATE4_PRODUCTS = [
+  { id: 1, name: "Metformin HCl 99.5%",    industry: "Pharmaceutical API", readiness: 92, status: "ready",     missing: [],                              launch: true  },
+  { id: 2, name: "Paracetamol DC Grade",   industry: "Pharmaceutical API", readiness: 85, status: "attention", missing: ["MSDS", "Packaging"],           launch: false },
+  { id: 6, name: "Caffeine Anhydrous EP",  industry: "Nutraceuticals",     readiness: 88, status: "ready",     missing: [],                              launch: true  },
+  { id: 8, name: "Acetylsalicylic Acid BP",industry: "Pharmaceutical API", readiness: 90, status: "ready",     missing: [],                              launch: true  },
+  { id: 3, name: "Ascorbic Acid USP",      industry: "Nutraceuticals",     readiness: 78, status: "attention", missing: ["Target Countries"],            launch: false },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Demo state switcher ──────────────────────────────────────────────────────
 
-// Demo state switcher (top-right, for demo purposes)
-function DemoStateSwitcher({
-  current,
-  onChange,
-}: {
-  current: DemoState;
-  onChange: (s: DemoState) => void;
-}) {
-  const states: { id: DemoState; label: string }[] = [
-    { id: "state1", label: "State 1 · Day 0"       },
-    { id: "state2", label: "State 2 · No Catalog"  },
-    { id: "state3", label: "State 3 · No Stars"    },
-    { id: "state4", label: "State 4 · Ready"       },
+function DemoStateSwitcher({ current, onChange }: { current: DemoState; onChange: (s: DemoState) => void }) {
+  const options: { id: DemoState; label: string }[] = [
+    { id: "state1", label: "State 1 · Day 0"      },
+    { id: "state2", label: "State 2 · No Catalog" },
+    { id: "state3", label: "State 3 · No Stars"   },
+    { id: "state4", label: "State 4 · Ready"      },
   ];
-
   return (
-    <div className="flex items-center gap-1 bg-white border border-[#E2E5E3] rounded-lg p-1">
-      {states.map((s) => (
-        <button
-          key={s.id}
-          onClick={() => onChange(s.id)}
-          className={cn(
-            "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-            current === s.id
-              ? "text-white"
-              : "text-[#68747A] hover:bg-[#F9FAFB]"
-          )}
-          style={current === s.id ? { background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" } : undefined}
-        >
-          {s.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─── Animated hero stepper ────────────────────────────────────────────────────
-
-const ONBOARDING_STEPS = [
-  {
-    step: "01",
-    icon: Star,
-    title: "Select Star Products",
-    desc: "Choose up to 5 products you want Synodo to actively market. These become your spotlight catalogue.",
-    color: "#1F6F54",
-    bg: "#DFF3EE",
-  },
-  {
-    step: "02",
-    icon: Megaphone,
-    title: "Campaign Planning & Execution",
-    desc: "Synodo's sales and marketing teams create targeted campaigns, reach buyers, and generate demand across global channels.",
-    color: "#2F66D0",
-    bg: "#EAF1FF",
-  },
-  {
-    step: "03",
-    icon: Target,
-    title: "Receive Qualified Opportunities",
-    desc: "Qualified buyer opportunities are delivered directly to you — no chasing leads, no cold outreach.",
-    color: "#5B3BA8",
-    bg: "#F1EDFF",
-  },
-];
-
-function HeroStepper() {
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setActive((p) => (p + 1) % 3), 3500);
-    return () => clearInterval(t);
-  }, []);
-
-  const step = ONBOARDING_STEPS[active];
-  const Icon = step.icon;
-
-  return (
-    <div className="bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-      {/* Step indicators */}
-      <div className="flex border-b border-[#E2E5E3]">
-        {ONBOARDING_STEPS.map((s, i) => {
-          const SI = s.icon;
-          const isActive = i === active;
-          return (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              className={cn(
-                "flex-1 flex items-center gap-2.5 px-4 py-3 transition-all text-left border-b-2",
-                isActive ? "border-[#1F6F54] bg-[#F9FAFB]" : "border-transparent hover:bg-[#F9FAFB]"
-              )}
-            >
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
-                style={{ background: isActive ? s.bg : "#F3F4F6" }}
-              >
-                <SI size={13} style={{ color: isActive ? s.color : "#68747A" }} />
-              </div>
-              <div className="min-w-0">
-                <p className={cn("text-xs font-medium truncate", isActive ? "text-[#171717]" : "text-[#68747A]")}>
-                  Step {s.step}
-                </p>
-                <p className={cn("text-[11px] truncate", isActive ? "text-[#4B5563]" : "text-[#99A8AF]")}>
-                  {s.title}
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Active step content */}
-      <div className="p-5 flex items-start gap-4">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: step.bg }}
-        >
-          <Icon size={20} style={{ color: step.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-bold tracking-widest" style={{ color: step.color }}>
-              STEP {step.step}
-            </span>
-          </div>
-          <p className="text-sm font-medium text-[#171717] mb-1">{step.title}</p>
-          <p className="text-sm text-[#68747A] leading-relaxed">{step.desc}</p>
-        </div>
-      </div>
-
-      {/* Progress dots */}
-      <div className="flex items-center justify-center gap-1.5 pb-4">
-        {[0, 1, 2].map((i) => (
+    <div className="flex items-center gap-2.5">
+      <span className="text-[10px] font-bold tracking-[0.12em] text-slate-400">DEMO</span>
+      <div className="flex items-center gap-1 bg-white border border-[#e4e4e7] rounded-lg p-1">
+        {options.map((o) => (
           <button
-            key={i}
-            onClick={() => setActive(i)}
-            className="rounded-full transition-all"
-            style={{
-              width: i === active ? 20 : 6,
-              height: 6,
-              background: i === active ? "#1F6F54" : "#D2D2D5",
-            }}
-          />
+            key={o.id}
+            onClick={() => onChange(o.id)}
+            className={cn(
+              "px-3 py-1.5 rounded-md text-[11.5px] font-semibold transition-all",
+              current === o.id ? "bg-[#020202] text-white" : "text-slate-500 hover:text-slate-800"
+            )}
+          >
+            {o.label}
+          </button>
         ))}
       </div>
     </div>
   );
 }
 
-// ─── How It Works infographic ─────────────────────────────────────────────────
+// ─── KPI Cards ────────────────────────────────────────────────────────────────
 
-const HOW_IT_WORKS_STEPS = [
-  { icon: Package,    label: "Product Catalog",      sub: "Your products",           color: "#68747A", bg: "#F3F4F6" },
-  { icon: Star,       label: "Star Products",         sub: "Up to 5 selected",        color: "#1F6F54", bg: "#DFF3EE" },
-  { icon: Layers,     label: "Campaign Planning",     sub: "Synodo team",             color: "#2F66D0", bg: "#EAF1FF" },
-  { icon: Megaphone,  label: "Campaign Execution",    sub: "Multi-channel outreach",  color: "#D95C7A", bg: "#F3E6EA" },
-  { icon: Search,     label: "Lead Finalization",     sub: "Buyer qualification",     color: "#9C5022", bg: "#FBF0C5" },
-  { icon: Target,     label: "Opportunities",         sub: "Delivered to you",        color: "#5B3BA8", bg: "#F1EDFF" },
-];
-
-function HowItWorks() {
-  return (
-    <div className="bg-white border border-[#E2E5E3] rounded-xl p-5">
-      <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-4">HOW DEMAND CATALYST WORKS</p>
-      <div className="flex items-center gap-0 overflow-x-auto pb-1">
-        {HOW_IT_WORKS_STEPS.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <React.Fragment key={i}>
-              <div className="flex flex-col items-center gap-2 min-w-[90px] flex-1">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: s.bg }}
-                >
-                  <Icon size={16} style={{ color: s.color }} />
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-medium text-[#171717] leading-tight">{s.label}</p>
-                  <p className="text-[10px] text-[#99A8AF] mt-0.5">{s.sub}</p>
-                </div>
-              </div>
-              {i < HOW_IT_WORKS_STEPS.length - 1 && (
-                <div className="flex-shrink-0 flex flex-col items-center pt-1">
-                  <div
-                    className="h-[2px] w-8"
-                    style={{ background: "repeating-linear-gradient(90deg,#D2D2D5 0,#D2D2D5 4px,transparent 4px,transparent 8px)" }}
-                  />
-                  <ChevronRight size={10} className="text-[#D2D2D5] -mt-1.5" />
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    </div>
-  );
+interface KpiData {
+  campaignsStarted: number;
+  starProducts: string;
+  opportunities: number;
+  stage: string;
+  launched?: boolean;
 }
 
-// ─── Value proposition cards ──────────────────────────────────────────────────
+function KpiCards({ data }: { data: KpiData }) {
+  const cards = [
+    {
+      label: "Campaigns Started",
+      value: data.campaignsStarted.toString(),
+      sub: data.launched ? "Active now" : "None launched yet",
+      icon: Megaphone,
+      iconBg: "#f1f5f9",
+      iconColor: "#64748b",
+      valueBg: "transparent",
+      valueColor: "#0f172a",
+      subColor: "#94a3b8",
+      border: "#e2e8f0",
+    },
+    {
+      label: "Star Products",
+      value: data.starProducts,
+      sub: data.starProducts === "0 / 5" ? "Action required" : "Selected for campaign",
+      icon: Star,
+      iconBg: "#fef9c3",
+      iconColor: "#ca8a04",
+      valueBg: "transparent",
+      valueColor: data.starProducts === "0 / 5" ? "#92400e" : "#0f172a",
+      subColor: data.starProducts === "0 / 5" ? "#d97706" : "#94a3b8",
+      border: data.starProducts === "0 / 5" ? "#fde68a" : "#e2e8f0",
+    },
+    {
+      label: "Opportunities Generated",
+      value: data.opportunities.toString(),
+      sub: "Delivered by SCINODE",
+      icon: Target,
+      iconBg: "#ede9fe",
+      iconColor: "#7c3aed",
+      valueBg: "transparent",
+      valueColor: data.opportunities > 0 ? "#5b21b6" : "#0f172a",
+      subColor: "#94a3b8",
+      border: "#e2e8f0",
+    },
+    {
+      label: "Current Stage",
+      value: data.stage,
+      sub: "Onboarding progress",
+      icon: Activity,
+      iconBg: "#f0fdf4",
+      iconColor: "#1a5c3a",
+      valueBg: "transparent",
+      valueColor: "#1a5c3a",
+      subColor: "#94a3b8",
+      border: data.launched ? "#bbf7d0" : "#e2e8f0",
+    },
+  ];
 
-const VALUE_CARDS = [
-  {
-    icon: Users,
-    title: "Dedicated Sales Team",
-    desc: "Human outreach from Synodo sales specialists who know your industry and your buyers.",
-    color: "#1F6F54", bg: "#DFF3EE",
-  },
-  {
-    icon: Radio,
-    title: "Digital Marketing Engine",
-    desc: "Multi-channel campaigns across relevant pharma, biotech, and specialty chemical markets.",
-    color: "#2F66D0", bg: "#EAF1FF",
-  },
-  {
-    icon: BarChart3,
-    title: "Market Intelligence",
-    desc: "Search demand signals, industry insights, and buyer intent data working for your products.",
-    color: "#5B3BA8", bg: "#F1EDFF",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Exclusive Opportunities",
-    desc: "Qualified buyer opportunities delivered directly to you — with full context and next steps.",
-    color: "#9C5022", bg: "#FBF0C5",
-  },
-];
-
-function ValueCards() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {VALUE_CARDS.map((card) => {
-        const Icon = card.icon;
+      {cards.map((c) => {
+        const Icon = c.icon;
         return (
-          <div key={card.title} className="bg-white border border-[#E2E5E3] rounded-xl p-4">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center mb-3"
-              style={{ background: card.bg }}
-            >
-              <Icon size={16} style={{ color: card.color }} />
+          <div
+            key={c.label}
+            className="bg-white rounded-2xl border p-4 flex flex-col gap-3 transition-all"
+            style={{ borderColor: c.border }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400">{c.label}</span>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: c.iconBg }}>
+                <Icon size={14} style={{ color: c.iconColor }} />
+              </div>
             </div>
-            <p className="text-sm font-medium text-[#171717] mb-1.5">{card.title}</p>
-            <p className="text-xs text-[#68747A] leading-relaxed">{card.desc}</p>
+            <div>
+              <p className="text-[22px] font-black leading-none" style={{ color: c.valueColor }}>{c.value}</p>
+              <p className="text-[11px] mt-1 font-medium" style={{ color: c.subColor }}>{c.sub}</p>
+            </div>
           </div>
         );
       })}
@@ -287,298 +155,582 @@ function ValueCards() {
   );
 }
 
-// ─── Explainer video section ──────────────────────────────────────────────────
+// ─── Vertical Timeline (Right Panel) ─────────────────────────────────────────
 
-function ExplainerVideo() {
-  const [playing, setPlaying] = useState(false);
+const TIMELINE_STEPS = [
+  { icon: Package,   label: "Product Catalog",       desc: "Add your products",           id: "catalog"   },
+  { icon: Star,      label: "Star Product Selection", desc: "Choose up to 5 products",     id: "star"      },
+  { icon: Layers,    label: "Campaign Planning",      desc: "SCINODE team prepares",        id: "planning"  },
+  { icon: Megaphone, label: "Campaign Execution",     desc: "Multi-channel outreach",       id: "execution" },
+  { icon: Target,    label: "Lead Finalization",      desc: "Buyer qualification",          id: "leads"     },
+  { icon: Award,     label: "Opportunities",          desc: "Delivered directly to you",    id: "opps"      },
+];
 
+function VerticalTimeline({ activeStep }: { activeStep: string }) {
   return (
-    <div className="bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-      <div className="p-5 border-b border-[#E2E5E3]">
-        <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-1">EXPLAINER</p>
-        <p className="text-base font-medium text-[#171717]">See Demand Catalyst in Action</p>
-        <p className="text-sm text-[#68747A] mt-1">
-          Understand how Synodo&apos;s team generates demand, qualifies buyers, and delivers opportunities directly to you.
-        </p>
-      </div>
-      <div
-        className="relative bg-[#0a1a14] flex items-center justify-center cursor-pointer group"
-        style={{ height: 240 }}
-        onClick={() => setPlaying(!playing)}
-      >
-        {/* Video thumbnail overlay grid */}
-        <div className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(255,255,255,0.08) 30px,rgba(255,255,255,0.08) 31px),repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(255,255,255,0.08) 30px,rgba(255,255,255,0.08) 31px)"
-          }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center border-2 border-white/30 bg-white/10 group-hover:bg-white/20 transition-all">
-            <Play size={22} className="text-white ml-1" fill="white" />
-          </div>
-          <p className="text-white/60 text-xs">Demand Catalyst Overview · 3:42</p>
-        </div>
-        {/* Chapter markers */}
-        <div className="absolute bottom-4 left-5 right-5">
-          <div className="flex gap-4">
-            {["How it works", "Marketing process", "Sales process", "Opportunity generation"].map((label, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                <span className="text-white/40 text-[10px]">{label}</span>
+    <div className="flex flex-col gap-0">
+      {TIMELINE_STEPS.map((step, i) => {
+        const Icon = step.icon;
+        const isActive = step.id === activeStep;
+        const isDone   = TIMELINE_STEPS.findIndex(s => s.id === activeStep) > i;
+        const isLast   = i === TIMELINE_STEPS.length - 1;
+        return (
+          <div key={step.id} className="flex gap-3">
+            {/* Timeline axis */}
+            <div className="flex flex-col items-center shrink-0">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all shrink-0"
+                style={
+                  isActive
+                    ? { background: "#1a5c3a", borderColor: "#1a5c3a" }
+                    : isDone
+                    ? { background: "#e3f5ec", borderColor: "#6ee7b7" }
+                    : { background: "#f8fafc", borderColor: "#e2e8f0" }
+                }
+              >
+                {isDone ? (
+                  <Check size={12} style={{ color: "#1a5c3a" }} strokeWidth={3} />
+                ) : (
+                  <Icon size={13} style={{ color: isActive ? "#fff" : "#94a3b8" }} />
+                )}
               </div>
-            ))}
+              {!isLast && (
+                <div
+                  className="w-px flex-1 my-1"
+                  style={{
+                    background: isDone ? "#6ee7b7" : "#e2e8f0",
+                    minHeight: 20,
+                  }}
+                />
+              )}
+            </div>
+            {/* Step content */}
+            <div className={cn("pb-4 min-w-0 flex-1", isLast && "pb-0")}>
+              <p
+                className="text-[13px] font-bold leading-tight"
+                style={{ color: isActive ? "#0f172a" : isDone ? "#1a5c3a" : "#94a3b8" }}
+              >
+                {step.label}
+              </p>
+              <p
+                className="text-[11.5px] mt-0.5 leading-snug"
+                style={{ color: isActive ? "#475569" : isDone ? "#64748b" : "#cbd5e1" }}
+              >
+                {step.desc}
+              </p>
+              {isActive && (
+                <span
+                  className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold tracking-wider"
+                  style={{ background: "#e3f5ec", color: "#1a5c3a" }}
+                >
+                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                  CURRENT
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// ─── Setup progress tracker ───────────────────────────────────────────────────
+// ─── Benefits Banner Card ─────────────────────────────────────────────────────
 
-function SetupProgress({ step }: { step: number }) {
-  const steps = [
-    { label: "Demand Catalyst Access", done: true   },
-    { label: "Product Catalog Added",  done: step >= 2 },
-    { label: "Star Products Selected", done: step >= 3 },
-    { label: "Campaign Ready",         done: step >= 4 },
-  ];
+function DemandCatalystBanner({
+  onLearnMore,
+  highlighted,
+}: {
+  onLearnMore: () => void;
+  highlighted: boolean;
+}) {
   return (
-    <div className="space-y-2.5">
-      {steps.map((s, i) => (
-        <div key={i} className="flex items-center gap-2.5">
-          {s.done ? (
-            <CheckCircle2 size={16} style={{ color: "#1F6F54" }} className="flex-shrink-0" />
-          ) : (
-            <Circle size={16} className="text-[#D2D2D5] flex-shrink-0" />
-          )}
-          <span className={cn("text-sm", s.done ? "text-[#171717] font-medium" : "text-[#99A8AF]")}>
-            {s.label}
+    <div
+      className="rounded-2xl overflow-hidden flex flex-col transition-all duration-300"
+      style={{
+        background: "linear-gradient(160deg,#0d2818 0%,#0a1e10 55%,#091510 100%)",
+        border: highlighted
+          ? "1.5px solid rgba(110,231,183,0.55)"
+          : "1px solid rgba(110,231,183,0.18)",
+        boxShadow: highlighted ? "0 0 0 3px rgba(110,231,183,0.12)" : undefined,
+      }}
+    >
+      <div className="relative flex-1 px-5 pt-6 pb-5 flex flex-col gap-4 overflow-hidden">
+        {/* Radial glows */}
+        <div
+          className="pointer-events-none absolute -bottom-10 -right-10 w-[180px] h-[180px] rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(42,203,131,0.22) 0%,transparent 70%)", filter: "blur(32px)" }}
+        />
+        <div
+          className="pointer-events-none absolute top-0 -left-8 w-[140px] h-[140px] rounded-full"
+          style={{ background: "radial-gradient(circle,rgba(26,92,58,0.35) 0%,transparent 70%)", filter: "blur(28px)" }}
+        />
+
+        {/* Badge */}
+        <div className="relative z-10 self-start">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.12em] border"
+            style={{ background: "rgba(42,203,131,0.15)", borderColor: "rgba(42,203,131,0.30)", color: "#6ee7b7" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            PREMIUM SERVICE
           </span>
         </div>
-      ))}
+
+        {/* Heading */}
+        <div className="relative z-10 flex flex-col gap-2">
+          <h3
+            className="text-[18px] font-bold leading-snug transition-colors duration-300"
+            style={{ color: highlighted ? "#6ee7b7" : "#ffffff" }}
+          >
+            See How Demand Catalyst Helps You Grow
+          </h3>
+          <p
+            className="text-[12.5px] leading-relaxed transition-colors duration-300"
+            style={{ color: highlighted ? "rgba(110,231,183,0.70)" : "rgba(255,255,255,0.55)" }}
+          >
+            SCINODE&apos;s team works for you — generating demand, qualifying buyers, and delivering exclusive opportunities.
+          </p>
+        </div>
+
+        {/* Bullet list */}
+        <div className="relative z-10 flex flex-col gap-2">
+          {[
+            "Dedicated sales outreach team",
+            "Multi-channel marketing campaigns",
+            "Qualified lead delivery",
+            "Zero business development effort",
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "rgba(42,203,131,0.18)" }}
+              >
+                <CheckCircle2 size={9} style={{ color: "#6ee7b7" }} />
+              </div>
+              <span className="text-[11.5px] leading-snug" style={{ color: "rgba(255,255,255,0.65)" }}>
+                {item}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="relative z-10 pt-1">
+          <button
+            onClick={onLearnMore}
+            className="w-full py-2.5 rounded-xl text-[#0d2818] text-[13px] font-bold flex items-center justify-center gap-2 hover:brightness-105 transition-all active:scale-[0.98]"
+            style={{ background: "#6ee7b7" }}
+          >
+            See How Demand Catalyst Helps You Grow <ArrowRight size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Stats strip */}
+      <div
+        className="px-5 py-3.5 flex items-center justify-between gap-4 border-t"
+        style={{ borderColor: "rgba(110,231,183,0.10)", background: "rgba(0,0,0,0.20)" }}
+      >
+        {[
+          { value: "2,400+", label: "Verified Suppliers" },
+          { value: "18K+",   label: "Projects Completed" },
+          { value: "60+",    label: "Countries" },
+        ].map((stat, i, arr) => (
+          <React.Fragment key={stat.label}>
+            <div className="flex flex-col">
+              <span className="text-[18px] font-black text-white leading-none">{stat.value}</span>
+              <span className="text-[10px] text-white/40 mt-0.5">{stat.label}</span>
+            </div>
+            {i < arr.length - 1 && <div className="w-px h-8 bg-white/10" />}
+          </React.Fragment>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── Readiness score badge ────────────────────────────────────────────────────
+// ─── Benefits Modal ───────────────────────────────────────────────────────────
+
+function BenefitsModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(5px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl w-full max-w-[680px] max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="relative px-6 pt-6 pb-5"
+          style={{ background: "linear-gradient(135deg,#0d2818,#0a1e10)" }}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center border border-white/20 text-white/60 hover:text-white transition-colors"
+          >
+            <X size={13} />
+          </button>
+          <div
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold mb-4"
+            style={{ background: "rgba(26,92,58,0.50)", border: "1px solid rgba(110,231,183,0.25)", color: "#6ee7b7" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            HOW DEMAND CATALYST WORKS
+          </div>
+          <h2 className="text-white text-[22px] font-bold leading-tight mb-2">
+            SCINODE Works for You — From Selection to Opportunity
+          </h2>
+          <p className="text-white/60 text-[13px] leading-relaxed max-w-[540px]">
+            Demand Catalyst is a fully managed B2B growth service. Select your products, and SCINODE&apos;s sales and marketing teams do the rest — generating demand, qualifying buyers, and delivering exclusive opportunities directly to you.
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6 flex flex-col gap-6">
+
+          {/* Workflow steps */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-4">THE WORKFLOW</p>
+            <div className="flex flex-col gap-0">
+              {[
+                {
+                  n: "01",
+                  title: "Select your Star Products",
+                  desc: "Choose up to 5 products from your catalog that you want SCINODE to actively promote. These become your campaign-ready spotlight products.",
+                },
+                {
+                  n: "02",
+                  title: "SCINODE plans your campaign",
+                  desc: "Our sales and marketing specialists analyse your products, identify the right buyer segments, and build a tailored demand generation strategy.",
+                },
+                {
+                  n: "03",
+                  title: "Multi-channel execution",
+                  desc: "SCINODE runs targeted digital campaigns, direct sales outreach, and market intelligence-driven engagement across global pharma and chemical markets.",
+                },
+                {
+                  n: "04",
+                  title: "Lead qualification & finalization",
+                  desc: "Every inbound lead is verified, qualified, and assessed for fit. Only serious, intent-matched buyers progress to the opportunity stage.",
+                },
+                {
+                  n: "05",
+                  title: "Receive exclusive opportunities",
+                  desc: "Qualified, verified buyer opportunities are delivered directly to you — with full context, buyer profile, and recommended next steps.",
+                },
+              ].map((step, i, arr) => (
+                <div key={i} className="flex gap-4">
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
+                      style={{ background: "#e3f5ec", color: "#1a5c3a" }}
+                    >
+                      {step.n}
+                    </div>
+                    {i < arr.length - 1 && (
+                      <div className="w-px flex-1 my-1.5" style={{ background: "#e4e4e7", minHeight: 20 }} />
+                    )}
+                  </div>
+                  <div className="pb-5 min-w-0 flex-1">
+                    <p className="text-[13.5px] font-bold text-slate-800 mb-1">{step.title}</p>
+                    <p className="text-[12.5px] text-slate-500 leading-relaxed">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Benefits grid */}
+          <div className="rounded-xl border border-[#e4e4e7] overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">
+                WHY SUPPLIERS CHOOSE DEMAND CATALYST
+              </p>
+              <h3 className="text-[14px] font-bold text-slate-900">Your Products. Our Effort. Your Growth.</h3>
+            </div>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { icon: "👥", title: "Dedicated sales team",           desc: "Human outreach from SCINODE sales specialists who know your buyers." },
+                { icon: "📡", title: "Digital marketing engine",       desc: "Multi-channel campaigns across pharma, biotech, and specialty chemical markets." },
+                { icon: "📊", title: "Market intelligence",            desc: "Buyer intent signals, search demand, and industry insights working for your products." },
+                { icon: "🏆", title: "Exclusive opportunities",        desc: "Qualified buyers delivered to you with full context and next steps." },
+                { icon: "⚡", title: "Zero BD effort",                 desc: "No cold outreach, no chasing leads — SCINODE's team does the work." },
+                { icon: "🌍", title: "Increased global visibility",    desc: "Reach pharmaceutical buyers across 60+ countries through SCINODE's network." },
+              ].map((b, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3.5 rounded-xl border border-[#f3f4f6]"
+                  style={{ background: "#fafafa" }}
+                >
+                  <span className="text-[18px] shrink-0">{b.icon}</span>
+                  <div>
+                    <p className="text-[12.5px] font-bold text-slate-800 mb-0.5">{b.title}</p>
+                    <p className="text-[11.5px] text-slate-500 leading-snug">{b.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA row */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all"
+              style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+            >
+              Get Started <ArrowRight size={14} />
+            </button>
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Right Panel ──────────────────────────────────────────────────────────────
+
+function RightPanel({
+  activeStep,
+  onLearnMore,
+  bannerHighlighted,
+}: {
+  activeStep: string;
+  onLearnMore: () => void;
+  bannerHighlighted: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Section label */}
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">HOW IT WORKS</p>
+        <div className="flex-1 h-px bg-slate-100" />
+      </div>
+
+      {/* Timeline */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+        <VerticalTimeline activeStep={activeStep} />
+      </div>
+
+      {/* Banner */}
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">DEMAND CATALYST</p>
+        <div className="flex-1 h-px bg-slate-100" />
+      </div>
+      <DemandCatalystBanner onLearnMore={onLearnMore} highlighted={bannerHighlighted} />
+    </div>
+  );
+}
+
+// ─── Readiness badge ──────────────────────────────────────────────────────────
 
 function ReadinessBadge({ score }: { score: number }) {
-  const color = score >= 85 ? "#0F7614" : score >= 70 ? "#9C5022" : "#C30E1A";
-  const bg    = score >= 85 ? "#B2F3B7" : score >= 70 ? "#FBF0C5" : "#FFEFEF";
+  const [bg, color] =
+    score >= 85 ? ["#dcfce7", "#166534"] :
+    score >= 70 ? ["#fef9c3", "#92400e"] :
+                  ["#fee2e2", "#991b1b"];
   return (
-    <span
-      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-      style={{ background: bg, color }}
-    >
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: bg, color }}>
       {score}%
     </span>
   );
 }
 
-// ─── STATE 1 — Day 0 / First-time user ───────────────────────────────────────
+// ─── State 1 — Day 0 empty state (LEFT PANEL) ────────────────────────────────
 
-function State1({ onGetStarted }: { onGetStarted: () => void }) {
+function EmptyStatePanel({ onGetStarted }: { onGetStarted: () => void }) {
   return (
-    <div className="space-y-4">
-      {/* Hero card */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl p-6">
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 min-w-0">
-            <div
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider mb-4"
-              style={{ background: "#DFF3EE", color: "#1F6F54" }}
-            >
-              <Sparkles size={10} />
-              MANAGED B2B GROWTH SERVICE
+    <div className="flex flex-col gap-5">
+      {/* Section label */}
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">CAMPAIGN WORKSPACE</p>
+        <div className="flex-1 h-px bg-slate-100" />
+      </div>
+
+      {/* Empty state card */}
+      <div className="bg-white rounded-2xl border-2 border-dashed border-[#e4e4e7] py-14 px-8 flex flex-col items-center text-center">
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+          style={{ background: "#f0fdf4" }}
+        >
+          <Megaphone size={26} style={{ color: "#1a5c3a" }} />
+        </div>
+        <p className="text-[16px] font-bold text-slate-800 mb-2">No Campaign Started Yet</p>
+        <p className="text-[13px] text-slate-400 max-w-[360px] leading-relaxed mb-6">
+          Complete the setup to launch your first Demand Catalyst campaign and start receiving qualified buyer opportunities.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onGetStarted}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+          >
+            <Sparkles size={14} /> Get Started
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
+            <Play size={12} /> Watch Demo
+          </button>
+        </div>
+      </div>
+
+      {/* Onboarding context cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          {
+            icon: Star,
+            iconBg: "#fef9c3", iconColor: "#ca8a04",
+            title: "Select Star Products",
+            desc: "Choose up to 5 products you want SCINODE to actively promote to qualified buyers.",
+          },
+          {
+            icon: Megaphone,
+            iconBg: "#ede9fe", iconColor: "#7c3aed",
+            title: "SCINODE Runs Campaigns",
+            desc: "Our team handles campaign planning, execution, and lead qualification — entirely managed.",
+          },
+          {
+            icon: Target,
+            iconBg: "#f0fdf4", iconColor: "#1a5c3a",
+            title: "Receive Opportunities",
+            desc: "Qualified buyer opportunities are delivered directly to you with full context.",
+          },
+        ].map((c) => {
+          const Icon = c.icon;
+          return (
+            <div key={c.title} className="bg-white rounded-2xl border border-[#e4e4e7] p-4 flex flex-col gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: c.iconBg }}>
+                <Icon size={16} style={{ color: c.iconColor }} />
+              </div>
+              <div>
+                <p className="text-[13px] font-bold text-slate-800 mb-1">{c.title}</p>
+                <p className="text-[12px] text-slate-500 leading-relaxed">{c.desc}</p>
+              </div>
             </div>
-            <h1 className="text-2xl font-semibold text-[#171717] leading-tight mb-3">
-              Turn Your Products Into<br />
-              Qualified Global Opportunities
-            </h1>
-            <p className="text-sm text-[#68747A] leading-relaxed max-w-[520px] mb-5">
-              Synodo&apos;s sales and marketing teams actively promote your selected products, generate buyer
-              demand, and deliver exclusive opportunities directly to you.
-            </p>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onGetStarted}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:brightness-110 active:scale-[0.98]"
-                style={{ background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" }}
-              >
-                Get Started
-                <ArrowRight size={14} />
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-[#68747A] border border-[#E2E5E3] hover:bg-[#F9FAFB] transition-all">
-                <Play size={13} />
-                Watch Demo
-              </button>
-            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── State 2 — No catalog (LEFT PANEL) ───────────────────────────────────────
+
+function NoCatalogPanel({ onGoToCatalog }: { onGoToCatalog: () => void }) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">SETUP REQUIRED</p>
+        <div className="flex-1 h-px bg-slate-100" />
+      </div>
+
+      {/* Blocker card */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+        {/* Warning banner */}
+        <div
+          className="px-5 py-3 flex items-center gap-2.5 border-b border-[#fde68a]"
+          style={{ background: "#fffbeb" }}
+        >
+          <AlertCircle size={14} style={{ color: "#d97706" }} />
+          <p className="text-[12px] font-semibold" style={{ color: "#92400e" }}>Setup Blocked — Action Required</p>
+        </div>
+
+        <div className="p-6">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ background: "#fef9c3" }}>
+            <Package size={18} style={{ color: "#ca8a04" }} />
           </div>
-          {/* Right summary card */}
-          <div className="flex-shrink-0 w-[200px] bg-[#F9FAFB] border border-[#E2E5E3] rounded-xl p-4">
-            <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-3">YOUR OVERVIEW</p>
-            <div className="space-y-3">
+          <h2 className="text-[16px] font-bold text-slate-900 mb-2">Product Catalog Required</h2>
+          <p className="text-[13px] text-slate-500 leading-relaxed mb-5 max-w-[480px]">
+            Before launching Demand Catalyst, add products to your Product Catalog. SCINODE&apos;s team uses your catalog to build campaigns, identify the right buyers, and generate qualified opportunities for your products.
+          </p>
+
+          {/* Benefits */}
+          <div className="bg-[#f8fafc] rounded-xl border border-[#e4e4e7] p-4 mb-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-3">WHY THIS MATTERS</p>
+            <div className="flex flex-col gap-2.5">
               {[
-                { label: "Campaigns Started",      value: "0"              },
-                { label: "Star Products",          value: "0 / 5"          },
-                { label: "Opportunities Generated",value: "0"              },
-                { label: "Current Stage",          value: "Getting Started" },
-              ].map((item) => (
-                <div key={item.label}>
-                  <p className="text-[10px] text-[#99A8AF]">{item.label}</p>
-                  <p className="text-sm font-medium text-[#171717]">{item.value}</p>
+                "Campaign-ready products with complete technical specifications",
+                "Better lead quality through accurate product and buyer matching",
+                "Faster campaign launch with verified, complete catalog data",
+              ].map((b, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#e3f5ec" }}>
+                    <CheckCircle2 size={9} style={{ color: "#1a5c3a" }} />
+                  </div>
+                  <span className="text-[12.5px] text-slate-600 leading-snug">{b}</span>
                 </div>
               ))}
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onGoToCatalog}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+              style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+            >
+              <Plus size={14} /> Add Products
+            </button>
+            <button
+              onClick={onGoToCatalog}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#1a5c3a] text-[#1a5c3a] text-[13px] font-semibold hover:bg-[#f0fdf4] transition-all"
+            >
+              Go To Product Catalog <ChevronRight size={13} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Stepper */}
-      <HeroStepper />
-
-      {/* How it works */}
-      <HowItWorks />
-
-      {/* Value cards */}
-      <ValueCards />
-
-      {/* Video */}
-      <ExplainerVideo />
-
-      {/* Empty state */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl p-8 flex flex-col items-center text-center">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#F3F4F6" }}>
-          <Megaphone size={22} className="text-[#D2D2D5]" />
+      {/* Setup progress */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-4">SETUP PROGRESS</p>
+        <div className="flex flex-col gap-3">
+          {[
+            { label: "Demand Catalyst Access", done: true  },
+            { label: "Product Catalog Added",  done: false },
+            { label: "Star Products Selected", done: false },
+            { label: "Campaign Ready",         done: false },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-3">
+              {s.done ? (
+                <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: "#e3f5ec" }}>
+                  <CheckCircle2 size={11} style={{ color: "#1a5c3a" }} />
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full border-2 border-[#e2e8f0] shrink-0" />
+              )}
+              <span className={cn("text-[13px]", s.done ? "text-slate-800 font-semibold" : "text-slate-400")}>
+                {s.label}
+              </span>
+            </div>
+          ))}
         </div>
-        <p className="text-base font-medium text-[#171717] mb-2">No Campaign Started Yet</p>
-        <p className="text-sm text-[#68747A] mb-5 max-w-[360px]">
-          Complete the setup to launch your first Demand Catalyst campaign and start receiving qualified opportunities.
-        </p>
-        <button
-          onClick={onGetStarted}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:brightness-110 active:scale-[0.98]"
-          style={{ background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" }}
-        >
-          Get Started
-          <ArrowRight size={14} />
-        </button>
+        <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[11px] text-slate-400">Completion</p>
+            <p className="text-[11px] font-bold" style={{ color: "#1a5c3a" }}>25%</p>
+          </div>
+          <div className="h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: "25%", background: "#1a5c3a" }} />
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── STATE 2 — No product catalog ────────────────────────────────────────────
+// ─── State 3 — Product selection (LEFT PANEL) ─────────────────────────────────
 
-function State2({ onGoToCatalog }: { onGoToCatalog: () => void }) {
-  return (
-    <div className="space-y-4">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#171717]">Demand Catalyst Setup</h1>
-          <p className="text-sm text-[#68747A] mt-0.5">Complete the steps below to launch your first campaign</p>
-        </div>
-      </div>
-
-      {/* Main blocker card */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Blocker — spans 2 cols */}
-        <div className="col-span-2 bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-[#E2E5E3]" style={{ background: "#FBF0C5" }}>
-            <div className="flex items-center gap-2.5">
-              <AlertCircle size={16} style={{ color: "#9C5022" }} />
-              <p className="text-sm font-medium" style={{ color: "#9C5022" }}>Setup Blocked</p>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: "#FBF0C5" }}>
-              <Package size={20} style={{ color: "#9C5022" }} />
-            </div>
-            <h2 className="text-lg font-semibold text-[#171717] mb-2">Product Catalog Required</h2>
-            <p className="text-sm text-[#68747A] leading-relaxed mb-5">
-              Before launching Demand Catalyst, you need products in your Product Catalog. Synodo&apos;s team
-              uses your catalog to build campaigns, identify the right buyers, and generate qualified
-              opportunities for your products.
-            </p>
-
-            {/* Benefits */}
-            <div className="bg-[#F9FAFB] border border-[#E2E5E3] rounded-xl p-4 mb-5">
-              <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-3">WHY THIS MATTERS</p>
-              <div className="space-y-2.5">
-                {[
-                  "Campaign-ready products with complete technical specifications",
-                  "Better lead quality through accurate product matching",
-                  "Faster campaign launch with verified catalog data",
-                ].map((b, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 size={14} style={{ color: "#1F6F54" }} className="flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-[#4B5563]">{b}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onGoToCatalog}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:brightness-110 active:scale-[0.98]"
-                style={{ background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" }}
-              >
-                <Plus size={14} />
-                Add Products
-              </button>
-              <button
-                onClick={onGoToCatalog}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-[#1F6F54] border-2 border-[#1F6F54] hover:bg-[#DFF3EE] transition-all"
-              >
-                Go To Product Catalog
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Setup progress — 1 col */}
-        <div className="bg-white border border-[#E2E5E3] rounded-xl p-5">
-          <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-4">SETUP PROGRESS</p>
-          <SetupProgress step={1} />
-          <div className="mt-5 pt-4 border-t border-[#E2E5E3]">
-            <p className="text-[10px] text-[#99A8AF] mb-1">Completion</p>
-            <div className="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: "25%", background: "#1F6F54" }} />
-            </div>
-            <p className="text-xs font-medium text-[#1F6F54] mt-1.5">25% complete</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Contextual guidance */}
-      <div className="bg-[#EAF1FF] border border-[#2F66D0]/20 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#2F66D0" }}>
-            <Sparkles size={14} className="text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#171717] mb-1">What makes a great product catalog for Demand Catalyst?</p>
-            <p className="text-xs text-[#4B5563] leading-relaxed">
-              Products with complete technical data sheets, MSDS documentation, packaging specs, and defined
-              target markets consistently generate 3× more qualified opportunities through Demand Catalyst campaigns.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* How It Works — still visible for orientation */}
-      <HowItWorks />
-    </div>
-  );
-}
-
-// ─── STATE 3 — Catalog added, no star products ────────────────────────────────
-
-function State3({ onContinue }: { onContinue: () => void }) {
+function ProductSelectionPanel({ onContinue }: { onContinue: (ids: number[]) => void }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const toggle = (id: number) => {
@@ -591,154 +743,156 @@ function State3({ onContinue }: { onContinue: () => void }) {
 
   const slots = Array(5).fill(null).map((_, i) => {
     const pid = selectedIds[i];
-    return pid ? CATALOG_PRODUCTS.find((p) => p.id === pid) : null;
+    return pid ? CATALOG_PRODUCTS.find((p) => p.id === pid) ?? null : null;
   });
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
+    <div className="flex flex-col gap-5">
+      {/* Section label */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#171717]">Select Your Spotlight Five</h1>
-          <p className="text-sm text-[#68747A] mt-0.5">Choose up to 5 products for Synodo to actively market</p>
+        <div className="flex items-center gap-2 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">STAR PRODUCT SELECTION</p>
+          <div className="flex-1 h-px bg-slate-100" />
         </div>
         <button
-          onClick={onContinue}
           disabled={selectedIds.length === 0}
+          onClick={() => onContinue(selectedIds)}
           className={cn(
-            "flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all",
+            "ml-3 flex items-center gap-2 px-4 py-2 rounded-lg text-[12.5px] font-bold transition-all",
             selectedIds.length > 0
               ? "text-white hover:brightness-110 active:scale-[0.98]"
-              : "text-[#99A8AF] bg-[#F3F4F6] cursor-not-allowed"
+              : "text-slate-400 bg-slate-100 cursor-not-allowed"
           )}
-          style={selectedIds.length > 0 ? { background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" } : undefined}
+          style={selectedIds.length > 0 ? { background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" } : undefined}
         >
-          Continue
-          <ArrowRight size={14} />
+          Continue <ArrowRight size={13} />
         </button>
       </div>
 
       {/* Slot tracker */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-bold tracking-widest text-[#68747A]">SELECTED PRODUCTS</p>
-          <span className="text-sm font-medium text-[#1F6F54]">{selectedIds.length} / 5 Products</span>
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-[14px] font-bold text-slate-900">Select Your Spotlight Five Products</p>
+            <p className="text-[12px] text-slate-400 mt-0.5">Choose up to 5 products that SCINODE should actively market</p>
+          </div>
+          <span
+            className="text-[13px] font-bold px-3 py-1.5 rounded-full"
+            style={{
+              background: selectedIds.length === 5 ? "#e3f5ec" : "#fef9c3",
+              color: selectedIds.length === 5 ? "#1a5c3a" : "#92400e",
+            }}
+          >
+            {selectedIds.length} / 5
+          </span>
         </div>
-        <div className="flex gap-2">
+
+        {/* Visual slots */}
+        <div className="flex gap-2 mb-2">
           {slots.map((product, i) => (
             <div
               key={i}
-              className={cn(
-                "flex-1 h-14 rounded-lg flex flex-col items-center justify-center border-2 transition-all",
-                product
-                  ? "border-[#1F6F54] bg-[#DFF3EE]"
-                  : "border-dashed border-[#D2D2D5] bg-[#F9FAFB]"
-              )}
+              className="flex-1 h-[54px] rounded-xl border-2 flex flex-col items-center justify-center transition-all"
+              style={{
+                borderStyle: product ? "solid" : "dashed",
+                borderColor: product ? "#1a5c3a" : "#e2e8f0",
+                background: product ? "#f0fdf4" : "#f8fafc",
+              }}
             >
               {product ? (
                 <>
-                  <Star size={12} style={{ color: "#1F6F54" }} fill="#1F6F54" />
-                  <p className="text-[9px] font-medium text-[#1F6F54] mt-0.5 text-center px-1 truncate w-full text-center">
+                  <Star size={11} style={{ color: "#1a5c3a" }} fill="#1a5c3a" />
+                  <p className="text-[9px] font-semibold text-[#1a5c3a] mt-0.5 px-1 text-center leading-tight truncate w-full text-center">
                     {product.name.split(" ").slice(0, 2).join(" ")}
                   </p>
                 </>
               ) : (
-                <Circle size={14} className="text-[#D2D2D5]" />
+                <span className="text-[11px] text-slate-300 font-bold">{i + 1}</span>
               )}
             </div>
           ))}
         </div>
         {selectedIds.length === 5 && (
-          <div className="flex items-center gap-1.5 mt-2.5">
-            <CheckCircle2 size={12} style={{ color: "#1F6F54" }} />
-            <p className="text-xs text-[#1F6F54] font-medium">All 5 star products selected — ready to continue</p>
-          </div>
+          <p className="text-[11.5px] font-semibold" style={{ color: "#1a5c3a" }}>
+            ✓ All 5 star products selected — ready to continue
+          </p>
         )}
       </div>
 
-      {/* Product catalog table */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E2E5E3]">
-          <p className="text-sm font-medium text-[#171717]">Your Product Catalog</p>
-          <button className="text-xs text-[#1F6F54] font-medium hover:underline flex items-center gap-1">
-            View Full Catalog <ChevronRight size={12} />
+      {/* Catalog table */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#f3f4f6]">
+          <p className="text-[13px] font-bold text-slate-800">Your Product Catalog</p>
+          <button className="flex items-center gap-1 text-[12px] font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+            View Full Catalog <ChevronRight size={13} />
           </button>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#E2E5E3]">
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase w-8"></th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Product</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Industry</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Campaign Readiness</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Action</th>
+            <tr className="border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+              {["", "Product", "Industry", "Readiness", "Action"].map((h) => (
+                <th key={h} className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 px-4 py-3 first:w-10">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {CATALOG_PRODUCTS.map((product) => {
-              const isSelected = selectedIds.includes(product.id);
+            {CATALOG_PRODUCTS.map((p) => {
+              const isSelected = selectedIds.includes(p.id);
               const isDisabled = !isSelected && selectedIds.length >= 5;
               return (
                 <tr
-                  key={product.id}
-                  className={cn(
-                    "border-b border-[#F3F4F6] transition-all",
-                    isSelected ? "bg-[#F9FAFB]" : "hover:bg-[#F9FAFB]",
-                    isDisabled ? "opacity-50" : ""
-                  )}
+                  key={p.id}
+                  className={cn("border-b border-[#f9fafb] transition-all", isSelected ? "bg-[#f0fdf4]" : "hover:bg-[#f9fafb]", isDisabled && "opacity-40")}
                 >
                   <td className="px-4 py-3">
                     <div
+                      onClick={() => !isDisabled && toggle(p.id)}
                       className={cn(
-                        "w-5 h-5 rounded flex items-center justify-center border-2 cursor-pointer transition-all",
-                        isSelected ? "border-[#1F6F54] bg-[#1F6F54]" : "border-[#D2D2D5] bg-white"
+                        "w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all",
+                        isSelected ? "bg-[#1a5c3a] border-[#1a5c3a]" : "border-[#e2e8f0] bg-white",
+                        isDisabled && "cursor-not-allowed"
                       )}
-                      onClick={() => !isDisabled && toggle(product.id)}
                     >
-                      {isSelected && <Check size={11} className="text-white" strokeWidth={3} />}
+                      {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-[#171717]">{product.name}</p>
-                    <p className="text-[10px] font-mono text-[#99A8AF] mt-0.5">{product.cas}</p>
+                    <p className="text-[13px] font-semibold text-slate-800">{p.name}</p>
+                    <p className="text-[10.5px] font-mono text-slate-400 mt-0.5">CAS {p.cas}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded">
-                      {product.industry}
-                    </span>
+                    <span className="text-[11.5px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-medium">{p.industry}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-24 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
                         <div
                           className="h-full rounded-full"
                           style={{
-                            width: `${product.readiness}%`,
-                            background: product.readiness >= 85 ? "#1F6F54" : product.readiness >= 70 ? "#9C5022" : "#C30E1A",
+                            width: `${p.readiness}%`,
+                            background: p.readiness >= 85 ? "#1a5c3a" : p.readiness >= 70 ? "#ca8a04" : "#dc2626",
                           }}
                         />
                       </div>
-                      <ReadinessBadge score={product.readiness} />
+                      <ReadinessBadge score={p.readiness} />
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <button
                       disabled={isDisabled}
-                      onClick={() => !isDisabled && toggle(product.id)}
+                      onClick={() => !isDisabled && toggle(p.id)}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border transition-all",
                         isSelected
-                          ? "border-[#C30E1A]/30 text-[#C30E1A] bg-[#FFEFEF] hover:bg-[#FFDFDF]"
+                          ? "border-red-200 text-red-600 bg-red-50 hover:bg-red-100"
                           : isDisabled
-                          ? "border-[#D2D2D5] text-[#99A8AF] cursor-not-allowed"
-                          : "border-[#1F6F54] text-[#1F6F54] hover:bg-[#DFF3EE]"
+                          ? "border-[#e2e8f0] text-slate-300 cursor-not-allowed"
+                          : "border-[#1a5c3a] text-[#1a5c3a] hover:bg-[#f0fdf4]"
                       )}
                     >
-                      {isSelected ? (
-                        <><Minus size={10} />Remove</>
-                      ) : (
-                        <><Star size={10} />Select</>
-                      )}
+                      {isSelected ? <><Minus size={10} /> Remove</> : <><Star size={10} /> Select</>}
                     </button>
                   </td>
                 </tr>
@@ -751,143 +905,122 @@ function State3({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-// ─── STATE 4 — Star products selected, ready to launch ───────────────────────
+// ─── State 4 — Launch Campaign (LEFT PANEL) ───────────────────────────────────
 
-function State4() {
-  const [launchSelection, setLaunchSelection] = useState<number[]>(
-    STATE4_SELECTED.filter((p) => p.includedInLaunch).map((p) => p.id)
+function LaunchPanel({ onLaunch }: { onLaunch: () => void }) {
+  const [launchIds, setLaunchIds] = useState<number[]>(
+    STATE4_PRODUCTS.filter((p) => p.launch).map((p) => p.id)
   );
   const [launched, setLaunched] = useState(false);
 
   const toggleLaunch = (id: number) => {
-    setLaunchSelection((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setLaunchIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   };
 
-  const readyCount   = STATE4_SELECTED.filter((p) => p.campaignStatus === "Ready").length;
-  const attentionCount = STATE4_SELECTED.filter((p) => p.campaignStatus === "Needs Attention").length;
+  const readyCount     = STATE4_PRODUCTS.filter((p) => p.status === "ready").length;
+  const attentionCount = STATE4_PRODUCTS.filter((p) => p.status === "attention").length;
+
+  const handleStart = () => {
+    setLaunched(true);
+    onLaunch();
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#171717]">Star Products Selected</h1>
-          <p className="text-sm text-[#68747A] mt-0.5">Review campaign readiness and launch your first Demand Catalyst campaign</p>
-        </div>
-        <div
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-          style={{ background: "#DFF3EE", color: "#1F6F54" }}
+    <div className="flex flex-col gap-5">
+
+      {/* Section label */}
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">CAMPAIGN WORKSPACE</p>
+        <div className="flex-1 h-px bg-slate-100" />
+        <span
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold"
+          style={{ background: "#e3f5ec", color: "#1a5c3a" }}
         >
-          <CheckCircle2 size={12} />
-          Setup Complete
-        </div>
+          <CheckCircle2 size={10} /> Setup Complete
+        </span>
       </div>
 
-      {/* Campaign readiness summary */}
+      {/* Readiness summary */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Selected Products", value: STATE4_SELECTED.length, color: "#171717", bg: "#F3F4F6"   },
-          { label: "Campaign Ready",    value: readyCount,             color: "#0F7614", bg: "#B2F3B7"   },
-          { label: "Needs Attention",   value: attentionCount,         color: "#9C5022", bg: "#FBF0C5"   },
+          { label: "Selected Products", value: STATE4_PRODUCTS.length, bg: "#f8fafc",   color: "#0f172a"  },
+          { label: "Campaign Ready",    value: readyCount,             bg: "#f0fdf4",   color: "#166534"  },
+          { label: "Needs Attention",   value: attentionCount,         bg: "#fffbeb",   color: "#92400e"  },
         ].map((m) => (
-          <div key={m.label} className="bg-white border border-[#E2E5E3] rounded-xl p-4">
-            <p className="text-[10px] font-bold tracking-widest text-[#68747A] mb-2">{m.label.toUpperCase()}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-semibold" style={{ color: m.color }}>{m.value}</span>
-              <span
-                className="text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ background: m.bg, color: m.color }}
-              >
-                of 5
-              </span>
-            </div>
+          <div key={m.label} className="rounded-xl p-4 border border-[#e4e4e7]" style={{ background: m.bg }}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">{m.label}</p>
+            <p className="text-[28px] font-black leading-none" style={{ color: m.color }}>{m.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Selected products table */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#E2E5E3]">
-          <p className="text-sm font-medium text-[#171717]">Selected Star Products</p>
+      {/* Products table */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#f3f4f6]">
+          <p className="text-[13px] font-bold text-slate-800">Selected Star Products</p>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#E2E5E3] bg-[#F9FAFB]">
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Product</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Industry</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Readiness</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Campaign Status</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Missing</th>
-              <th className="text-left text-[10px] font-bold text-[#68747A] tracking-widest px-4 py-3 uppercase">Action</th>
+            <tr className="border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+              {["Product", "Industry", "Readiness", "Status", "Missing", "Action"].map((h) => (
+                <th key={h} className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 px-4 py-3">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {STATE4_SELECTED.map((product) => (
-              <tr key={product.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-all">
+            {STATE4_PRODUCTS.map((p) => (
+              <tr key={p.id} className="border-b border-[#f9fafb] hover:bg-[#f9fafb] transition-all">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Star size={11} style={{ color: "#1F6F54" }} fill="#1F6F54" />
+                    <Star size={10} style={{ color: "#1a5c3a" }} fill="#1a5c3a" />
                     <div>
-                      <p className="text-sm font-medium text-[#171717]">{product.name}</p>
-                      <p className="text-[10px] text-[#99A8AF]">{product.industry}</p>
+                      <p className="text-[12.5px] font-semibold text-slate-800">{p.name}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-xs text-[#4B5563] bg-[#F3F4F6] px-2 py-0.5 rounded">{product.industry}</span>
+                  <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-medium">{p.industry}</span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-16 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${product.readiness}%`,
-                          background: product.readiness >= 85 ? "#1F6F54" : "#9C5022",
-                        }}
-                      />
+                    <div className="w-14 h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${p.readiness}%`, background: p.readiness >= 85 ? "#1a5c3a" : "#ca8a04" }} />
                     </div>
-                    <ReadinessBadge score={product.readiness} />
+                    <ReadinessBadge score={p.readiness} />
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  {product.campaignStatus === "Ready" ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#B2F3B7] text-[#0F7614]">
-                      <CheckCircle2 size={10} />
-                      Campaign Ready
+                  {p.status === "ready" ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#dcfce7] text-[#166534]">
+                      <CheckCircle2 size={9} /> Campaign Ready
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FBF0C5] text-[#9C5022]">
-                      <AlertCircle size={10} />
-                      Needs Attention
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#fef9c3] text-[#92400e]">
+                      <AlertCircle size={9} /> Needs Attention
                     </span>
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  {product.missing.length > 0 ? (
+                  {p.missing.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
-                      {product.missing.map((m) => (
-                        <span key={m} className="text-[10px] bg-[#FFEFEF] text-[#C30E1A] px-1.5 py-0.5 rounded">
-                          {m}
-                        </span>
+                      {p.missing.map((m) => (
+                        <span key={m} className="text-[10px] bg-[#fee2e2] text-[#991b1b] px-1.5 py-0.5 rounded">{m}</span>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[10px] text-[#99A8AF]">—</span>
+                    <span className="text-[11px] text-slate-300">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  {product.missing.length > 0 ? (
-                    <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#9C5022]/30 text-[#9C5022] bg-[#FBF0C5] hover:bg-[#F7E6B8] transition-all">
-                      Complete Details
-                      <ChevronRight size={10} />
+                  {p.missing.length > 0 ? (
+                    <button className="text-[11.5px] font-semibold px-3 py-1.5 rounded-lg border border-[#fde68a] text-[#92400e] bg-[#fffbeb] hover:bg-[#fef9c3] transition-all flex items-center gap-1">
+                      Complete Details <ChevronRight size={10} />
                     </button>
                   ) : (
-                    <span className="text-xs text-[#1F6F54] font-medium flex items-center gap-1">
-                      <CheckCircle2 size={12} />
-                      Complete
+                    <span className="text-[11.5px] font-semibold text-[#1a5c3a] flex items-center gap-1">
+                      <CheckCircle2 size={12} /> Complete
                     </span>
                   )}
                 </td>
@@ -897,34 +1030,34 @@ function State4() {
         </table>
       </div>
 
-      {/* Launch Campaign section */}
-      <div className="bg-white border border-[#E2E5E3] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#E2E5E3]" style={{ background: "linear-gradient(98.03deg,#f0faf7 0%,#e8f0fb 100%)" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#1F6F54" }}>
-              <Rocket size={14} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#171717]">Launch Demand Catalyst</p>
-              <p className="text-xs text-[#68747A]">Choose which star products to include in this campaign launch</p>
-            </div>
+      {/* Launch section */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+        <div
+          className="px-5 py-4 border-b border-[#e4e4e7] flex items-center gap-3"
+          style={{ background: "linear-gradient(98deg,#f0fdf4 0%,#e8f5f0 100%)" }}
+        >
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#1a5c3a" }}>
+            <Rocket size={15} className="text-white" />
+          </div>
+          <div>
+            <p className="text-[13.5px] font-bold text-slate-900">Launch Demand Catalyst</p>
+            <p className="text-[11.5px] text-slate-500">Choose which Star Products to include in this campaign launch</p>
           </div>
         </div>
 
         <div className="p-5">
           {launched ? (
-            <div className="flex flex-col items-center text-center py-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: "#DFF3EE" }}>
-                <CheckCircle2 size={24} style={{ color: "#1F6F54" }} />
+            <div className="flex flex-col items-center text-center py-6">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#e3f5ec" }}>
+                <CheckCircle2 size={26} style={{ color: "#1a5c3a" }} />
               </div>
-              <p className="text-base font-medium text-[#171717] mb-1">Campaign Launched! 🎉</p>
-              <p className="text-sm text-[#68747A] mb-4 max-w-[360px]">
-                Synodo&apos;s team has been notified and will begin campaign planning within 24 hours.
-                Your campaign will appear under <strong>Campaign Planning</strong>.
+              <p className="text-[15px] font-bold text-slate-800 mb-2">Campaign Launched! 🎉</p>
+              <p className="text-[12.5px] text-slate-400 mb-4 max-w-[360px] leading-relaxed">
+                SCINODE&apos;s team has been notified and will begin campaign planning within 24 hours.
               </p>
               <div
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ background: "#DFF3EE", color: "#1F6F54" }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold"
+                style={{ background: "#e3f5ec", color: "#1a5c3a" }}
               >
                 <Activity size={11} />
                 Moving to Campaign Planning →
@@ -932,60 +1065,58 @@ function State4() {
             </div>
           ) : (
             <>
-              <div className="space-y-2 mb-5">
-                {STATE4_SELECTED.map((product) => {
-                  const isIncluded = launchSelection.includes(product.id);
+              <div className="flex flex-col gap-2 mb-5">
+                {STATE4_PRODUCTS.map((p) => {
+                  const included = launchIds.includes(p.id);
                   return (
                     <label
-                      key={product.id}
+                      key={p.id}
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                        isIncluded ? "border-[#1F6F54] bg-[#F9FAFB]" : "border-[#E2E5E3] bg-white hover:bg-[#F9FAFB]"
+                        "flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all",
+                        included ? "border-[#1a5c3a] bg-[#f0fdf4]" : "border-[#e4e4e7] bg-white hover:bg-[#f9fafb]"
                       )}
                     >
                       <div
                         className={cn(
-                          "w-5 h-5 rounded flex items-center justify-center border-2 flex-shrink-0 transition-all",
-                          isIncluded ? "border-[#1F6F54] bg-[#1F6F54]" : "border-[#D2D2D5] bg-white"
+                          "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
+                          included ? "bg-[#1a5c3a] border-[#1a5c3a]" : "border-[#e2e8f0] bg-white"
                         )}
-                        onClick={() => toggleLaunch(product.id)}
+                        onClick={() => toggleLaunch(p.id)}
                       >
-                        {isIncluded && <Check size={11} className="text-white" strokeWidth={3} />}
+                        {included && <Check size={10} className="text-white" strokeWidth={3} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-[#171717] truncate">{product.name}</p>
-                          {product.campaignStatus === "Needs Attention" && (
-                            <span className="text-[10px] bg-[#FBF0C5] text-[#9C5022] px-1.5 py-0.5 rounded flex-shrink-0">
+                          <p className="text-[13px] font-semibold text-slate-800 truncate">{p.name}</p>
+                          {p.status === "attention" && (
+                            <span className="text-[10px] bg-[#fef9c3] text-[#92400e] px-1.5 py-0.5 rounded font-semibold flex-shrink-0">
                               Needs Attention
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-[#68747A]">{product.industry} · Readiness {product.readiness}%</p>
+                        <p className="text-[11px] text-slate-400">{p.industry} · Readiness {p.readiness}%</p>
                       </div>
-                      <ReadinessBadge score={product.readiness} />
+                      <ReadinessBadge score={p.readiness} />
                     </label>
                   );
                 })}
               </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-[#E2E5E3]">
-                <p className="text-sm text-[#68747A]">
-                  <span className="font-medium text-[#171717]">{launchSelection.length}</span> product{launchSelection.length !== 1 ? "s" : ""} selected for launch
+              <div className="flex items-center justify-between pt-4 border-t border-[#f3f4f6]">
+                <p className="text-[12.5px] text-slate-500">
+                  <span className="font-bold text-slate-800">{launchIds.length}</span> product{launchIds.length !== 1 ? "s" : ""} selected for launch
                 </p>
                 <button
-                  disabled={launchSelection.length === 0}
-                  onClick={() => setLaunched(true)}
+                  disabled={launchIds.length === 0}
+                  onClick={handleStart}
                   className={cn(
-                    "flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all",
-                    launchSelection.length > 0
+                    "flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all",
+                    launchIds.length > 0
                       ? "text-white hover:brightness-110 active:scale-[0.98]"
-                      : "text-[#99A8AF] bg-[#F3F4F6] cursor-not-allowed"
+                      : "text-slate-400 bg-slate-100 cursor-not-allowed"
                   )}
-                  style={launchSelection.length > 0 ? { background: "linear-gradient(98.03deg,#016358 12.27%,#182133 110.8%)" } : undefined}
+                  style={launchIds.length > 0 ? { background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" } : undefined}
                 >
-                  <Rocket size={14} />
-                  Start Campaign
+                  <Rocket size={14} /> Start Campaign
                 </button>
               </div>
             </>
@@ -996,52 +1127,145 @@ function State4() {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function DemandCatalyst() {
-  const [demoState, setDemoState] = useState<DemoState>("state1");
+  const [demoState, setDemoState]       = useState<DemoState>("state1");
+  const [modalOpen, setModalOpen]       = useState(false);
+  const [bannerHighlighted, setBannerHighlighted] = useState(false);
+  const [launched, setLaunched]         = useState(false);
+
+  const openModal = () => {
+    setBannerHighlighted(true);
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+    setTimeout(() => setBannerHighlighted(false), 800);
+  };
+
+  // KPI data per state
+  const kpiData: KpiData = (() => {
+    if (demoState === "state4" && launched) {
+      return { campaignsStarted: 1, starProducts: "3 / 5", opportunities: 0, stage: "Campaign Planning", launched: true };
+    }
+    if (demoState === "state4") {
+      return { campaignsStarted: 0, starProducts: "5 / 5", opportunities: 0, stage: "Ready to Launch"  };
+    }
+    if (demoState === "state3") {
+      return { campaignsStarted: 0, starProducts: "0 / 5", opportunities: 0, stage: "Select Products"  };
+    }
+    if (demoState === "state2") {
+      return { campaignsStarted: 0, starProducts: "0 / 5", opportunities: 0, stage: "Getting Started"  };
+    }
+    return   { campaignsStarted: 0, starProducts: "0 / 5", opportunities: 0, stage: "Getting Started"  };
+  })();
+
+  // Active timeline step per state
+  const activeStep = (() => {
+    if (demoState === "state4" && launched) return "planning";
+    if (demoState === "state4")             return "planning";
+    if (demoState === "state3")             return "star";
+    if (demoState === "state2")             return "catalog";
+    return "catalog";
+  })();
+
+  // Reset launched when changing state
+  useEffect(() => { setLaunched(false); }, [demoState]);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-[#E2E5E3]">
-        <div className="flex items-center justify-between px-6 py-3">
+    <div className="min-h-screen bg-[#f9fafb]">
+      {/* ── Page header ── */}
+      <div className="sticky top-0 z-20 bg-white border-b border-[#e4e4e7]">
+        <div className="flex items-center justify-between px-6 py-3 max-w-[1300px] mx-auto">
+          {/* Breadcrumb */}
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg,#016358,#182133)" }}
+              style={{ background: "linear-gradient(135deg,#0d2818,#091510)" }}
             >
-              <Megaphone size={15} className="text-white" />
+              <Megaphone size={14} className="text-white" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-[#171717] leading-tight">Demand Catalyst</h2>
-              <p className="text-[10px] text-[#99A8AF]">Managed B2B Growth Service</p>
+              <p className="text-[13px] font-bold text-slate-900 leading-tight">Demand Catalyst</p>
+              <p className="text-[10.5px] text-slate-400">Managed B2B Growth Service</p>
             </div>
           </div>
 
-          {/* Demo state switcher */}
-          <div className="flex items-center gap-3">
-            <p className="text-[10px] font-bold text-[#99A8AF] tracking-widest hidden lg:block">DEMO STATE</p>
-            <DemoStateSwitcher current={demoState} onChange={setDemoState} />
+          {/* Demo switcher */}
+          <DemoStateSwitcher current={demoState} onChange={(s) => setDemoState(s)} />
+        </div>
+      </div>
+
+      {/* ── Page body ── */}
+      <div className="max-w-[1300px] mx-auto px-6 py-6 flex flex-col gap-6">
+
+        {/* Hero */}
+        <div className="flex items-start justify-between gap-6">
+          <div className="max-w-[620px]">
+            <div
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest mb-3"
+              style={{ background: "#e3f5ec", color: "#1a5c3a" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              MANAGED B2B GROWTH SERVICE
+            </div>
+            <h1 className="text-[26px] font-black text-slate-900 leading-tight mb-3">
+              Turn Your Products Into<br />Qualified Global Opportunities
+            </h1>
+            <p className="text-[14px] text-slate-500 leading-relaxed mb-4 max-w-[520px]">
+              SCINODE&apos;s sales and marketing teams actively promote your selected products, generate buyer demand, and deliver exclusive opportunities directly to you.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => demoState === "state1" && setDemoState("state2")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+                style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+              >
+                Get Started <ArrowRight size={14} />
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
+                <Play size={12} /> Watch Demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI cards */}
+        <KpiCards data={kpiData} />
+
+        {/* 70 / 30 layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
+
+          {/* LEFT — 70% */}
+          <div className="lg:col-span-7">
+            {demoState === "state1" && (
+              <EmptyStatePanel onGetStarted={() => setDemoState("state2")} />
+            )}
+            {demoState === "state2" && (
+              <NoCatalogPanel onGoToCatalog={() => setDemoState("state3")} />
+            )}
+            {demoState === "state3" && (
+              <ProductSelectionPanel onContinue={() => setDemoState("state4")} />
+            )}
+            {demoState === "state4" && (
+              <LaunchPanel onLaunch={() => setLaunched(true)} />
+            )}
+          </div>
+
+          {/* RIGHT — 30% */}
+          <div className="lg:col-span-3">
+            <RightPanel
+              activeStep={activeStep}
+              onLearnMore={openModal}
+              bannerHighlighted={bannerHighlighted}
+            />
           </div>
         </div>
       </div>
 
-      {/* Page content */}
-      <div className="max-w-[1200px] mx-auto px-6 py-6">
-        {demoState === "state1" && (
-          <State1 onGetStarted={() => setDemoState("state2")} />
-        )}
-        {demoState === "state2" && (
-          <State2 onGoToCatalog={() => setDemoState("state3")} />
-        )}
-        {demoState === "state3" && (
-          <State3 onContinue={() => setDemoState("state4")} />
-        )}
-        {demoState === "state4" && (
-          <State4 />
-        )}
-      </div>
+      {/* Benefits modal */}
+      {modalOpen && <BenefitsModal onClose={closeModal} />}
     </div>
   );
 }
