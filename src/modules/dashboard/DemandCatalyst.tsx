@@ -1226,7 +1226,7 @@ export function DemandCatalyst() {
             <h1 className="text-[26px] font-black text-slate-900 leading-tight mb-3 whitespace-nowrap">
               Turn Your Products Into Qualified Global Opportunities
             </h1>
-            <p className="text-[14px] text-slate-500 leading-relaxed max-w-[480px]">
+            <p className="text-[14px] text-slate-500 leading-relaxed max-w-[680px]">
               SCINODE&apos;s sales and marketing teams actively promote your selected products, generate buyer demand, and deliver exclusive opportunities directly to you.
             </p>
           </div>
