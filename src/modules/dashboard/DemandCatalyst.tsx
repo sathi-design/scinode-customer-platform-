@@ -352,6 +352,60 @@ function DemandCatalystBanner({
 
 // ─── Benefits Modal ───────────────────────────────────────────────────────────
 
+const MODAL_PILLARS = [
+  {
+    icon: Star,
+    iconBg: "#fef9c3",
+    iconColor: "#ca8a04",
+    label: "01",
+    labelBg: "#e3f5ec",
+    labelColor: "#1a5c3a",
+    title: "Select Star Products",
+    intro: "Choose up to 5 products you want SCINODE to actively promote to qualified buyers.",
+    bullets: [
+      "Pick from your existing Product Catalog",
+      "Products are reviewed for campaign readiness",
+      "Incomplete products get guided completion support",
+      "You stay in control — update your selection anytime",
+    ],
+    outcome: "Your spotlight products are locked in and campaign-ready.",
+  },
+  {
+    icon: Megaphone,
+    iconBg: "#ede9fe",
+    iconColor: "#7c3aed",
+    label: "02",
+    labelBg: "#ede9fe",
+    labelColor: "#7c3aed",
+    title: "SCINODE Runs Campaigns",
+    intro: "Our team handles campaign planning, execution, and lead qualification — entirely managed.",
+    bullets: [
+      "Dedicated sales specialists reach out to qualified buyers",
+      "Digital campaigns run across pharma, biotech & chemical markets",
+      "Market intelligence drives targeting — right buyer, right time",
+      "Every lead is verified and assessed for genuine intent",
+    ],
+    outcome: "SCINODE's team does the work. You do none of the outreach.",
+  },
+  {
+    icon: Target,
+    iconBg: "#f0fdf4",
+    iconColor: "#1a5c3a",
+    label: "03",
+    labelBg: "#e3f5ec",
+    labelColor: "#1a5c3a",
+    title: "Receive Opportunities",
+    intro: "Qualified buyer opportunities are delivered directly to you with full context.",
+    bullets: [
+      "Verified buyer profile — company, role, intent",
+      "Product match rationale and qualification notes",
+      "Recommended next steps and engagement guidance",
+      "Opportunities tracked end-to-end inside SCINODE",
+    ],
+    outcome: "Exclusive, qualified, context-rich — ready for you to act on.",
+  },
+];
+
 function BenefitsModal({ onClose }: { onClose: () => void }) {
   return (
     <div
@@ -360,12 +414,12 @@ function BenefitsModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-[680px] max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* ── Dark header ── */}
         <div
-          className="relative px-6 pt-6 pb-5"
+          className="relative px-6 pt-6 pb-6"
           style={{ background: "linear-gradient(135deg,#0d2818,#0a1e10)" }}
         >
           <button
@@ -379,97 +433,102 @@ function BenefitsModal({ onClose }: { onClose: () => void }) {
             style={{ background: "rgba(26,92,58,0.50)", border: "1px solid rgba(110,231,183,0.25)", color: "#6ee7b7" }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            HOW DEMAND CATALYST WORKS
+            HOW DEMAND CATALYST HELPS YOU GROW
           </div>
           <h2 className="text-white text-[22px] font-bold leading-tight mb-2">
-            SCINODE Works for You — From Selection to Opportunity
+            See How Demand Catalyst Helps You Grow
           </h2>
-          <p className="text-white/60 text-[13px] leading-relaxed max-w-[540px]">
-            Demand Catalyst is a fully managed B2B growth service. Select your products, and SCINODE&apos;s sales and marketing teams do the rest — generating demand, qualifying buyers, and delivering exclusive opportunities directly to you.
+          <p className="text-white/60 text-[13px] leading-relaxed max-w-[560px]">
+            Demand Catalyst is a fully managed B2B growth service. Select your products and SCINODE&apos;s sales and marketing teams do the rest — generating demand, qualifying buyers, and delivering exclusive opportunities directly to you.
           </p>
+
+          {/* Stat strip inside header */}
+          <div className="flex items-center gap-6 mt-5 pt-4 border-t border-white/10">
+            {[
+              { value: "2,400+", label: "Verified Suppliers" },
+              { value: "60+",    label: "Countries Reached" },
+              { value: "18K+",   label: "Projects Completed" },
+              { value: "100%",   label: "Managed for You"   },
+            ].map((s) => (
+              <div key={s.label}>
+                <p className="text-[18px] font-black text-white leading-none">{s.value}</p>
+                <p className="text-[10px] text-white/40 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-6 flex flex-col gap-6">
+        {/* ── Body ── */}
+        <div className="px-6 py-6 flex flex-col gap-5">
 
-          {/* Workflow steps */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-4">THE WORKFLOW</p>
-            <div className="flex flex-col gap-0">
-              {[
-                {
-                  n: "01",
-                  title: "Select your Star Products",
-                  desc: "Choose up to 5 products from your catalog that you want SCINODE to actively promote. These become your campaign-ready spotlight products.",
-                },
-                {
-                  n: "02",
-                  title: "SCINODE plans your campaign",
-                  desc: "Our sales and marketing specialists analyse your products, identify the right buyer segments, and build a tailored demand generation strategy.",
-                },
-                {
-                  n: "03",
-                  title: "Multi-channel execution",
-                  desc: "SCINODE runs targeted digital campaigns, direct sales outreach, and market intelligence-driven engagement across global pharma and chemical markets.",
-                },
-                {
-                  n: "04",
-                  title: "Lead qualification & finalization",
-                  desc: "Every inbound lead is verified, qualified, and assessed for fit. Only serious, intent-matched buyers progress to the opportunity stage.",
-                },
-                {
-                  n: "05",
-                  title: "Receive exclusive opportunities",
-                  desc: "Qualified, verified buyer opportunities are delivered directly to you — with full context, buyer profile, and recommended next steps.",
-                },
-              ].map((step, i, arr) => (
-                <div key={i} className="flex gap-4">
-                  <div className="flex flex-col items-center shrink-0">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
-                      style={{ background: "#e3f5ec", color: "#1a5c3a" }}
-                    >
-                      {step.n}
+          {/* 3 pillar cards matching the context cards */}
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">HOW IT WORKS — IN DETAIL</p>
+
+          <div className="flex flex-col gap-4">
+            {MODAL_PILLARS.map((pillar, i) => {
+              const Icon = pillar.icon;
+              return (
+                <div key={i} className="rounded-xl border border-[#e4e4e7] overflow-hidden">
+                  {/* Card header */}
+                  <div className="flex items-start gap-4 p-5 border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
+                      style={{ background: pillar.labelBg, color: pillar.labelColor }}>
+                      {pillar.label}
                     </div>
-                    {i < arr.length - 1 && (
-                      <div className="w-px flex-1 my-1.5" style={{ background: "#e4e4e7", minHeight: 20 }} />
-                    )}
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: pillar.iconBg }}>
+                        <Icon size={16} style={{ color: pillar.iconColor }} />
+                      </div>
+                      <div>
+                        <p className="text-[14px] font-bold text-slate-900 mb-0.5">{pillar.title}</p>
+                        <p className="text-[12.5px] text-slate-500 leading-relaxed">{pillar.intro}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="pb-5 min-w-0 flex-1">
-                    <p className="text-[13.5px] font-bold text-slate-800 mb-1">{step.title}</p>
-                    <p className="text-[12.5px] text-slate-500 leading-relaxed">{step.desc}</p>
+                  {/* Bullets + outcome */}
+                  <div className="p-5 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {pillar.bullets.map((b, j) => (
+                        <div key={j} className="flex items-start gap-2.5">
+                          <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                            style={{ background: "#e3f5ec" }}>
+                            <Check size={9} style={{ color: "#1a5c3a" }} strokeWidth={3} />
+                          </div>
+                          <span className="text-[12.5px] text-slate-600 leading-snug">{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg"
+                      style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                      <CheckCircle2 size={13} style={{ color: "#1a5c3a" }} />
+                      <p className="text-[12px] font-semibold" style={{ color: "#1a5c3a" }}>{pillar.outcome}</p>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {/* Benefits grid */}
+          {/* Growth summary strip */}
           <div className="rounded-xl border border-[#e4e4e7] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">
-                WHY SUPPLIERS CHOOSE DEMAND CATALYST
-              </p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">WHY SUPPLIERS CHOOSE DEMAND CATALYST</p>
               <h3 className="text-[14px] font-bold text-slate-900">Your Products. Our Effort. Your Growth.</h3>
             </div>
-            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
-                { icon: "👥", title: "Dedicated sales team",           desc: "Human outreach from SCINODE sales specialists who know your buyers." },
-                { icon: "📡", title: "Digital marketing engine",       desc: "Multi-channel campaigns across pharma, biotech, and specialty chemical markets." },
-                { icon: "📊", title: "Market intelligence",            desc: "Buyer intent signals, search demand, and industry insights working for your products." },
-                { icon: "🏆", title: "Exclusive opportunities",        desc: "Qualified buyers delivered to you with full context and next steps." },
-                { icon: "⚡", title: "Zero BD effort",                 desc: "No cold outreach, no chasing leads — SCINODE's team does the work." },
-                { icon: "🌍", title: "Increased global visibility",    desc: "Reach pharmaceutical buyers across 60+ countries through SCINODE's network." },
+                { icon: "👥", title: "Dedicated sales team",        desc: "Human outreach from SCINODE specialists who know your buyers."              },
+                { icon: "📡", title: "Digital marketing engine",    desc: "Multi-channel campaigns across pharma, biotech & chemical markets."         },
+                { icon: "📊", title: "Market intelligence",         desc: "Buyer intent signals and industry insights working for your products."       },
+                { icon: "🏆", title: "Exclusive opportunities",     desc: "Qualified buyers delivered to you with full context and next steps."         },
+                { icon: "⚡", title: "Zero BD effort",              desc: "No cold outreach, no chasing leads — SCINODE's team does the work."         },
+                { icon: "🌍", title: "Global visibility",           desc: "Reach pharmaceutical buyers across 60+ countries through SCINODE's network." },
               ].map((b, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-3.5 rounded-xl border border-[#f3f4f6]"
-                  style={{ background: "#fafafa" }}
-                >
-                  <span className="text-[18px] shrink-0">{b.icon}</span>
+                <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl border border-[#f3f4f6]" style={{ background: "#fafafa" }}>
+                  <span className="text-[17px] shrink-0">{b.icon}</span>
                   <div>
-                    <p className="text-[12.5px] font-bold text-slate-800 mb-0.5">{b.title}</p>
-                    <p className="text-[11.5px] text-slate-500 leading-snug">{b.desc}</p>
+                    <p className="text-[12px] font-bold text-slate-800 mb-0.5">{b.title}</p>
+                    <p className="text-[11px] text-slate-500 leading-snug">{b.desc}</p>
                   </div>
                 </div>
               ))}
@@ -480,7 +539,7 @@ function BenefitsModal({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-3 pt-1">
             <button
               onClick={onClose}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
               style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
             >
               Get Started <ArrowRight size={14} />
