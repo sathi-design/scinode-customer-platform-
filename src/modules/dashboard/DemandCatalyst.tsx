@@ -1,6 +1,28 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+
+// ─── Shine button style (injected once) ──────────────────────────────────────
+const SHINE_STYLE = `
+@keyframes dc-shine {
+  0%   { transform: translateX(-100%) skewX(-20deg); }
+  100% { transform: translateX(250%)  skewX(-20deg); }
+}
+.dc-primary-btn {
+  position: relative;
+  overflow: hidden;
+}
+.dc-primary-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  animation: dc-shine 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+`;
 import {
   Megaphone, Star, Package, Users, Globe, Target,
   ArrowRight, CheckCircle2, Circle, ChevronRight,
@@ -539,10 +561,10 @@ function BenefitsModal({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-3 pt-1">
             <button
               onClick={onClose}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+              className="dc-primary-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
               style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
             >
-              Get Started <ArrowRight size={14} />
+              Add Product <ArrowRight size={14} />
             </button>
             <button
               onClick={onClose}
@@ -620,10 +642,10 @@ function EmptyStatePanel({ onGetStarted }: { onGetStarted: () => void }) {
         <div className="flex items-center gap-3">
           <button
             onClick={onGetStarted}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+            className="dc-primary-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
             style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
           >
-            <Sparkles size={14} /> Get Started
+            <Sparkles size={14} /> Add Product
           </button>
           <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
             <Play size={12} /> Watch Demo
@@ -1187,6 +1209,7 @@ export function DemandCatalyst() {
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
+      <style dangerouslySetInnerHTML={{ __html: SHINE_STYLE }} />
       {/* ── Page header ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-[#e4e4e7]">
         <div className="flex items-center justify-between px-6 py-3 max-w-[1300px] mx-auto">
@@ -1235,10 +1258,10 @@ export function DemandCatalyst() {
           <div className="flex-shrink-0 flex flex-row items-center gap-3 pt-1">
             <button
               onClick={() => demoState === "state1" && setDemoState("state2")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+              className="dc-primary-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
               style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
             >
-              Get Started <ArrowRight size={14} />
+              Add Product <ArrowRight size={14} />
             </button>
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
               <Play size={12} /> Watch Demo
