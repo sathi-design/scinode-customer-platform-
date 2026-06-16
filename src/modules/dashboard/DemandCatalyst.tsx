@@ -268,7 +268,7 @@ function DemandCatalystBanner({
 }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden flex flex-col transition-all duration-300"
+      className="rounded-2xl overflow-hidden flex flex-col h-full transition-all duration-300"
       style={{
         background: "linear-gradient(160deg,#0d2818 0%,#0a1e10 55%,#091510 100%)",
         border: highlighted
@@ -591,13 +591,15 @@ function RightPanel({
   bannerHighlighted: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 h-full">
       {/* Section label */}
       <div className="flex items-center gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">DEMAND CATALYST</p>
         <div className="flex-1 h-px bg-slate-100" />
       </div>
-      <DemandCatalystBanner onLearnMore={onLearnMore} highlighted={bannerHighlighted} />
+      <div className="flex-1">
+        <DemandCatalystBanner onLearnMore={onLearnMore} highlighted={bannerHighlighted} />
+      </div>
     </div>
   );
 }
@@ -1309,7 +1311,7 @@ export function DemandCatalyst() {
         </div>
 
         {/* 70 / 30 layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
 
           {/* LEFT — 70% */}
           <div className="lg:col-span-7">
@@ -1328,7 +1330,7 @@ export function DemandCatalyst() {
           </div>
 
           {/* RIGHT — 30% */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 flex flex-col">
             <RightPanel
               activeStep={activeStep}
               onLearnMore={openModal}
