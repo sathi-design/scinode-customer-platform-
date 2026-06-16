@@ -681,8 +681,8 @@ function NoCatalogCard({ onGoToCatalog }: { onGoToCatalog: () => void }) {
               <h2 className="text-[20px] font-black text-slate-900 leading-tight mb-2">
                 Product Catalog Required
               </h2>
-              <p className="text-[13.5px] text-slate-500 leading-relaxed max-w-[420px]">
-                Before launching Demand Catalyst, add products to your Product Catalog. SCINODE&apos;s team uses your catalog to build campaigns, identify the right buyers, and generate qualified opportunities for your products.
+              <p className="text-[13.5px] text-slate-500 leading-relaxed" style={{ maxWidth: "100%" }}>
+                Before launching Demand Catalyst, add products to your Product Catalog. SCINODE&apos;s sales and marketing team uses your catalog to build targeted campaigns, identify the right buyers, and generate qualified opportunities exclusively for your products.
               </p>
             </div>
           </div>
