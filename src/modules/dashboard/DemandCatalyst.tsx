@@ -1201,8 +1201,9 @@ export function DemandCatalyst() {
       <div className="max-w-[1300px] mx-auto px-6 py-6 flex flex-col gap-6">
 
         {/* Hero */}
-        <div className="flex items-start justify-between gap-6">
-          <div className="max-w-[620px]">
+        <div className="flex items-start justify-between gap-8">
+          {/* Left — heading block */}
+          <div className="max-w-[560px]">
             <div
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest mb-3"
               style={{ background: "#e3f5ec", color: "#1a5c3a" }}
@@ -1213,7 +1214,7 @@ export function DemandCatalyst() {
             <h1 className="text-[26px] font-black text-slate-900 leading-tight mb-3">
               Turn Your Products Into<br />Qualified Global Opportunities
             </h1>
-            <p className="text-[14px] text-slate-500 leading-relaxed mb-4 max-w-[520px]">
+            <p className="text-[14px] text-slate-500 leading-relaxed mb-4 max-w-[460px]">
               SCINODE&apos;s sales and marketing teams actively promote your selected products, generate buyer demand, and deliver exclusive opportunities directly to you.
             </p>
             <div className="flex items-center gap-3">
@@ -1227,6 +1228,33 @@ export function DemandCatalyst() {
               <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
                 <Play size={12} /> Watch Demo
               </button>
+            </div>
+          </div>
+
+          {/* Right — overview summary card */}
+          <div className="flex-shrink-0 w-[220px] bg-white border border-[#e4e4e7] rounded-2xl p-4 self-start">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-3">YOUR OVERVIEW</p>
+            <div className="flex flex-col gap-3">
+              {[
+                { label: "Campaigns Started",       value: kpiData.campaignsStarted.toString() },
+                { label: "Star Products",           value: kpiData.starProducts                },
+                { label: "Opportunities Generated", value: kpiData.opportunities.toString()    },
+                { label: "Current Stage",           value: kpiData.stage                       },
+              ].map((item) => (
+                <div key={item.label} className="border-b border-[#f3f4f6] pb-3 last:border-0 last:pb-0">
+                  <p className="text-[10.5px] text-slate-400 mb-0.5">{item.label}</p>
+                  <p
+                    className="text-[13.5px] font-bold leading-tight"
+                    style={{
+                      color: item.label === "Current Stage" ? "#1a5c3a"
+                           : item.label === "Star Products" && item.value === "0 / 5" ? "#92400e"
+                           : "#0f172a",
+                    }}
+                  >
+                    {item.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
