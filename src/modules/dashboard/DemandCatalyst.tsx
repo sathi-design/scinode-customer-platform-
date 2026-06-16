@@ -136,22 +136,10 @@ function KpiCards({ data }: { data: KpiData }) {
       subColor: "#94a3b8",
       border: "#e2e8f0",
     },
-    {
-      label: "Current Stage",
-      value: data.stage,
-      sub: "Onboarding progress",
-      icon: Activity,
-      iconBg: "#f0fdf4",
-      iconColor: "#1a5c3a",
-      valueBg: "transparent",
-      valueColor: "#1a5c3a",
-      subColor: "#94a3b8",
-      border: data.launched ? "#bbf7d0" : "#e2e8f0",
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
       {cards.map((c) => {
         const Icon = c.icon;
         return (
@@ -622,15 +610,15 @@ function ReadinessBadge({ score }: { score: number }) {
 
 function EmptyStatePanel({ onGetStarted }: { onGetStarted: () => void }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 h-full">
       {/* Section label */}
       <div className="flex items-center gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">CAMPAIGN WORKSPACE</p>
         <div className="flex-1 h-px bg-slate-100" />
       </div>
 
-      {/* Empty state card */}
-      <div className="bg-white rounded-2xl border-2 border-dashed border-[#e4e4e7] py-14 px-8 flex flex-col items-center text-center">
+      {/* Empty state card — stretches to fill */}
+      <div className="flex-1 bg-white rounded-2xl border-2 border-dashed border-[#e4e4e7] py-14 px-8 flex flex-col items-center justify-center text-center">
         <div
           className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
           style={{ background: "#f0fdf4" }}
@@ -1314,7 +1302,7 @@ export function DemandCatalyst() {
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
 
           {/* LEFT — 70% */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 flex flex-col">
             {demoState === "state1" && (
               <EmptyStatePanel onGetStarted={() => setDemoState("state2")} />
             )}
