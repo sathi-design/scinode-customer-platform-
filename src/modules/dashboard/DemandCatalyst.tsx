@@ -651,101 +651,96 @@ function EmptyStatePanel({ onGetStarted }: { onGetStarted: () => void }) {
 
 function NoCatalogPanel({ onGoToCatalog }: { onGoToCatalog: () => void }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 h-full">
+      {/* Section label — same as State 1 */}
       <div className="flex items-center gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">SETUP REQUIRED</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">CAMPAIGN WORKSPACE</p>
         <div className="flex-1 h-px bg-slate-100" />
       </div>
 
-      {/* Blocker card */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
-        {/* Warning banner */}
-        <div
-          className="px-5 py-3 flex items-center gap-2.5 border-b border-[#fde68a]"
-          style={{ background: "#fffbeb" }}
-        >
-          <AlertCircle size={14} style={{ color: "#d97706" }} />
-          <p className="text-[12px] font-semibold" style={{ color: "#92400e" }}>Setup Blocked — Action Required</p>
-        </div>
+      {/* Same dashed card as State 1 — stretches to fill height */}
+      <div className="flex-1 bg-white rounded-2xl border-2 border-dashed border-[#e4e4e7] flex flex-col items-center justify-center px-8 gap-0">
 
-        <div className="p-6">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ background: "#fef9c3" }}>
-            <Package size={18} style={{ color: "#ca8a04" }} />
-          </div>
-          <h2 className="text-[16px] font-bold text-slate-900 mb-2">Product Catalog Required</h2>
-          <p className="text-[13px] text-slate-500 leading-relaxed mb-5 max-w-[480px]">
-            Before launching Demand Catalyst, add products to your Product Catalog. SCINODE&apos;s team uses your catalog to build campaigns, identify the right buyers, and generate qualified opportunities for your products.
-          </p>
-
-          {/* Benefits */}
-          <div className="bg-[#f8fafc] rounded-xl border border-[#e4e4e7] p-4 mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-3">WHY THIS MATTERS</p>
-            <div className="flex flex-col gap-2.5">
-              {[
-                "Campaign-ready products with complete technical specifications",
-                "Better lead quality through accurate product and buyer matching",
-                "Faster campaign launch with verified, complete catalog data",
-              ].map((b, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#e3f5ec" }}>
-                    <CheckCircle2 size={9} style={{ color: "#1a5c3a" }} />
-                  </div>
-                  <span className="text-[12.5px] text-slate-600 leading-snug">{b}</span>
+        {/* ── Separator: Product Catalog Required notice ── */}
+        <div className="w-full mb-6">
+          <div className="rounded-xl border border-[#fde68a] overflow-hidden">
+            {/* Warning strip */}
+            <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-[#fde68a]" style={{ background: "#fffbeb" }}>
+              <AlertCircle size={13} style={{ color: "#d97706" }} />
+              <p className="text-[11.5px] font-semibold" style={{ color: "#92400e" }}>Setup Blocked — Action Required</p>
+            </div>
+            {/* Body */}
+            <div className="px-4 py-4 flex items-start gap-4" style={{ background: "#fffef5" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#fef9c3" }}>
+                <Package size={16} style={{ color: "#ca8a04" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13.5px] font-bold text-slate-900 mb-1">Product Catalog Required</p>
+                <p className="text-[12px] text-slate-500 leading-relaxed mb-3">
+                  Add products to your catalog before launching Demand Catalyst. SCINODE uses your catalog to build campaigns and match the right buyers.
+                </p>
+                {/* Inline setup steps */}
+                <div className="flex items-center gap-3 flex-wrap mb-3">
+                  {[
+                    { label: "Demand Catalyst Access", done: true  },
+                    { label: "Product Catalog Added",  done: false },
+                    { label: "Star Products Selected", done: false },
+                    { label: "Campaign Ready",         done: false },
+                  ].map((s, i, arr) => (
+                    <React.Fragment key={i}>
+                      <div className="flex items-center gap-1.5">
+                        {s.done ? (
+                          <CheckCircle2 size={12} style={{ color: "#1a5c3a" }} />
+                        ) : (
+                          <Circle size={12} className="text-[#d1d5db]" />
+                        )}
+                        <span className={cn("text-[11px] font-medium", s.done ? "text-slate-700" : "text-slate-400")}>
+                          {s.label}
+                        </span>
+                      </div>
+                      {i < arr.length - 1 && <ChevronRight size={10} className="text-slate-300 flex-shrink-0" />}
+                    </React.Fragment>
+                  ))}
                 </div>
-              ))}
+                <div className="flex items-center gap-2.5">
+                  <button
+                    onClick={onGoToCatalog}
+                    className="dc-primary-btn flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+                    style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+                  >
+                    <Plus size={12} /> Add Products
+                  </button>
+                  <button
+                    onClick={onGoToCatalog}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1a5c3a] text-[#1a5c3a] text-[12px] font-semibold hover:bg-[#f0fdf4] transition-all"
+                  >
+                    Go To Product Catalog <ChevronRight size={12} />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onGoToCatalog}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
-              style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
-            >
-              <Plus size={14} /> Add Products
-            </button>
-            <button
-              onClick={onGoToCatalog}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#1a5c3a] text-[#1a5c3a] text-[13px] font-semibold hover:bg-[#f0fdf4] transition-all"
-            >
-              Go To Product Catalog <ChevronRight size={13} />
-            </button>
-          </div>
         </div>
-      </div>
 
-      {/* Setup progress */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
-        <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-4">SETUP PROGRESS</p>
-        <div className="flex flex-col gap-3">
-          {[
-            { label: "Demand Catalyst Access", done: true  },
-            { label: "Product Catalog Added",  done: false },
-            { label: "Star Products Selected", done: false },
-            { label: "Campaign Ready",         done: false },
-          ].map((s, i) => (
-            <div key={i} className="flex items-center gap-3">
-              {s.done ? (
-                <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: "#e3f5ec" }}>
-                  <CheckCircle2 size={11} style={{ color: "#1a5c3a" }} />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded-full border-2 border-[#e2e8f0] shrink-0" />
-              )}
-              <span className={cn("text-[13px]", s.done ? "text-slate-800 font-semibold" : "text-slate-400")}>
-                {s.label}
-              </span>
-            </div>
-          ))}
+        {/* Same empty state content as State 1 */}
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5" style={{ background: "#f0fdf4" }}>
+          <Megaphone size={26} style={{ color: "#1a5c3a" }} />
         </div>
-        <div className="mt-4 pt-4 border-t border-[#f3f4f6]">
-          <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px] text-slate-400">Completion</p>
-            <p className="text-[11px] font-bold" style={{ color: "#1a5c3a" }}>25%</p>
-          </div>
-          <div className="h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: "25%", background: "#1a5c3a" }} />
-          </div>
+        <p className="text-[16px] font-bold text-slate-800 mb-2 text-center">No Campaign Started Yet</p>
+        <p className="text-[13px] text-slate-400 max-w-[360px] leading-relaxed mb-6 text-center">
+          Complete the setup to launch your first Demand Catalyst campaign and start receiving qualified buyer opportunities.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            className="dc-primary-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}
+            onClick={onGoToCatalog}
+          >
+            <Sparkles size={14} /> Add Product
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#e4e4e7] text-slate-600 text-[13px] font-semibold hover:bg-slate-50 transition-all">
+            <Play size={12} /> Watch Demo
+          </button>
         </div>
       </div>
     </div>
