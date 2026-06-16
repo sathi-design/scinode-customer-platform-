@@ -1220,7 +1220,7 @@ export function DemandCatalyst() {
           </div>
 
           {/* Right — CTAs */}
-          <div className="flex-shrink-0 flex flex-col items-end justify-start gap-3 pt-1">
+          <div className="flex-shrink-0 flex flex-row items-center gap-3 pt-1">
             <button
               onClick={() => demoState === "state1" && setDemoState("state2")}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-[13px] font-bold hover:brightness-110 transition-all active:scale-[0.98]"
