@@ -30,6 +30,7 @@ import {
   AlertCircle, Check, Rocket, Activity, BarChart3,
   Layers, Radio, ShieldCheck, X, Plus, Minus,
   Sparkles, Crown, Lock, Database, ExternalLink,
+  Search, Filter, LayoutGrid, List, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,15 +40,24 @@ type DemoState = "state1" | "state2" | "state3" | "state4";
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
+const INDUSTRIES = ["Pharmaceutical API", "Nutraceuticals", "Food & Beverage", "Specialty Chemicals", "Agrochemicals", "Cosmetics"];
+
 const CATALOG_PRODUCTS = [
-  { id: 1, name: "Metformin HCl 99.5%",        cas: "1115-70-4",  industry: "Pharmaceutical API",  readiness: 92, missing: []                                      },
-  { id: 2, name: "Paracetamol DC Grade",         cas: "103-90-2",   industry: "Pharmaceutical API",  readiness: 85, missing: ["MSDS", "Packaging"]                   },
-  { id: 3, name: "Ascorbic Acid USP",            cas: "50-81-7",    industry: "Nutraceuticals",      readiness: 78, missing: ["Target Countries"]                    },
-  { id: 4, name: "Citric Acid Anhydrous",        cas: "77-92-9",    industry: "Food & Beverage",     readiness: 95, missing: []                                      },
-  { id: 5, name: "Ibuprofen Micronised",         cas: "15687-27-1", industry: "Pharmaceutical API",  readiness: 61, missing: ["MSDS", "Packaging", "Target Countries"] },
-  { id: 6, name: "Caffeine Anhydrous EP",        cas: "58-08-2",    industry: "Nutraceuticals",      readiness: 88, missing: []                                      },
-  { id: 7, name: "Benzyl Alcohol NF",            cas: "100-51-6",   industry: "Specialty Chemicals", readiness: 73, missing: ["Packaging"]                           },
-  { id: 8, name: "Acetylsalicylic Acid BP",      cas: "50-78-2",    industry: "Pharmaceutical API",  readiness: 90, missing: []                                      },
+  { id: 1,  name: "Metformin HCl 99.5%",         chemicalName: "1,1-Dimethylbiguanide hydrochloride",    cas: "1115-70-4",   industry: "Pharmaceutical API",  readiness: 92, missing: []                                          },
+  { id: 2,  name: "Paracetamol DC Grade",          chemicalName: "4-Acetamidophenol",                      cas: "103-90-2",    industry: "Pharmaceutical API",  readiness: 85, missing: ["MSDS", "Packaging"]                       },
+  { id: 3,  name: "Ascorbic Acid USP",             chemicalName: "L-Ascorbic acid",                        cas: "50-81-7",     industry: "Nutraceuticals",      readiness: 78, missing: ["Target Countries"]                        },
+  { id: 4,  name: "Citric Acid Anhydrous",         chemicalName: "2-Hydroxypropane-1,2,3-tricarboxylic acid", cas: "77-92-9", industry: "Food & Beverage",     readiness: 95, missing: []                                          },
+  { id: 5,  name: "Ibuprofen Micronised",          chemicalName: "(RS)-2-(4-(2-methylpropyl)phenyl)propanoic acid", cas: "15687-27-1", industry: "Pharmaceutical API", readiness: 61, missing: ["MSDS", "Packaging", "Target Countries"] },
+  { id: 6,  name: "Caffeine Anhydrous EP",         chemicalName: "1,3,7-Trimethyl-3,7-dihydro-1H-purine-2,6-dione", cas: "58-08-2", industry: "Nutraceuticals", readiness: 88, missing: []                                       },
+  { id: 7,  name: "Benzyl Alcohol NF",             chemicalName: "Phenylmethanol",                         cas: "100-51-6",    industry: "Specialty Chemicals", readiness: 73, missing: ["Packaging"]                               },
+  { id: 8,  name: "Acetylsalicylic Acid BP",       chemicalName: "2-Acetoxybenzoic acid",                  cas: "50-78-2",     industry: "Pharmaceutical API",  readiness: 90, missing: []                                          },
+  { id: 9,  name: "Sodium Benzoate FCC",           chemicalName: "Sodium benzoate",                        cas: "532-32-1",    industry: "Food & Beverage",     readiness: 82, missing: []                                          },
+  { id: 10, name: "Magnesium Stearate EP",         chemicalName: "Magnesium octadecanoate",                cas: "557-04-0",    industry: "Pharmaceutical API",  readiness: 77, missing: ["Target Countries"]                        },
+  { id: 11, name: "Talc Pharma Grade",             chemicalName: "Magnesium silicate hydroxide",           cas: "14807-96-6",  industry: "Pharmaceutical API",  readiness: 69, missing: ["MSDS"]                                    },
+  { id: 12, name: "Lactose Monohydrate NF",        chemicalName: "4-O-β-D-Galactopyranosyl-D-glucose monohydrate", cas: "5989-81-1", industry: "Pharmaceutical API", readiness: 93, missing: []                                  },
+  { id: 13, name: "Niacinamide USP",              chemicalName: "Pyridine-3-carboxamide",                 cas: "98-92-0",     industry: "Nutraceuticals",      readiness: 86, missing: []                                          },
+  { id: 14, name: "Menthol Natural Crystals",      chemicalName: "(1R,2S,5R)-2-Isopropyl-5-methylcyclohexanol", cas: "89-78-1", industry: "Cosmetics",         readiness: 74, missing: ["Packaging"]                               },
+  { id: 15, name: "Chlorpyrifos TC 97%",           chemicalName: "O,O-Diethyl O-3,5,6-trichloro-2-pyridyl phosphorothioate", cas: "2921-88-2", industry: "Agrochemicals", readiness: 65, missing: ["MSDS", "Target Countries"] },
 ];
 
 const STATE4_PRODUCTS = [
@@ -766,10 +776,16 @@ function NoCatalogCard({ onGoToCatalog }: { onGoToCatalog: () => void }) {
   );
 }
 
-// ─── State 3 — Product selection (LEFT PANEL) ─────────────────────────────────
+// ─── State 3 — Star Product Selector (full-width) ────────────────────────────
 
 function ProductSelectionPanel({ onContinue }: { onContinue: (ids: number[]) => void }) {
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds]   = useState<number[]>([]);
+  const [search, setSearch]             = useState("");
+  const [industryFilter, setIndustryFilter] = useState("All Industries");
+  const [viewMode, setViewMode]         = useState<"table" | "card">("table");
+  const [suggestion, setSuggestion]     = useState<typeof CATALOG_PRODUCTS[0] | null>(null);
+  const [industryOpen, setIndustryOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const toggle = (id: number) => {
     if (selectedIds.includes(id)) {
@@ -779,165 +795,347 @@ function ProductSelectionPanel({ onContinue }: { onContinue: (ids: number[]) => 
     }
   };
 
-  const slots = Array(5).fill(null).map((_, i) => {
-    const pid = selectedIds[i];
-    return pid ? CATALOG_PRODUCTS.find((p) => p.id === pid) ?? null : null;
+  // CAS / name autocomplete suggestion
+  useEffect(() => {
+    if (search.length < 2) { setSuggestion(null); return; }
+    const isCas = /^[\d-]/.test(search);
+    const match = CATALOG_PRODUCTS.find(p =>
+      isCas ? p.cas.startsWith(search) : p.name.toLowerCase().startsWith(search.toLowerCase())
+    );
+    setSuggestion(match || null);
+  }, [search]);
+
+  const filtered = CATALOG_PRODUCTS.filter(p => {
+    const q = search.toLowerCase();
+    const matchSearch = !search || p.name.toLowerCase().includes(q) || p.cas.includes(search) || p.chemicalName.toLowerCase().includes(q);
+    const matchIndustry = industryFilter === "All Industries" || p.industry === industryFilter;
+    return matchSearch && matchIndustry;
   });
 
+  const selectedProducts = selectedIds.map(id => CATALOG_PRODUCTS.find(p => p.id === id)!).filter(Boolean);
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       {/* Section label */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">STAR PRODUCT SELECTION</p>
-          <div className="flex-1 h-px bg-slate-100" />
-        </div>
-        <button
-          disabled={selectedIds.length === 0}
-          onClick={() => onContinue(selectedIds)}
-          className={cn(
-            "ml-3 flex items-center gap-2 px-4 py-2 rounded-lg text-[12.5px] font-bold transition-all",
-            selectedIds.length > 0
-              ? "text-white hover:brightness-110 active:scale-[0.98]"
-              : "text-slate-400 bg-slate-100 cursor-not-allowed"
-          )}
-          style={selectedIds.length > 0 ? { background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" } : undefined}
-        >
-          Continue <ArrowRight size={13} />
-        </button>
+      <div className="flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">STAR PRODUCT SELECTION</p>
+        <div className="flex-1 h-px bg-slate-100" />
       </div>
 
-      {/* Slot tracker */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-[14px] font-bold text-slate-900">Select Your Spotlight Five Products</p>
-            <p className="text-[12px] text-slate-400 mt-0.5">Choose up to 5 products that SCINODE should actively market</p>
-          </div>
-          <span
-            className="text-[13px] font-bold px-3 py-1.5 rounded-full"
-            style={{
-              background: selectedIds.length === 5 ? "#e3f5ec" : "#fef9c3",
-              color: selectedIds.length === 5 ? "#1a5c3a" : "#92400e",
-            }}
-          >
-            {selectedIds.length} / 5
-          </span>
-        </div>
+      {/* Full-width selector card: left catalog + right panel */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden flex" style={{ minHeight: 520 }}>
 
-        {/* Visual slots */}
-        <div className="flex gap-2 mb-2">
-          {slots.map((product, i) => (
-            <div
-              key={i}
-              className="flex-1 h-[54px] rounded-xl border-2 flex flex-col items-center justify-center transition-all"
-              style={{
-                borderStyle: product ? "solid" : "dashed",
-                borderColor: product ? "#1a5c3a" : "#e2e8f0",
-                background: product ? "#f0fdf4" : "#f8fafc",
-              }}
-            >
-              {product ? (
-                <>
-                  <Star size={11} style={{ color: "#1a5c3a" }} fill="#1a5c3a" />
-                  <p className="text-[9px] font-semibold text-[#1a5c3a] mt-0.5 px-1 text-center leading-tight truncate w-full text-center">
-                    {product.name.split(" ").slice(0, 2).join(" ")}
-                  </p>
-                </>
-              ) : (
-                <span className="text-[11px] text-slate-300 font-bold">{i + 1}</span>
+        {/* ── LEFT: Catalog ── */}
+        <div className="flex-1 flex flex-col border-r border-[#f3f4f6] min-w-0">
+
+          {/* Toolbar */}
+          <div className="px-4 py-3 border-b border-[#f3f4f6] flex flex-wrap items-center gap-2" style={{ background: "#f9fafb" }}>
+
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                ref={searchRef}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by product name or CAS number…"
+                className="w-full pl-8 pr-3 py-2 text-[12.5px] rounded-lg border border-[#e4e4e7] bg-white focus:outline-none focus:border-[#1a5c3a] focus:ring-2 focus:ring-[#1a5c3a]/10 placeholder:text-slate-400"
+              />
+              {/* CAS / name suggestion dropdown */}
+              {suggestion && (
+                <div
+                  className="absolute left-0 top-full mt-1 w-full bg-white rounded-xl border border-[#e4e4e7] shadow-lg z-20 p-3 cursor-pointer hover:bg-[#f0fdf4] transition-all"
+                  onClick={() => { toggle(suggestion.id); setSearch(""); setSuggestion(null); }}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <Star size={12} className="mt-0.5 shrink-0" style={{ color: "#ca8a04" }} fill="#ca8a04" />
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-slate-800">{suggestion.name}</p>
+                      <p className="text-[11px] text-slate-500 italic mt-0.5">{suggestion.chemicalName}</p>
+                      <p className="text-[10.5px] font-mono text-slate-400 mt-0.5">CAS {suggestion.cas} · {suggestion.industry}</p>
+                    </div>
+                    <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: "#fef9c3", color: "#92400e" }}>
+                      Click to select
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-        {selectedIds.length === 5 && (
-          <p className="text-[11.5px] font-semibold" style={{ color: "#1a5c3a" }}>
-            ✓ All 5 star products selected — ready to continue
-          </p>
-        )}
-      </div>
 
-      {/* Catalog table */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#f3f4f6]">
-          <p className="text-[13px] font-bold text-slate-800">Your Product Catalog</p>
-          <button className="flex items-center gap-1 text-[12px] font-semibold text-slate-500 hover:text-slate-800 transition-colors">
-            View Full Catalog <ChevronRight size={13} />
-          </button>
-        </div>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
-              {["", "Product", "Industry", "Readiness", "Action"].map((h) => (
-                <th key={h} className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 px-4 py-3 first:w-10">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {CATALOG_PRODUCTS.map((p) => {
-              const isSelected = selectedIds.includes(p.id);
-              const isDisabled = !isSelected && selectedIds.length >= 5;
-              return (
-                <tr
-                  key={p.id}
-                  className={cn("border-b border-[#f9fafb] transition-all", isSelected ? "bg-[#f0fdf4]" : "hover:bg-[#f9fafb]", isDisabled && "opacity-40")}
-                >
-                  <td className="px-4 py-3">
-                    <div
-                      onClick={() => !isDisabled && toggle(p.id)}
-                      className={cn(
-                        "w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all",
-                        isSelected ? "bg-[#1a5c3a] border-[#1a5c3a]" : "border-[#e2e8f0] bg-white",
-                        isDisabled && "cursor-not-allowed"
-                      )}
-                    >
-                      {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="text-[13px] font-semibold text-slate-800">{p.name}</p>
-                    <p className="text-[10.5px] font-mono text-slate-400 mt-0.5">CAS {p.cas}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-[11.5px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-medium">{p.industry}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${p.readiness}%`,
-                            background: p.readiness >= 85 ? "#1a5c3a" : p.readiness >= 70 ? "#ca8a04" : "#dc2626",
-                          }}
-                        />
-                      </div>
-                      <ReadinessBadge score={p.readiness} />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
+            {/* Industry filter */}
+            <div className="relative">
+              <button
+                onClick={() => setIndustryOpen(!industryOpen)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#e4e4e7] bg-white text-[12px] font-medium text-slate-600 hover:border-slate-300 transition-all whitespace-nowrap"
+              >
+                <Filter size={11} className="text-slate-400" />
+                {industryFilter === "All Industries" ? "Industry" : industryFilter}
+                <ChevronDown size={11} className="text-slate-400" />
+              </button>
+              {industryOpen && (
+                <div className="absolute left-0 top-full mt-1 w-[200px] bg-white rounded-xl border border-[#e4e4e7] shadow-lg z-20 py-1 overflow-hidden">
+                  {["All Industries", ...INDUSTRIES].map(ind => (
                     <button
-                      disabled={isDisabled}
-                      onClick={() => !isDisabled && toggle(p.id)}
+                      key={ind}
+                      onClick={() => { setIndustryFilter(ind); setIndustryOpen(false); }}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border transition-all",
-                        isSelected
-                          ? "border-red-200 text-red-600 bg-red-50 hover:bg-red-100"
-                          : isDisabled
-                          ? "border-[#e2e8f0] text-slate-300 cursor-not-allowed"
-                          : "border-[#1a5c3a] text-[#1a5c3a] hover:bg-[#f0fdf4]"
+                        "w-full text-left px-4 py-2 text-[12px] transition-all",
+                        industryFilter === ind ? "bg-[#f0fdf4] text-[#1a5c3a] font-semibold" : "text-slate-600 hover:bg-[#f9fafb]"
                       )}
                     >
-                      {isSelected ? <><Minus size={10} /> Remove</> : <><Star size={10} /> Select</>}
+                      {ind}
                     </button>
-                  </td>
-                </tr>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* View toggle */}
+            <div className="flex items-center rounded-lg border border-[#e4e4e7] overflow-hidden bg-white">
+              <button
+                onClick={() => setViewMode("table")}
+                className={cn("px-2.5 py-2 transition-all", viewMode === "table" ? "bg-[#1a5c3a] text-white" : "text-slate-400 hover:bg-slate-50")}
+              >
+                <List size={13} />
+              </button>
+              <div className="w-px h-5 bg-[#e4e4e7]" />
+              <button
+                onClick={() => setViewMode("card")}
+                className={cn("px-2.5 py-2 transition-all", viewMode === "card" ? "bg-[#1a5c3a] text-white" : "text-slate-400 hover:bg-slate-50")}
+              >
+                <LayoutGrid size={13} />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-400 ml-auto">{filtered.length} products</p>
+          </div>
+
+          {/* TABLE VIEW */}
+          {viewMode === "table" && (
+            <div className="overflow-y-auto flex-1">
+              <table className="w-full">
+                <thead className="sticky top-0 z-10">
+                  <tr className="border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+                    {["", "Product / CAS", "Industry", "Readiness", ""].map((h, i) => (
+                      <th key={i} className="text-left text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 px-3 py-2.5">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p) => {
+                    const isSelected = selectedIds.includes(p.id);
+                    const isDisabled = !isSelected && selectedIds.length >= 5;
+                    return (
+                      <tr
+                        key={p.id}
+                        className={cn(
+                          "border-b border-[#f9fafb] transition-all",
+                          isSelected ? "bg-[#fffbeb]" : "hover:bg-[#f9fafb]",
+                          isDisabled && "opacity-40"
+                        )}
+                      >
+                        {/* Star button */}
+                        <td className="px-3 py-2.5 w-10">
+                          <button
+                            disabled={isDisabled}
+                            onClick={() => !isDisabled && toggle(p.id)}
+                            className="transition-all"
+                            title={isSelected ? "Remove star" : "Add as star product"}
+                          >
+                            <Star
+                              size={16}
+                              style={{
+                                color: isSelected ? "#ca8a04" : "#d1d5db",
+                                fill: isSelected ? "#ca8a04" : "transparent",
+                                transition: "all 0.15s",
+                              }}
+                            />
+                          </button>
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <p className="text-[12.5px] font-semibold text-slate-800 leading-tight">{p.name}</p>
+                          <p className="text-[10px] font-mono text-slate-400 mt-0.5">CAS {p.cas}</p>
+                          {isSelected && (
+                            <p className="text-[10px] italic text-amber-700 mt-0.5 truncate max-w-[220px]">{p.chemicalName}</p>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <span className="text-[10.5px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-medium whitespace-nowrap">{p.industry}</span>
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-14 h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
+                              <div className="h-full rounded-full" style={{
+                                width: `${p.readiness}%`,
+                                background: p.readiness >= 85 ? "#1a5c3a" : p.readiness >= 70 ? "#ca8a04" : "#dc2626",
+                              }} />
+                            </div>
+                            <span className="text-[10.5px] font-semibold text-slate-500">{p.readiness}%</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <button
+                            disabled={isDisabled}
+                            onClick={() => !isDisabled && toggle(p.id)}
+                            className={cn(
+                              "text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all whitespace-nowrap",
+                              isSelected
+                                ? "border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100"
+                                : isDisabled
+                                ? "border-[#e2e8f0] text-slate-300 cursor-not-allowed"
+                                : "border-[#e2e8f0] text-slate-500 hover:border-amber-300 hover:text-amber-700 hover:bg-amber-50"
+                            )}
+                          >
+                            {isSelected ? "★ Selected" : "☆ Select"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-[12.5px] text-slate-400">
+                        No products match your search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* CARD VIEW */}
+          {viewMode === "card" && (
+            <div className="overflow-y-auto flex-1 p-4">
+              <div className="grid grid-cols-2 gap-3">
+                {filtered.map(p => {
+                  const isSelected = selectedIds.includes(p.id);
+                  const isDisabled = !isSelected && selectedIds.length >= 5;
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => !isDisabled && toggle(p.id)}
+                      className={cn(
+                        "rounded-xl border-2 p-3.5 cursor-pointer transition-all flex flex-col gap-2",
+                        isSelected
+                          ? "border-amber-300 bg-[#fffbeb]"
+                          : isDisabled
+                          ? "border-[#e4e4e7] opacity-40 cursor-not-allowed"
+                          : "border-[#e4e4e7] hover:border-amber-200 hover:bg-amber-50/30"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[12px] font-bold text-slate-800 leading-tight flex-1">{p.name}</p>
+                        <Star size={14} style={{ color: isSelected ? "#ca8a04" : "#d1d5db", fill: isSelected ? "#ca8a04" : "transparent", flexShrink: 0 }} />
+                      </div>
+                      {isSelected && <p className="text-[10px] italic text-amber-700 leading-snug">{p.chemicalName}</p>}
+                      <p className="text-[10px] font-mono text-slate-400">CAS {p.cas}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded truncate">{p.industry}</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-10 h-1 bg-[#f3f4f6] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${p.readiness}%`, background: p.readiness >= 85 ? "#1a5c3a" : "#ca8a04" }} />
+                          </div>
+                          <span className="text-[10px] text-slate-400">{p.readiness}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <div className="col-span-2 py-10 text-center text-[12.5px] text-slate-400">
+                    No products match your search.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── RIGHT: Selected products vertical panel ── */}
+        <div className="w-[240px] flex-shrink-0 flex flex-col border-l border-[#f3f4f6]">
+          {/* Header */}
+          <div className="px-4 py-3.5 border-b border-[#f3f4f6]" style={{ background: "#f9fafb" }}>
+            <div className="flex items-center justify-between mb-0.5">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400">YOUR SPOTLIGHT 5</p>
+              <span
+                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                style={{
+                  background: selectedIds.length === 5 ? "#e3f5ec" : "#fef9c3",
+                  color: selectedIds.length === 5 ? "#1a5c3a" : "#92400e",
+                }}
+              >
+                {selectedIds.length} / 5
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400">Click ★ to add a product</p>
+          </div>
+
+          {/* Selected product pills */}
+          <div className="flex-1 px-3 py-3 flex flex-col gap-2 overflow-y-auto">
+            {Array(5).fill(null).map((_, i) => {
+              const product = selectedProducts[i];
+              return product ? (
+                <div
+                  key={product.id}
+                  className="flex items-start gap-2 p-2.5 rounded-xl border-2 border-amber-200 bg-[#fffbeb] group"
+                >
+                  <Star size={12} style={{ color: "#ca8a04", fill: "#ca8a04" }} className="mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11.5px] font-semibold text-slate-800 leading-tight truncate">{product.name}</p>
+                    <p className="text-[9.5px] font-mono text-slate-400 mt-0.5">CAS {product.cas}</p>
+                    <p className="text-[9.5px] italic text-amber-700 mt-0.5 leading-snug line-clamp-2">{product.chemicalName}</p>
+                  </div>
+                  <button
+                    onClick={() => toggle(product.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 hover:bg-red-100"
+                  >
+                    <X size={9} className="text-red-400" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-dashed border-[#e2e8f0]"
+                  style={{ background: "#f8fafc" }}
+                >
+                  <span className="w-5 h-5 rounded-full border-2 border-[#e2e8f0] flex items-center justify-center text-[9px] font-bold text-slate-300 shrink-0">
+                    {i + 1}
+                  </span>
+                  <p className="text-[11px] text-slate-300">Empty slot</p>
+                </div>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+
+          {/* Progress + Continue */}
+          <div className="px-3 py-3 border-t border-[#f3f4f6]">
+            <div className="h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${(selectedIds.length / 5) * 100}%`,
+                  background: selectedIds.length === 5 ? "#1a5c3a" : "#ca8a04",
+                }}
+              />
+            </div>
+            <button
+              disabled={selectedIds.length === 0}
+              onClick={() => onContinue(selectedIds)}
+              className={cn(
+                "w-full py-2 rounded-xl text-[12.5px] font-bold flex items-center justify-center gap-2 transition-all",
+                selectedIds.length > 0
+                  ? "text-white hover:brightness-110 active:scale-[0.98]"
+                  : "text-slate-400 bg-slate-100 cursor-not-allowed"
+              )}
+              style={selectedIds.length > 0 ? { background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" } : undefined}
+            >
+              Continue <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1317,16 +1515,18 @@ export function DemandCatalyst() {
           <NoCatalogCard onGoToCatalog={() => setDemoState("state3")} />
         )}
 
+        {/* State 3 — full-width star product selector above the layout */}
+        {(demoState === "state1" || demoState === "state3") && (
+          <ProductSelectionPanel onContinue={() => setDemoState("state4")} />
+        )}
+
         {/* 70 / 30 layout */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
 
           {/* LEFT — 70% */}
           <div className="lg:col-span-7 flex flex-col">
-            {demoState === "state2" && (
+            {(demoState === "state1" || demoState === "state2" || demoState === "state3") && (
               <EmptyStatePanel onGetStarted={() => setDemoState("state2")} />
-            )}
-            {(demoState === "state1" || demoState === "state3") && (
-              <ProductSelectionPanel onContinue={() => setDemoState("state4")} />
             )}
             {demoState === "state4" && (
               <LaunchPanel onLaunch={() => setLaunched(true)} />
