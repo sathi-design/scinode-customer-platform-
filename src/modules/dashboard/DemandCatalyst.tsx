@@ -631,42 +631,6 @@ function EmptyStatePanel({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
       </div>
 
-      {/* Onboarding context cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[
-          {
-            icon: Star,
-            iconBg: "#fef9c3", iconColor: "#ca8a04",
-            title: "Select Star Products",
-            desc: "Choose up to 5 products you want SCINODE to actively promote to qualified buyers.",
-          },
-          {
-            icon: Megaphone,
-            iconBg: "#ede9fe", iconColor: "#7c3aed",
-            title: "SCINODE Runs Campaigns",
-            desc: "Our team handles campaign planning, execution, and lead qualification — entirely managed.",
-          },
-          {
-            icon: Target,
-            iconBg: "#f0fdf4", iconColor: "#1a5c3a",
-            title: "Receive Opportunities",
-            desc: "Qualified buyer opportunities are delivered directly to you with full context.",
-          },
-        ].map((c) => {
-          const Icon = c.icon;
-          return (
-            <div key={c.title} className="bg-white rounded-2xl border border-[#e4e4e7] p-4 flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: c.iconBg }}>
-                <Icon size={16} style={{ color: c.iconColor }} />
-              </div>
-              <div>
-                <p className="text-[13px] font-bold text-slate-800 mb-1">{c.title}</p>
-                <p className="text-[12px] text-slate-500 leading-relaxed">{c.desc}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
