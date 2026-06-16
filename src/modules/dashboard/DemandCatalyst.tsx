@@ -344,7 +344,7 @@ function DemandCatalystBanner({
             className="w-full py-2.5 rounded-xl text-[#0d2818] text-[13px] font-bold flex items-center justify-center gap-2 hover:brightness-105 transition-all active:scale-[0.98]"
             style={{ background: "#6ee7b7" }}
           >
-            See How Demand Catalyst Helps You Grow <ArrowRight size={13} />
+            How It Works <ArrowRight size={13} />
           </button>
         </div>
       </div>
