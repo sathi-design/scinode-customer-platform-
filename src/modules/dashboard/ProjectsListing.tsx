@@ -33,6 +33,10 @@ interface Project {
   title: string;
   description: string;
   matchType: MatchType;
+  country: string;
+  countryFlag: string;
+  postedDate: string;
+  quantity: string;
 }
 
 type DrawerFilters = {
@@ -65,6 +69,29 @@ const INITIAL_COUNT   = 16;
 const LOAD_MORE_COUNT = 8;
 const MATCHED_COUNT   = 47;
 
+const COUNTRY_DATA = [
+  { country: "Germany",       flag: "🇩🇪" },
+  { country: "Japan",         flag: "🇯🇵" },
+  { country: "United States", flag: "🇺🇸" },
+  { country: "France",        flag: "🇫🇷" },
+  { country: "United Kingdom",flag: "🇬🇧" },
+  { country: "India",         flag: "🇮🇳" },
+  { country: "UAE",           flag: "🇦🇪" },
+  { country: "South Korea",   flag: "🇰🇷" },
+  { country: "Singapore",     flag: "🇸🇬" },
+  { country: "Switzerland",   flag: "🇨🇭" },
+  { country: "Netherlands",   flag: "🇳🇱" },
+  { country: "Sweden",        flag: "🇸🇪" },
+  { country: "Australia",     flag: "🇦🇺" },
+  { country: "Canada",        flag: "🇨🇦" },
+  { country: "Brazil",        flag: "🇧🇷" },
+  { country: "Italy",         flag: "🇮🇹" },
+  { country: "Spain",         flag: "🇪🇸" },
+  { country: "Belgium",       flag: "🇧🇪" },
+  { country: "China",         flag: "🇨🇳" },
+  { country: "Taiwan",        flag: "🇹🇼" },
+];
+
 const OPEN_SEED: Project[] = ALL_PROJECTS.map((p, i) => ({
   id: i + 1,
   image: p.image,
@@ -73,6 +100,10 @@ const OPEN_SEED: Project[] = ALL_PROJECTS.map((p, i) => ({
   title: p.title,
   description: p.description,
   matchType: (i % 3 === 0 ? "Product Catalogue-Based" : "Capability-Based") as MatchType,
+  country: COUNTRY_DATA[i % COUNTRY_DATA.length].country,
+  countryFlag: COUNTRY_DATA[i % COUNTRY_DATA.length].flag,
+  postedDate: p.postedDate,
+  quantity: p.quantity,
 }));
 
 const EXCLUSIVE_PROJECTS: Project[] = ALL_PROJECTS.map((p, i) => ({
@@ -83,6 +114,10 @@ const EXCLUSIVE_PROJECTS: Project[] = ALL_PROJECTS.map((p, i) => ({
   title: p.title,
   description: p.description,
   matchType: (i % 2 === 0 ? "Capability-Based" : "Product Catalogue-Based") as MatchType,
+  country: COUNTRY_DATA[(i + 3) % COUNTRY_DATA.length].country,
+  countryFlag: COUNTRY_DATA[(i + 3) % COUNTRY_DATA.length].flag,
+  postedDate: p.postedDate,
+  quantity: p.quantity,
 }));
 
 function generateOpenProjects(count: number, offset = 0): Project[] {
@@ -495,99 +530,104 @@ function ProjectCard({
   planState: PlanState;
   proposalsUsed: number;
 }) {
-  const badge       = project.badge ? BADGE_CONFIG[project.badge] : null;
-  const footer      = getFooterMessage(isExclusive, planState, proposalsUsed);
-  const displayMT   = matchType ?? project.matchType;
+  const footer    = getFooterMessage(isExclusive, planState, proposalsUsed);
+  const displayMT = matchType ?? project.matchType;
+
+  // Quantity — truncate to ~30 chars
+  const qtyShort = project.quantity.length > 32
+    ? project.quantity.slice(0, 30) + "…"
+    : project.quantity;
 
   return (
     <div className="group relative cursor-pointer h-full" onClick={onClick}>
       {/* Animated gradient border on hover */}
-      <div
-        className="absolute -inset-[1.5px] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      <div className="absolute -inset-[1.5px] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
           background:     "linear-gradient(135deg, #1F6F54 0%, #2ACB83 40%, #1F6F54 70%, #2dd194 100%)",
           backgroundSize: "300% 300%",
           animation:      "gradientShift 3s ease infinite",
-        }}
-      />
+        }} />
 
       {/* Card body */}
       <div className={cn(
-        "relative bg-white rounded-[12px] p-[10px] flex flex-col gap-3 overflow-hidden h-full",
-        "shadow-[0px_4px_6px_0px_rgba(0,0,0,0.1),0px_2px_4px_0px_rgba(0,0,0,0.06)]",
-        "group-hover:shadow-[0px_16px_32px_rgba(31,111,84,0.18)] group-hover:pb-11",
+        "relative bg-white rounded-[12px] p-[10px] flex flex-col overflow-hidden h-full",
+        "shadow-[0px_4px_6px_0px_rgba(0,0,0,0.08),0px_2px_4px_0px_rgba(0,0,0,0.04)]",
+        "group-hover:shadow-[0px_16px_32px_rgba(31,111,84,0.15)] group-hover:pb-12",
         "transition-[box-shadow,padding] duration-300 ease-in-out",
       )}>
 
-        {/* Image */}
-        <div className="relative overflow-hidden rounded-[10px] h-[140px] bg-[#cfd8dc] flex-shrink-0">
-          <img
-            src={project.image} alt={project.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-[1.07]"
-          />
-          {/* Top scrim — ensures pills are always legible */}
-          <div className="absolute inset-x-0 top-0 h-14 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%)" }} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* ── Image ── */}
+        <div className="relative overflow-hidden rounded-[10px] h-[148px] bg-[#cfd8dc] flex-shrink-0 mb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={project.image} alt={project.title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-[1.07]" />
+          {/* Top scrim */}
+          <div className="absolute inset-x-0 top-0 h-16 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.50) 0%, transparent 100%)" }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Top-left pill group */}
-          <div className="absolute top-[8px] left-[9px] flex items-center gap-1.5">
-            {/* Exclusive pill — shown only on exclusive cards */}
-            {isExclusive && (
-              <div
-                className="flex items-center gap-[4px] px-2 py-[3px] rounded-full text-[9px] font-bold"
+          {/* Pill over image — Exclusive OR Capability/Catalogue (never both) */}
+          <div className="absolute top-[8px] left-[9px]">
+            {isExclusive ? (
+              /* Exclusive pill */
+              <div className="flex items-center gap-[4px] px-2 py-[3px] rounded-full text-[9px] font-bold"
                 style={{
-                  background: "linear-gradient(135deg, #111111 0%, #1a1400 100%)",
+                  background: "linear-gradient(135deg,#111111 0%,#1a1400 100%)",
                   color: "#f5c842",
                   border: "1px solid #c9a22766",
                   backdropFilter: "blur(4px)",
                   letterSpacing: "0.02em",
-                }}
-              >
-                <span style={{ fontSize: "9px", lineHeight: 1 }}>⭐</span>
+                }}>
+                <span style={{ fontSize: 9, lineHeight: 1 }}>⭐</span>
                 Exclusive
               </div>
-            )}
-            {/* Match type pill */}
-            {displayMT && (
-              <div className="px-2 py-[3px] rounded-full text-[9px] font-semibold"
+            ) : (
+              /* Capability / Catalogue pill */
+              <div className="px-2 py-[3px] rounded-full text-[9px] font-semibold text-white"
                 style={{
                   background: displayMT === "Capability-Based" ? "rgba(14,111,92,0.88)" : "rgba(99,55,199,0.88)",
-                  color: "#fff",
                   backdropFilter: "blur(4px)",
                 }}>
-                {displayMT === "Capability-Based" ? "Capability" : "Product Catalogue"}
+                {displayMT === "Capability-Based" ? "Capability" : "Catalogue"}
               </div>
             )}
           </div>
         </div>
 
-        {/* Industry pill */}
-        <div>
-          <span className="inline-flex items-center px-[10px] py-[2px] rounded-full bg-[#e3f4ff] text-[#171717] text-[13px] font-medium leading-[24px]">
+        {/* ── Industry pill ── */}
+        <div className="mb-2">
+          <span className="inline-flex items-center px-[9px] py-[2px] rounded-full bg-[#e3f4ff] text-[#171717] text-[11.5px] font-medium leading-[22px]">
             {project.industry}
           </span>
         </div>
 
-        {/* Title + description */}
-        <div className="flex flex-col gap-[4px] flex-1">
-          <h3 className="font-semibold text-[16px] leading-[24px] text-black line-clamp-2">
-            {project.title}
-          </h3>
-          {/* Exclusive context strip */}
-          {isExclusive && (
-            <p className="text-[10.5px] italic text-[#1F6F54]/70 leading-snug -mt-0.5">
-              Matched specifically for your manufacturing profile
-            </p>
-          )}
-          <p className="text-[13px] font-normal leading-[20px] text-[#353535] line-clamp-2">
-            {project.description}
-          </p>
+        {/* ── Project name ── */}
+        <h3 className="font-semibold text-[14.5px] leading-snug text-black line-clamp-2 mb-2">
+          {project.title}
+        </h3>
+
+        {/* ── Meta rows ── */}
+        <div className="flex flex-col gap-1.5 mt-auto">
+          {/* Country */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] leading-none">{project.countryFlag}</span>
+            <span className="text-[11.5px] text-[#353535] font-medium">{project.country}</span>
+          </div>
+          {/* Quantity */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-slate-400">📦</span>
+            <span className="text-[11.5px] text-[#353535]">{qtyShort}</span>
+          </div>
+          {/* Posted date */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-slate-400">🗓</span>
+            <span className="text-[11px] text-slate-400">Posted {project.postedDate}</span>
+          </div>
         </div>
 
         {/* Footer message */}
         {footer && (
-          <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 mt-auto">
+          <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 mt-3">
             <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: footer.color }} />
             <p className="text-[10.5px] font-medium leading-snug" style={{ color: footer.color }}>
               {footer.text}

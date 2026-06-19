@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import {
   Plus, Package, Trash2, Upload, FileSpreadsheet, CheckCircle2, X, Download,
   AlertCircle, FileText, Image as ImageIcon, Search, ChevronDown, ChevronUp,
   Clock, SlidersHorizontal, Check, Info, Sparkles, Loader2,
+  MoreVertical, Columns3, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Eye, Copy, Ban,
+  Star, Megaphone, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormField, inputCls, DropdownSelect, EmptyState, DrawerFooter } from "../SharedUI";
@@ -1010,7 +1014,7 @@ const EMPTY: Omit<Product, "id"> = {
   crackedChemistry: false, workedOnProduct: false,
 };
 
-function AddProductDrawer({ open, onClose, onSave }: {
+export function ProfileAddProductDrawer({ open, onClose, onSave }: {
   open: boolean; onClose: () => void; onSave: (p: Product) => void;
 }) {
   const [form, setForm] = useState<Omit<Product, "id">>(EMPTY);
@@ -1104,124 +1108,780 @@ function AddProductDrawer({ open, onClose, onSave }: {
   );
 }
 
-// ─── DetailRow ─────────────────────────────────────────────────────────────────
+// ─── Column definitions ────────────────────────────────────────────────────────
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between py-1.5 border-b border-[#F3F4F6] last:border-0 gap-2">
-      <span className="text-[11px] text-[#9CA3AF] flex-shrink-0">{label}</span>
-      <span className="text-[11px] font-semibold text-[#020202] text-right">{value}</span>
-    </div>
+type ColKey = "name" | "cas" | "industry" | "grade" | "purity" | "moq" | "status" | "source" | "chemistry" | "readiness" | "lastAction";
+
+interface ColDef { key: ColKey; label: string; width: number; }
+
+const ALL_COLS: ColDef[] = [
+  { key: "name",       label: "Product Name",          width: 160 },
+  { key: "cas",        label: "CAS Number",            width: 130 },
+  { key: "industry",   label: "Industry",              width: 160 },
+  { key: "grade",      label: "Grade",                 width: 120 },
+  { key: "purity",     label: "Purity",                width: 90  },
+  { key: "moq",        label: "MOQ",                   width: 110 },
+  { key: "status",     label: "Status / Availability", width: 190 },
+  { key: "source",     label: "Source",                width: 130 },
+  { key: "chemistry",  label: "Chemistry",             width: 140 },
+  { key: "readiness",  label: "Readiness",             width: 110 },
+  { key: "lastAction", label: "Last Action",           width: 140 },
+];
+
+// ─── Columns popover ───────────────────────────────────────────────────────────
+
+function ColumnsPopover({ visible, onChange, onClose, anchorRef }: {
+  visible: Set<ColKey>;
+  onChange: (k: ColKey, on: boolean) => void;
+  onClose: () => void;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+
+  useEffect(() => {
+    if (anchorRef.current) {
+      const r = anchorRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 6, right: window.innerWidth - r.right });
+    }
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node) &&
+          anchorRef.current && !anchorRef.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose, anchorRef]);
+
+  if (!pos || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div ref={ref}
+      style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999, minWidth: 220 }}
+      className="bg-white rounded-xl border border-[#E4E4E7] shadow-2xl overflow-hidden">
+      <div className="px-3 py-2.5 border-b border-[#F3F4F6] flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500">Toggle Columns</p>
+        <button onClick={() => {
+          ALL_COLS.forEach(c => onChange(c.key, true));
+        }} className="text-[10.5px] text-[#018e7e] font-semibold hover:underline">Select all</button>
+      </div>
+      <div className="py-1 max-h-[280px] overflow-y-auto">
+        {ALL_COLS.map(col => {
+          const on = visible.has(col.key);
+          return (
+            <label key={col.key}
+              className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-slate-50 transition-colors">
+              <div
+                onClick={() => onChange(col.key, !on)}
+                className={cn(
+                  "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+                  on ? "bg-[#018e7e] border-[#018e7e]" : "bg-white border-slate-300"
+                )}>
+                {on && <Check size={9} className="text-white" strokeWidth={3} />}
+              </div>
+              <span className="text-[12.5px] text-slate-700">{col.label}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>,
+    document.body
   );
 }
 
-// ─── ProductCard (enhanced) ────────────────────────────────────────────────────
+// ─── Row 3-dot menu ────────────────────────────────────────────────────────────
 
-function ProductCard({
-  p, onDelete, source, needsUpdate,
-}: {
-  p: Product;
-  onDelete: () => void;
-  source?: "manual" | "catalogue";
-  needsUpdate?: boolean;
+function RowMenu({ onEdit, onDelete, onDuplicate, onDeactivate, onClose, anchorRef }: {
+  onEdit: () => void; onDelete: () => void;
+  onDuplicate: () => void; onDeactivate: () => void; onClose: () => void;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const isInInventory = p.inventoryStatus === "In inventory";
-  const complete = isProductComplete(p);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
 
+  useEffect(() => {
+    if (anchorRef.current) {
+      const r = anchorRef.current.getBoundingClientRect();
+      // Position to the left of the anchor button, aligned to its top
+      setPos({ top: r.top, right: window.innerWidth - r.left + 4 });
+    }
+    const handler = (e: MouseEvent) => {
+      if (
+        ref.current && !ref.current.contains(e.target as Node) &&
+        anchorRef.current && !anchorRef.current.contains(e.target as Node)
+      ) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose, anchorRef]);
+
+  if (!pos || typeof document === "undefined") return null;
+
+  const items = [
+    { icon: Pencil, label: "Edit",       action: onEdit,       cls: "text-slate-700" },
+    { icon: Copy,   label: "Duplicate",  action: onDuplicate,  cls: "text-slate-700" },
+    { icon: Ban,    label: "Deactivate", action: onDeactivate, cls: "text-amber-600" },
+    { icon: Trash2, label: "Delete",     action: onDelete,     cls: "text-red-500"   },
+  ];
+
+  return createPortal(
+    <div ref={ref}
+      style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 99999, minWidth: 168 }}
+      className="bg-white rounded-xl border border-[#E4E4E7] shadow-2xl overflow-hidden py-1">
+      {items.map(({ icon: Icon, label, action, cls }) => (
+        <button key={label} onClick={() => { action(); onClose(); }}
+          className={cn("w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12.5px] font-medium hover:bg-slate-50 transition-colors text-left", cls)}>
+          <Icon size={13} /> {label}
+        </button>
+      ))}
+    </div>,
+    document.body
+  );
+}
+
+// ─── Demand Catalyst Banner ────────────────────────────────────────────────────
+
+function DemandCatalystBanner({ onSelect }: { onSelect: () => void }) {
   return (
-    <div className="bg-white rounded-xl border border-[#E4E4E7] flex flex-col hover:border-[#B3B7BD] transition-colors">
-      {/* Header */}
-      <div className="p-3 flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-bold text-[#020202] leading-snug truncate">{p.name}</p>
-          {p.industry && <p className="text-[11px] font-medium text-[#018e7e] mt-0.5 truncate">{p.industry}</p>}
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            <span className={cn(
-              "text-[10px] font-bold px-2 py-0.5 rounded-full",
-              isInInventory ? "bg-[#B2F3B7] text-[#0F7614]" : "bg-[#F3F4F6] text-[#4B5563]"
-            )}>
-              {isInInventory ? "IN INVENTORY" : "Made to Order"}
+    <div className="rounded-xl overflow-hidden" style={{ background: "#1F6F54" }}>
+      <div className="flex items-center justify-between px-4 py-2.5 gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border border-white/15 bg-white/10">
+            <Megaphone size={13} className="text-[#2ACB83]" />
+          </div>
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <span className="text-[12.5px] font-bold text-white whitespace-nowrap">Demand Catalyst</span>
+            <span className="text-white/35 hidden sm:inline">·</span>
+            <span className="text-[12px] text-white/70 hidden sm:inline leading-tight">
+              Grow your business — get qualified leads on your star products delivered by SCINODE&apos;s team.
             </span>
-            {needsUpdate && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FEF0EB] text-[#FD4923]">
-                ⚠ Action Required
-              </span>
-            )}
-            {!needsUpdate && !complete && source === "catalogue" && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FBF0C5] text-[#9C5022]">
-                Incomplete
-              </span>
-            )}
           </div>
         </div>
-        <button onClick={onDelete}
-          className="p-1.5 rounded-lg hover:bg-[#FFEFEF] text-[#D1D5DB] hover:text-[#C30E1A] transition-colors flex-shrink-0">
-          <Trash2 className="w-3.5 h-3.5" />
+        <button onClick={onSelect}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-[#1F6F54] text-[11.5px] font-bold flex-shrink-0 hover:bg-white/90 transition-all whitespace-nowrap">
+          <Star size={11} fill="currentColor" />
+          Select Star Products
         </button>
-      </div>
-
-      {/* Details */}
-      <div className="px-3 pb-2 border-t border-[#F3F4F6] pt-2 flex flex-col flex-1">
-        {p.casNo && <DetailRow label="CAS" value={p.casNo} />}
-        {p.purity && <DetailRow label="Purity" value={`${p.purity}%`} />}
-        {p.moq && <DetailRow label="MOQ" value={`${p.moq} ${p.moqUnit}`} />}
-        {p.grade && <DetailRow label="Grade" value={p.grade} />}
-        {isInInventory && p.availableQty && (
-          <DetailRow label="Available" value={`${p.availableQty} ${p.availableUnit}`} />
-        )}
-      </div>
-
-      {/* Footer badges */}
-      <div className="px-3 pb-3 flex flex-wrap gap-1 mt-auto">
-        {source === "catalogue" && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E6F3FB] text-[#0077CC] flex items-center gap-1">
-            <Sparkles size={8} /> Generated from Catalogue
-          </span>
-        )}
-        {source === "manual" && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#4B5563]">
-            Added Manually
-          </span>
-        )}
-        {p.crackedChemistry && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#6D28D9]">
-            ⚡ Chemistry Cracked
-          </span>
-        )}
-        {p.workedOnProduct && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E]">
-            ✓ Past Experience
-          </span>
-        )}
       </div>
     </div>
   );
 }
 
-// ─── Collapsible Card Grid ─────────────────────────────────────────────────────
+// ─── DC Scene Switcher (demo control) ─────────────────────────────────────────
 
-function CollapsibleCardGrid<T extends { id: string }>({
-  items, renderItem, emptyText,
-}: {
-  items: T[];
-  renderItem: (item: T) => React.ReactNode;
-  emptyText: string;
-}) {
-  const [showAll, setShowAll] = useState(false);
-  const LIMIT = 4;
-  const visible = showAll ? items : items.slice(0, LIMIT);
-  if (items.length === 0) return <p className="text-xs text-[#9CA3AF] py-4 text-center">{emptyText}</p>;
+type DcScene = "banner" | "sel-0" | "sel-1-only" | "sel-3" | "sel-5" | "confirm";
+
+const DC_SCENES: { key: DcScene; label: string }[] = [
+  { key: "banner",    label: "Banner" },
+  { key: "sel-0",     label: "Selecting 0/5" },
+  { key: "sel-1-only", label: "1 product only" },
+  { key: "sel-3",     label: "3/5 selected" },
+  { key: "sel-5",     label: "5/5 ready" },
+  { key: "confirm",   label: "Confirm popup" },
+];
+
+function DcSceneSwitcher({ scene, onChange }: { scene: DcScene; onChange: (s: DcScene) => void }) {
   return (
-    <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {visible.map((item) => renderItem(item))}
-      </div>
-      {items.length > LIMIT && (
-        <button type="button" onClick={() => setShowAll((s) => !s)}
-          className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#018e7e] hover:text-[#015f54] transition-colors">
-          {showAll ? <><ChevronUp size={13} /> Show less</> : <><ChevronDown size={13} /> Show all {items.length}</>}
+    <div className="flex items-center gap-1.5 flex-wrap px-1">
+      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF] whitespace-nowrap">DC Demo:</span>
+      {DC_SCENES.map(s => (
+        <button key={s.key} onClick={() => onChange(s.key)}
+          className={cn(
+            "px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors whitespace-nowrap",
+            scene === s.key
+              ? "bg-[#020202] text-white"
+              : "bg-[#F3F4F6] text-[#4B5563] hover:bg-[#E5E7EB]"
+          )}>
+          {s.label}
         </button>
-      )}
+      ))}
+    </div>
+  );
+}
+
+// ─── Star Tracker (replaces banner in selection mode) ─────────────────────────
+
+function StarTracker({
+  count, totalProducts, onCancel, onConfirm, onSelectAll,
+}: {
+  count: number; totalProducts: number;
+  onCancel: () => void; onConfirm: () => void; onSelectAll: () => void;
+}) {
+  const MAX = 5;
+  const remaining = MAX - count;
+  const isMax = count >= MAX;
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: "#1F6F54" }}>
+      <div className="px-4 py-2.5 flex items-center gap-3 flex-wrap">
+        {/* Slot dots */}
+        <div className="flex items-center gap-1">
+          {Array.from({ length: MAX }).map((_, i) => (
+            <div key={i} className={cn(
+              "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200",
+              i < count ? "bg-[#2ACB83]" : "bg-white/15 border border-white/25"
+            )}>
+              {i < count && <Star size={9} fill="white" className="text-white" />}
+            </div>
+          ))}
+        </div>
+        {/* Status text */}
+        <div className="flex-1 min-w-0">
+          <span className="text-[13px] font-bold text-white">{count} / {MAX} </span>
+          <span className="text-[12px] text-white/70">
+            {isMax
+              ? "Maximum reached — ready to activate"
+              : count === 0
+                ? "star products — tap ☆ on a product to nominate it"
+                : `selected · ${remaining} slot${remaining !== 1 ? "s" : ""} remaining`}
+          </span>
+        </div>
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+          {!isMax && totalProducts > 0 && (
+            <button onClick={onSelectAll}
+              className="text-[11px] font-medium text-white/60 hover:text-white/90 underline underline-offset-2 transition-colors whitespace-nowrap">
+              Select all ({Math.min(totalProducts, MAX)})
+            </button>
+          )}
+          <button onClick={onCancel}
+            className="px-2.5 py-1.5 rounded-lg border border-white/25 text-[11.5px] font-medium text-white/80 hover:bg-white/10 transition-colors">
+            Cancel
+          </button>
+          <button onClick={onConfirm} disabled={count === 0}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all",
+              count > 0
+                ? "bg-white text-[#1F6F54] hover:bg-white/90"
+                : "bg-white/15 text-white/35 cursor-not-allowed"
+            )}>
+            {isMax ? "Review & Activate" : count > 0 ? `Confirm ${count} Star${count !== 1 ? "s" : ""}` : "Select First"}
+            {count > 0 && <ChevronRight size={12} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Low Catalogue Nudge ──────────────────────────────────────────────────────
+
+function LowCatalogueNudge({
+  totalProducts, selectedCount, onAddProducts, onContinue,
+}: {
+  totalProducts: number; selectedCount: number;
+  onAddProducts: () => void; onContinue: () => void;
+}) {
+  const MAX = 5;
+  const emptySlots = MAX - Math.min(totalProducts, MAX);
+  const remainingSlots = MAX - selectedCount;
+
+  return (
+    <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl border border-[#0077CC]/25" style={{ background: "#EFF6FF" }}>
+      <Info size={15} className="text-[#0077CC] shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold text-[#0077CC]">
+          {totalProducts === 1
+            ? "Your catalogue has 1 product"
+            : `Your catalogue has ${totalProducts} product${totalProducts !== 1 ? "s" : ""} — ${emptySlots} slot${emptySlots !== 1 ? "s" : ""} will be empty`}
+        </p>
+        <p className="text-[12px] text-[#374151] mt-0.5 leading-relaxed">
+          {totalProducts === 1
+            ? `Select it as your star product now — you can fill the remaining ${remainingSlots} slot${remainingSlots !== 1 ? "s" : ""} after adding more products to your catalogue.`
+            : `Add more products to your catalogue to fill all ${MAX} Demand Catalyst slots. You can always update your star selection later.`}
+        </p>
+        <div className="flex items-center gap-3 mt-2.5">
+          <button onClick={onAddProducts}
+            className="flex items-center gap-1 text-[12px] font-semibold text-[#0077CC] hover:underline transition-colors">
+            <Plus size={12} /> Add more products
+          </button>
+          {selectedCount > 0 && (
+            <>
+              <span className="text-[#CBD5E1]">|</span>
+              <button onClick={onContinue}
+                className="text-[12px] font-medium text-[#4B5563] hover:text-[#020202] transition-colors">
+                Continue with {selectedCount} star{selectedCount !== 1 ? "s" : ""} →
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DC Confirm Popup ─────────────────────────────────────────────────────────
+
+function DcConfirmPopup({
+  starIds, allProducts, onBack, onActivate,
+}: {
+  starIds: Set<string>;
+  allProducts: (Product | CatalogueProduct)[];
+  onBack: () => void;
+  onActivate: () => void;
+}) {
+  const MAX = 5;
+  const selectedProducts = allProducts.filter(p => starIds.has(p.id));
+  const count = selectedProducts.length;
+  const remaining = MAX - count;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200"
+        onClick={onBack}
+      />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div
+          className="w-full max-w-[680px] rounded-2xl overflow-hidden shadow-2xl pointer-events-auto animate-in fade-in-0 zoom-in-95 duration-200"
+          style={{ background: "linear-gradient(160deg, #f0fdf9 0%, #e4f5ed 100%)" }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-start gap-3 px-6 py-5 border-b border-[#2ACB83]/20">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, #1F6F54, #2ACB83)" }}>
+              <Star size={19} fill="white" className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[16px] font-bold text-[#020202]">
+                {count} Star Product{count !== 1 ? "s" : ""} Selected
+              </p>
+              <p className="text-[12.5px] text-[#6B7280] mt-0.5">
+                {remaining === 0
+                  ? "All 5 slots filled — your Demand Catalyst campaign is ready to launch."
+                  : `${remaining} slot${remaining !== 1 ? "s" : ""} remaining — you can add more star products after activating.`}
+              </p>
+            </div>
+            <button onClick={onBack}
+              className="p-1.5 text-[#9CA3AF] hover:text-[#374151] hover:bg-black/5 rounded-lg transition-colors flex-shrink-0">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Product rows */}
+          <div className="px-6 py-4 flex flex-col gap-2">
+            <div className="grid grid-cols-[24px_1fr_140px_140px] gap-x-4 px-3 pb-1.5 border-b border-[#D1FAE5]">
+              <span />
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">Product Name</span>
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">CAS Number</span>
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#9CA3AF]">Industry</span>
+            </div>
+
+            {/* Filled rows */}
+            {selectedProducts.map((p, i) => (
+              <div key={p.id}
+                className="grid grid-cols-[24px_1fr_140px_140px] gap-x-4 items-center px-3 py-2.5 rounded-xl bg-white border border-[#2ACB83]/25 shadow-sm">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #1F6F54, #2ACB83)" }}>
+                  <Star size={11} fill="white" className="text-white" />
+                </div>
+                <p className="text-[13px] font-semibold text-[#020202] truncate">{p.name}</p>
+                <p className="text-[12px] text-[#6B7280] font-mono truncate">{p.casNo || "—"}</p>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E8FBF2] text-[#018e7e] truncate w-fit">
+                  {p.industry || "—"}
+                </span>
+              </div>
+            ))}
+
+            {/* Empty slot rows */}
+            {Array.from({ length: remaining }).map((_, i) => (
+              <div key={`empty-${i}`}
+                className="grid grid-cols-[24px_1fr_140px_140px] gap-x-4 items-center px-3 py-2.5 rounded-xl border border-dashed border-[#CBD5E1] bg-white/50">
+                <div className="w-6 h-6 rounded-full border-2 border-dashed border-[#CBD5E1] flex items-center justify-center flex-shrink-0">
+                  <Star size={10} className="text-[#CBD5E1]" />
+                </div>
+                <p className="text-[12.5px] text-[#9CA3AF] italic">Empty slot {selectedProducts.length + i + 1}</p>
+                <p className="text-[12px] text-[#CBD5E1]">—</p>
+                <p className="text-[12px] text-[#CBD5E1]">—</p>
+              </div>
+            ))}
+
+            {remaining > 0 && (
+              <p className="text-[12px] text-[#6B7280] leading-relaxed bg-white/70 rounded-lg px-3 py-2.5 border border-[#E5E7EB] mt-1">
+                💡 You can fill the remaining {remaining} slot{remaining !== 1 ? "s" : ""} by adding more products and updating your star selection from Demand Catalyst.
+              </p>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-[#2ACB83]/20 flex items-center justify-between gap-3">
+            <button onClick={onBack}
+              className="text-[13px] font-medium text-[#6B7280] hover:text-[#020202] transition-colors">
+              ← Back to selection
+            </button>
+            <button onClick={onActivate}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-white text-[13px] font-bold hover:brightness-110 transition-all shadow-lg"
+              style={{ background: "linear-gradient(135deg, #1F6F54, #2ACB83)" }}>
+              <Megaphone size={14} />
+              Activate Demand Catalyst
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Product Table ─────────────────────────────────────────────────────────────
+
+const MIN_ROWS = 5;
+
+export function ProductTable({
+  products, onDelete, onAddClick, starMode, starIds, onStarToggle,
+}: {
+  products: (Product | CatalogueProduct)[];
+  onDelete: (id: string) => void;
+  onAddClick: () => void;
+  starMode?: boolean;
+  starIds?: Set<string>;
+  onStarToggle?: (id: string) => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Number of empty placeholder rows: at least 1, or enough to reach MIN_ROWS
+  const emptyCount = Math.max(1, MIN_ROWS - products.length);
+  // All columns visible by default — table scrolls horizontally
+  const [visibleCols, setVisibleCols] = useState<Set<ColKey>>(new Set(ALL_COLS.map(c => c.key)));
+  const [showColPopover, setShowColPopover] = useState(false);
+  const colBtnRef = useRef<HTMLButtonElement>(null);
+  const [sortCol, setSortCol] = useState<ColKey | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const toggleCol = (k: ColKey, on: boolean) =>
+    setVisibleCols(prev => { const s = new Set(prev); on ? s.add(k) : s.delete(k); return s; });
+
+  const toggleAll = () => {
+    if (selectedIds.size === products.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(products.map(p => p.id)));
+  };
+
+  const toggleRow = (id: string) =>
+    setSelectedIds(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+
+  const handleSort = (k: ColKey) => {
+    if (sortCol === k) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortCol(k); setSortDir("asc"); }
+  };
+
+  const getCell = (p: Product | CatalogueProduct, k: ColKey): string => {
+    switch (k) {
+      case "name":       return p.name;
+      case "cas":        return p.casNo;
+      case "industry":   return p.industry;
+      case "grade":      return p.grade;
+      case "purity":     return p.purity ? `${p.purity}%` : "";
+      case "moq":        return p.moq ? `${p.moq} ${p.moqUnit}` : "";
+      case "status":     return p.inventoryStatus;
+      case "readiness":  return isProductComplete(p) ? "Complete" : "Incomplete";
+      case "source":     return "source" in p && (p as CatalogueProduct).source === "catalogue" ? "Catalogue" : "Manual";
+      case "chemistry":  return p.crackedChemistry ? "⚡ Cracked" : p.workedOnProduct ? "✓ Experience" : "";
+      case "lastAction": return "Added manually";
+      default:           return "";
+    }
+  };
+
+  const shownCols = ALL_COLS.filter(c => visibleCols.has(c.key));
+
+  const sorted = [...products].sort((a, b) => {
+    if (!sortCol) return 0;
+    const va = getCell(a, sortCol).toLowerCase();
+    const vb = getCell(b, sortCol).toLowerCase();
+    return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+
+  const SortIcon = ({ col }: { col: ColKey }) => {
+    if (sortCol !== col) return <ArrowUpDown size={10} className="opacity-30 group-hover:opacity-60" />;
+    return sortDir === "asc" ? <ArrowUp size={10} className="text-[#018e7e]" /> : <ArrowDown size={10} className="text-[#018e7e]" />;
+  };
+
+  return (
+    <div className="flex flex-col">
+      {/* Toolbar: selection info + Columns button */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#F3F4F6] bg-[#FAFAFA]">
+        <div className="flex items-center gap-2">
+          {starMode ? (
+            <div className="flex items-center gap-1.5">
+              <Star size={12} fill="#F59E0B" className="text-[#F59E0B]" />
+              <span className="text-[12px] font-semibold text-[#92400E]">
+                {(starIds?.size ?? 0)} / 5 star products nominated
+              </span>
+            </div>
+          ) : selectedIds.size > 0 ? (
+            <>
+              <span className="text-[12px] font-semibold text-[#018e7e]">{selectedIds.size} selected</span>
+              <button onClick={() => { selectedIds.forEach(id => onDelete(id)); setSelectedIds(new Set()); }}
+                className="flex items-center gap-1 text-[11.5px] text-red-500 hover:text-red-700 font-medium transition-colors">
+                <Trash2 size={11} /> Delete
+              </button>
+            </>
+          ) : (
+            <p className="text-[12px] text-slate-400">{products.length} product{products.length !== 1 ? "s" : ""}</p>
+          )}
+        </div>
+        <div className="relative">
+          <button
+            ref={colBtnRef}
+            onClick={() => setShowColPopover(v => !v)}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium border transition-colors",
+              showColPopover ? "bg-[#E8FBF2] border-[#2ACB83]/40 text-[#018e7e]" : "border-[#E4E4E7] text-slate-600 hover:bg-slate-50"
+            )}>
+            <Columns3 size={13} /> Columns
+          </button>
+          {showColPopover && (
+            <ColumnsPopover
+              visible={visibleCols}
+              onChange={toggleCol}
+              onClose={() => setShowColPopover(false)}
+              anchorRef={colBtnRef}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse" style={{ minWidth: Math.min(shownCols.reduce((a, c) => a + c.width, 0) + 88, 9999) }}>
+          <thead>
+            <tr className="bg-[#F9FAFB] border-b border-[#E4E4E7]">
+              {/* Sticky left: master checkbox OR star mode header */}
+              <th className="sticky left-0 z-20 bg-[#F9FAFB] w-10 px-3 py-2.5 border-r border-[#E4E4E7]">
+                {starMode ? (
+                  <Star size={13} fill="#F59E0B" className="text-[#F59E0B]" />
+                ) : (
+                  <div
+                    onClick={toggleAll}
+                    className={cn(
+                      "w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-colors",
+                      selectedIds.size === products.length && products.length > 0
+                        ? "bg-[#018e7e] border-[#018e7e]"
+                        : "bg-white border-slate-300 hover:border-[#018e7e]"
+                    )}>
+                    {selectedIds.size === products.length && products.length > 0 && (
+                      <Check size={9} className="text-white" strokeWidth={3} />
+                    )}
+                  </div>
+                )}
+              </th>
+
+              {/* Columns — name is sticky left-10, rest scroll */}
+              {shownCols.map(col => (
+                <th key={col.key}
+                  style={{ width: col.width, minWidth: col.width, ...(col.key === "name" ? { left: 40 } : {}) }}
+                  className={cn(
+                    "px-3 py-2.5 border-r border-[#F3F4F6]",
+                    col.key === "name"
+                      ? "sticky z-20 bg-[#F9FAFB] shadow-[3px_0_6px_-1px_rgba(0,0,0,0.1)] border-r border-[#E4E4E7]"
+                      : "last:border-r-0"
+                  )}>
+                  <button
+                    onClick={() => handleSort(col.key)}
+                    className="group flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap w-full">
+                    {col.label}
+                    <SortIcon col={col.key} />
+                  </button>
+                </th>
+              ))}
+
+              {/* Sticky right: 3-dot header */}
+              <th className="sticky right-0 z-20 bg-[#F9FAFB] w-9 p-0 shadow-[-3px_0_6px_-2px_rgba(0,0,0,0.08)] border-l border-[#E4E4E7]" />
+            </tr>
+          </thead>
+
+          <tbody>
+            {sorted.map((p, idx) => {
+              const isSel    = selectedIds.has(p.id);
+              const isStarred = starMode && (starIds?.has(p.id) ?? false);
+              const catP     = p as CatalogueProduct;
+              const isInInv  = p.inventoryStatus === "In inventory";
+              const rowBgBase = isStarred ? "bg-[#FFFBEB]" : isSel ? "bg-[#F0FDF9]" : idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]";
+
+              return (
+                <tr key={p.id}
+                  className={cn(
+                    "border-b border-[#F3F4F6] last:border-0 transition-colors group/row",
+                    rowBgBase,
+                    starMode ? "hover:bg-[#FFFBEB]" : "hover:bg-[#F0FDF9]"
+                  )}>
+
+                  {/* Sticky left: star toggle OR row checkbox */}
+                  <td className={cn("sticky left-0 z-10 w-10 px-3 py-2 border-r border-[#F3F4F6]",
+                    rowBgBase,
+                    starMode ? "group-hover/row:bg-[#FFFBEB]" : "group-hover/row:bg-[#F0FDF9]"
+                  )}>
+                    {starMode ? (
+                      <button
+                        onClick={() => onStarToggle?.(p.id)}
+                        disabled={(starIds?.size ?? 0) >= 5 && !isStarred}
+                        className="transition-transform hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={isStarred ? "Remove star" : (starIds?.size ?? 0) >= 5 ? "Maximum 5 stars reached" : "Nominate as star product"}
+                      >
+                        <Star
+                          size={16}
+                          fill={isStarred ? "#F59E0B" : "none"}
+                          className={isStarred ? "text-[#F59E0B]" : "text-slate-300 hover:text-[#F59E0B]"}
+                        />
+                      </button>
+                    ) : (
+                      <div
+                        onClick={() => toggleRow(p.id)}
+                        className={cn(
+                          "w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-colors",
+                          isSel ? "bg-[#018e7e] border-[#018e7e]" : "bg-white border-slate-300 hover:border-[#018e7e]"
+                        )}>
+                        {isSel && <Check size={9} className="text-white" strokeWidth={3} />}
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Cells — name sticky, rest scroll */}
+                  {shownCols.map(col => {
+                    const val = getCell(p, col.key);
+                    const hoverBg = starMode ? "group-hover/row:bg-[#FFFBEB]" : "group-hover/row:bg-[#F0FDF9]";
+                    return (
+                      <td key={col.key}
+                        style={{ width: col.width, minWidth: col.width, ...(col.key === "name" ? { left: 40 } : {}) }}
+                        className={cn(
+                          "px-3 py-2 border-r border-[#F3F4F6] align-middle",
+                          col.key === "name"
+                            ? cn("sticky z-10 shadow-[3px_0_6px_-1px_rgba(0,0,0,0.09)] border-r border-[#E4E4E7]", rowBgBase, hoverBg)
+                            : "last:border-r-0"
+                        )}>
+                        {col.key === "name" ? (
+                          <div className="w-full">
+                            <p className="text-[12.5px] font-semibold text-slate-900 leading-snug truncate w-full">{p.name}</p>
+                            {catP.needsUpdate && (
+                              <span className="text-[9.5px] font-bold text-[#FD4923] bg-[#FEF0EB] px-1.5 py-0.5 rounded-full inline-block mt-0.5">⚠ Action needed</span>
+                            )}
+                          </div>
+                        ) : col.key === "status" ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className={cn(
+                              "text-[10.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap w-fit",
+                              isInInv ? "bg-[#B2F3B7] text-[#0F7614]" : "bg-[#F3F4F6] text-[#4B5563]"
+                            )}>
+                              {isInInv ? "In Inventory" : "Made to Order"}
+                            </span>
+                            {isInInv && (p.availableQty || p.availableLocation) && (
+                              <p className="text-[10.5px] text-slate-500 leading-tight">
+                                {p.availableQty ? `${p.availableQty} ${p.availableUnit}` : ""}
+                                {p.availableQty && p.availableLocation ? " · " : ""}
+                                {p.availableLocation || ""}
+                              </p>
+                            )}
+                          </div>
+                        ) : col.key === "source" ? (
+                          <span className={cn(
+                            "text-[10.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap",
+                            "source" in p && (p as CatalogueProduct).source === "catalogue" ? "bg-[#E6F3FB] text-[#0077CC]" : "bg-[#F3F4F6] text-[#4B5563]"
+                          )}>
+                            {"source" in p && (p as CatalogueProduct).source === "catalogue" ? "Catalogue" : "Manual"}
+                          </span>
+                        ) : col.key === "chemistry" ? (
+                          val ? (
+                            <span className={cn(
+                              "text-[10.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap",
+                              p.crackedChemistry ? "bg-[#EDE9FE] text-[#6D28D9]" : "bg-[#FEF3C7] text-[#92400E]"
+                            )}>
+                              {val}
+                            </span>
+                          ) : <span className="text-slate-300 text-[11px]">—</span>
+                        ) : col.key === "readiness" ? (
+                          <span className={cn(
+                            "text-[10.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap",
+                            isProductComplete(p) ? "bg-[#E8FBF2] text-[#018e7e]" : "bg-[#FEF0EB] text-[#C30E1A]"
+                          )}>
+                            {isProductComplete(p) ? "✓ Complete" : "Incomplete"}
+                          </span>
+                        ) : col.key === "lastAction" ? (
+                          <span className="text-[11px] text-slate-400 whitespace-nowrap">{val || "Added manually"}</span>
+                        ) : val ? (
+                          <span className="text-[12px] text-slate-700 whitespace-nowrap">{val}</span>
+                        ) : (
+                          <span className="text-slate-300 text-[11px]">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
+
+                  {/* Sticky right: 3-dot menu — flush to edge, no padding */}
+                  <td className={cn(
+                    "sticky right-0 z-10 w-9 p-0 relative border-l border-[#E4E4E7]",
+                    "shadow-[-3px_0_6px_-2px_rgba(0,0,0,0.08)]",
+                    rowBgBase,
+                    starMode ? "group-hover/row:bg-[#FFFBEB]" : "group-hover/row:bg-[#F0FDF9]"
+                  )}>
+                    <button
+                      ref={el => { menuBtnRefs.current[p.id] = el; }}
+                      onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
+                      className="w-9 h-full min-h-[40px] flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                      <MoreVertical size={14} />
+                    </button>
+                    {openMenuId === p.id && (
+                      <RowMenu
+                        anchorRef={{ current: menuBtnRefs.current[p.id] }}
+                        onEdit={() => {}}
+                        onDelete={() => { onDelete(p.id); setOpenMenuId(null); }}
+                        onDuplicate={() => setOpenMenuId(null)}
+                        onDeactivate={() => setOpenMenuId(null)}
+                        onClose={() => setOpenMenuId(null)}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+
+            {/* ── Empty placeholder rows ── */}
+            {Array.from({ length: emptyCount }).map((_, i) => (
+              <tr
+                key={`empty-${i}`}
+                onClick={onAddClick}
+                className="border-b border-[#F3F4F6] last:border-0 cursor-pointer group/empty hover:bg-[#f0fdf9] transition-colors"
+              >
+                {/* Left checkbox (empty) */}
+                <td className="sticky left-0 z-10 w-10 px-3 py-2.5 border-r border-[#F3F4F6] bg-white group-hover/empty:bg-[#f0fdf9]">
+                  <div className="w-4 h-4 rounded border-2 border-dashed border-slate-200" />
+                </td>
+
+                {/* Name cell — shows "Add product…" hint on first empty row */}
+                {shownCols.map(col => (
+                  <td
+                    key={col.key}
+                    style={{ width: col.width, minWidth: col.width, ...(col.key === "name" ? { left: 40 } : {}) }}
+                    className={cn(
+                      "px-3 py-2.5 border-r border-[#F3F4F6]",
+                      col.key === "name"
+                        ? "sticky z-10 bg-white group-hover/empty:bg-[#f0fdf9] shadow-[3px_0_6px_-1px_rgba(0,0,0,0.09)] border-r border-[#E4E4E7]"
+                        : "last:border-r-0"
+                    )}
+                  >
+                    {col.key === "name" ? (
+                      <span className={cn(
+                        "text-[12px] select-none transition-colors",
+                        i === 0
+                          ? "text-slate-400 italic group-hover/empty:text-[#018e7e]"
+                          : "text-slate-300 italic"
+                      )}>
+                        {i === 0 ? "+ Add product…" : "—"}
+                      </span>
+                    ) : (
+                      <span className="text-[12px] text-slate-300 select-none">—</span>
+                    )}
+                  </td>
+                ))}
+
+                {/* Sticky right: empty kebab cell */}
+                <td className="sticky right-0 z-10 w-9 p-0 border-l border-[#E4E4E7] shadow-[-3px_0_6px_-2px_rgba(0,0,0,0.08)] bg-white group-hover/empty:bg-[#f0fdf9]" />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1230,7 +1890,6 @@ function CollapsibleCardGrid<T extends { id: string }>({
 
 function filterAndSort<T extends Product>(
   items: T[],
-  src: "manual" | "catalogue",
   search: string,
   sort: string,
   filters: Record<"inventory" | "source" | "readiness", string[]>,
@@ -1253,8 +1912,12 @@ function filterAndSort<T extends Product>(
   }
 
   if (filters.source.length > 0) {
-    if (src === "catalogue" && !filters.source.includes("Catalogue Generated")) return [];
-    if (src === "manual" && !filters.source.includes("Manually Added")) return [];
+    result = result.filter((p) => {
+      const isCat = "source" in p && (p as CatalogueProduct).source === "catalogue";
+      if (isCat && filters.source.includes("Catalogue Generated")) return true;
+      if (!isCat && filters.source.includes("Manually Added")) return true;
+      return false;
+    });
   }
 
   if (filters.readiness.length > 0) {
@@ -1277,10 +1940,9 @@ function filterAndSort<T extends Product>(
 
 function GroupHeader({ label, badge, badgeCls }: { label: string; badge: string; badgeCls: string }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
-      <p className="text-[12px] font-bold text-[#020202]">{label}</p>
+    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#F3F4F6] bg-[#FAFAFA]">
+      <p className="text-[12px] font-semibold text-slate-700">{label}</p>
       <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", badgeCls)}>{badge}</span>
-      <div className="flex-1 h-px bg-[#E5E7EB]" />
     </div>
   );
 }
@@ -1288,6 +1950,7 @@ function GroupHeader({ label, badge, badgeCls }: { label: string; badge: string;
 // ─── Main Products component ───────────────────────────────────────────────────
 
 export function Products({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+  const router      = useRouter();
   const products    = useProfileStore((s) => s.products);
   const addProduct  = useProfileStore((s) => s.addProduct);
   const deleteProduct = useProfileStore((s) => s.deleteProduct);
@@ -1300,6 +1963,55 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
   const [cataloguePhase, setCataloguePhase]             = useState<CataloguePhase>("none");
   const [uploadedFiles, setUploadedFiles]               = useState<UploadedFile[]>([]);
   const [catalogueProducts, setCatalogueProducts]       = useState<CatalogueProduct[]>([]);
+
+  // ── Demand Catalyst star-selection state ──────────────────────────────────────
+  const [dcMode, setDcMode] = useState<"off" | "selecting" | "confirm">("off");
+  const [starIds, setStarIds] = useState<Set<string>>(new Set());
+  const [dcScene, setDcScene] = useState<DcScene>("banner");
+
+  // Apply demo scene → drive dcMode + starIds + catalogue products
+  useEffect(() => {
+    const ALL_IDS = SAMPLE_CATALOGUE_PRODUCTS.map(p => p.id);
+    switch (dcScene) {
+      case "banner":
+        setDcMode("off"); setStarIds(new Set());
+        break;
+      case "sel-0":
+        setCataloguePhase("complete"); setCatalogueProducts(SAMPLE_CATALOGUE_PRODUCTS);
+        setDcMode("selecting"); setStarIds(new Set());
+        break;
+      case "sel-1-only":
+        setCataloguePhase("complete"); setCatalogueProducts(SAMPLE_CATALOGUE_PRODUCTS.slice(0, 1));
+        setDcMode("selecting"); setStarIds(new Set([ALL_IDS[0]]));
+        break;
+      case "sel-3":
+        setCataloguePhase("complete"); setCatalogueProducts(SAMPLE_CATALOGUE_PRODUCTS);
+        setDcMode("selecting"); setStarIds(new Set(ALL_IDS.slice(0, 3)));
+        break;
+      case "sel-5":
+        setCataloguePhase("complete"); setCatalogueProducts(SAMPLE_CATALOGUE_PRODUCTS);
+        setDcMode("selecting"); setStarIds(new Set(ALL_IDS.slice(0, 5)));
+        break;
+      case "confirm":
+        setCataloguePhase("complete"); setCatalogueProducts(SAMPLE_CATALOGUE_PRODUCTS);
+        setDcMode("confirm"); setStarIds(new Set(ALL_IDS.slice(0, 3)));
+        break;
+    }
+  }, [dcScene]);
+
+  const handleStarToggle = (id: string) => {
+    setStarIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); }
+      else if (next.size < 5) { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const ids = allProducts.slice(0, 5).map(p => p.id);
+    setStarIds(new Set(ids));
+  };
 
   // Banner visibility
   const [processingBannerDismissed, setProcessingBannerDismissed] = useState(false);
@@ -1342,19 +2054,21 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
     setMissingBannerDismissed(false);
   };
 
-  // Pure derived data — filter/sort via module-level function (no closure risk)
-  const filteredCatalogueProducts = filterAndSort(catalogueProducts, "catalogue", search, sort, filters);
-  const filteredManualProducts    = filterAndSort(products as Product[], "manual", search, sort, filters) as Product[];
+  // Pure derived data — merge all products, filter/sort via module-level function
+  const allProducts = [
+    ...(cataloguePhase === "complete" ? catalogueProducts : []),
+    ...(products as Product[]),
+  ];
+  const filteredProducts = filterAndSort(allProducts, search, sort, filters);
 
   const hasAnyProducts = products.length > 0 || (cataloguePhase === "complete" && catalogueProducts.length > 0);
   const missingDataProducts = catalogueProducts.filter((p) => p.needsUpdate);
   const showMissingBanner = cataloguePhase === "complete" && missingDataProducts.length > 0 && !missingBannerDismissed;
-
-  const totalProductCount = products.length + (cataloguePhase === "complete" ? catalogueProducts.length : 0);
+  const totalProductCount = allProducts.length;
 
   return (
     <>
-      <AddProductDrawer open={addProductOpen} onClose={() => setAddProductOpen(false)}
+      <ProfileAddProductDrawer open={addProductOpen} onClose={() => setAddProductOpen(false)}
         onSave={(p) => addProduct(p)} />
       <UploadCatalogueModal open={catalogueModalOpen} onClose={() => setCatalogueModalOpen(false)}
         onUploaded={handleUploaded} />
@@ -1504,7 +2218,7 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
 
             {/* Upload Catalogue */}
             <button onClick={() => setCatalogueModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-[7px] rounded-lg bg-[#2ACB83] text-[#020202] text-[13px] font-semibold hover:brightness-105 transition-all flex-shrink-0">
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-[7px] rounded-lg bg-[#1F6F54] text-white text-[13px] font-semibold hover:bg-[#185e46] transition-colors flex-shrink-0">
               <Upload size={14} />
               <span className="hidden sm:inline">Upload Catalogue</span>
               <span className="sm:hidden">Upload</span>
@@ -1545,6 +2259,42 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
             CONTENT AREA
             ═══════════════════════════════════════════════════════════════ */}
         <div className="p-4 sm:p-5 flex flex-col gap-4">
+
+          {/* ── DC Demo scene switcher ── */}
+          <DcSceneSwitcher scene={dcScene} onChange={setDcScene} />
+
+          {/* ── Demand Catalyst banner / tracker / confirm ── */}
+          {dcMode === "off" && (
+            <DemandCatalystBanner onSelect={() => { setDcMode("selecting"); setDcScene("sel-0"); }} />
+          )}
+          {dcMode === "selecting" && (
+            <>
+              <StarTracker
+                count={starIds.size}
+                totalProducts={allProducts.length}
+                onCancel={() => { setDcMode("off"); setStarIds(new Set()); setDcScene("banner"); }}
+                onConfirm={() => setDcMode("confirm")}
+                onSelectAll={handleSelectAll}
+              />
+              {/* Low-product nudge: show when user has fewer products than star slots */}
+              {allProducts.length < 5 && (
+                <LowCatalogueNudge
+                  totalProducts={allProducts.length === 0 ? 1 : allProducts.length}
+                  selectedCount={starIds.size}
+                  onAddProducts={() => setAddProductOpen(true)}
+                  onContinue={() => { setDcMode("confirm"); setDcScene("confirm"); }}
+                />
+              )}
+            </>
+          )}
+          {dcMode === "confirm" && (
+            <DcConfirmPopup
+              starIds={starIds}
+              allProducts={allProducts}
+              onBack={() => setDcMode("selecting")}
+              onActivate={() => router.push("/dashboard/demand-catalyst")}
+            />
+          )}
 
           {/* ── System banners ── */}
           {cataloguePhase === "processing" && !processingBannerDismissed && (
@@ -1628,64 +2378,26 @@ export function Products({ onNext, onBack }: { onNext: () => void; onBack: () =>
                   </p>
                 </div>
               </div>
-              {/* Section body */}
-              <div className="p-4 flex flex-col gap-6">
-
-                {/* Catalogue products */}
-                {cataloguePhase === "complete" && filteredCatalogueProducts.length > 0 && (
-                  <div>
-                    <GroupHeader
-                      label="Catalogue Products"
-                      badge="Generated from Catalogue"
-                      badgeCls="bg-[#E6F3FB] text-[#0077CC]"
-                    />
-                    <CollapsibleCardGrid
-                      items={filteredCatalogueProducts}
-                      emptyText="No catalogue products match your filters."
-                      renderItem={(p: CatalogueProduct) => (
-                        <ProductCard
-                          key={p.id}
-                          p={p}
-                          source="catalogue"
-                          needsUpdate={p.needsUpdate}
-                          onDelete={() => {
-                            setCatalogueProducts((prev) => prev.filter((cp) => cp.id !== p.id));
-                          }}
-                        />
-                      )}
-                    />
-                  </div>
-                )}
-
-                {/* Manual products */}
-                {filteredManualProducts.length > 0 && (
-                  <div>
-                    {cataloguePhase === "complete" && catalogueProducts.length > 0 && (
-                      <GroupHeader
-                        label="Manually Added"
-                        badge="Added Manually"
-                        badgeCls="bg-[#F3F4F6] text-[#4B5563]"
-                      />
-                    )}
-                    <CollapsibleCardGrid
-                      items={filteredManualProducts}
-                      emptyText="No manually added products match your filters."
-                      renderItem={(p: Product) => (
-                        <ProductCard
-                          key={p.id}
-                          p={p}
-                          source="manual"
-                          onDelete={() => deleteProduct(p.id)}
-                        />
-                      )}
-                    />
-                  </div>
-                )}
-
-                {/* No results after filtering */}
-                {filteredCatalogueProducts.length === 0 && filteredManualProducts.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-8 gap-2">
-                    <Search size={24} className="text-[#9CA3AF]" />
+              {/* Section body — single unified table */}
+              <div>
+                {filteredProducts.length > 0 ? (
+                  <ProductTable
+                    products={filteredProducts}
+                    onDelete={(id) => {
+                      if (id.startsWith("cat-")) {
+                        setCatalogueProducts(prev => prev.filter(p => p.id !== id));
+                      } else {
+                        deleteProduct(id);
+                      }
+                    }}
+                    onAddClick={() => setAddProductOpen(true)}
+                    starMode={dcMode === "selecting"}
+                    starIds={starIds}
+                    onStarToggle={handleStarToggle}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2">
+                    <Search size={22} className="text-[#9CA3AF]" />
                     <p className="text-[13px] font-medium text-[#4B5563]">No products match your search</p>
                     <p className="text-[12px] text-[#9CA3AF]">Try adjusting your search or filter criteria</p>
                   </div>

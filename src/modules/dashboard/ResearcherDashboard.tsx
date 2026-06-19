@@ -160,54 +160,44 @@ const TESTIMONIALS = [
 
 const MATCHED_PROJECTS = [
   {
-    id: 1,
-    title: "Catalyst Development Research",
-    company: "Hexion Materials",
-    industry: "Green Chemistry",
-    matchPct: 92,
+    id: 1, title: "Catalyst Development Research", company: "Hexion Materials",
+    industry: "Green Chemistry", matchPct: 92,
     description: "Seeking expert to optimise heterogeneous catalysts for industrial-scale green reactions.",
-    image: SUPPLIER_IMAGES.specialty[0],
-    locked: false,
+    image: SUPPLIER_IMAGES.specialty[0], locked: false,
+    country: "Germany", countryFlag: "🇩🇪",
+    quantity: "50 g pilot, scalable to 2 kg", postedDate: "May 12, 2026", matchType: "Capability" as const,
   },
   {
-    id: 2,
-    title: "Asymmetric Synthesis Scale-Up",
-    company: "Pavion Materials",
-    industry: "Pharma",
-    matchPct: 88,
+    id: 2, title: "Asymmetric Synthesis Scale-Up", company: "Pavion Materials",
+    industry: "Pharma", matchPct: 88,
     description: "Scale-up of asymmetric synthesis routes for active pharmaceutical intermediates.",
-    image: SUPPLIER_IMAGES.pharma[0],
-    locked: false,
+    image: SUPPLIER_IMAGES.pharma[0], locked: false,
+    country: "Japan", countryFlag: "🇯🇵",
+    quantity: "100 g initial, 1 kg scale-up", postedDate: "May 8, 2026", matchType: "Catalogue" as const,
   },
   {
-    id: 3,
-    title: "Bioprocess Optimization Study",
-    company: "NovaBio AG",
-    industry: "Biotechnology",
-    matchPct: 79,
+    id: 3, title: "Bioprocess Optimization Study", company: "NovaBio AG",
+    industry: "Biotechnology", matchPct: 79,
     description: "Optimise fermentation parameters and downstream processing for pilot-scale production.",
-    image: SUPPLIER_IMAGES.pharma[1],
-    locked: true,
+    image: SUPPLIER_IMAGES.pharma[1], locked: true,
+    country: "Switzerland", countryFlag: "🇨🇭",
+    quantity: "10 L pilot batch", postedDate: "Apr 30, 2026", matchType: "Capability" as const,
   },
   {
-    id: 4,
-    title: "Flow Chemistry Implementation",
-    company: "ChemVista EU",
-    industry: "Industrial Chemistry",
-    matchPct: 74,
+    id: 4, title: "Flow Chemistry Implementation", company: "ChemVista EU",
+    industry: "Industrial Chemistry", matchPct: 74,
     description: "Implementation of continuous flow chemistry for exothermic reaction management.",
-    image: SUPPLIER_IMAGES.industrial[0],
-    locked: true,
+    image: SUPPLIER_IMAGES.industrial[0], locked: true,
+    country: "France", countryFlag: "🇫🇷",
+    quantity: "200 kg per batch", postedDate: "Apr 20, 2026", matchType: "Capability" as const,
   },
   {
-    id: 5,
-    title: "Polymer Matrix Characterisation",
-    company: "AkzoNobel Research",
-    industry: "Specialty Chemical",
-    matchPct: 68,
+    id: 5, title: "Polymer Matrix Characterisation", company: "AkzoNobel Research",
+    industry: "Specialty Chemical", matchPct: 68,
     description: "Characterisation of novel polymer matrices for high-performance composite applications.",
-    image: SUPPLIER_IMAGES.specialty[1],
-    locked: true,
+    image: SUPPLIER_IMAGES.specialty[1], locked: true,
+    country: "Netherlands", countryFlag: "🇳🇱",
+    quantity: "5 kg samples", postedDate: "Apr 15, 2026", matchType: "Catalogue" as const,
   },
 ];
 
@@ -1000,52 +990,29 @@ export function OpenProjects() {
 }
 
 function MatchCard({ proj }: { proj: typeof MATCHED_PROJECTS[0] }) {
+  const qtyShort = proj.quantity.length > 30 ? proj.quantity.slice(0, 28) + "…" : proj.quantity;
   return (
-    <div className="w-[240px] flex-shrink-0 snap-start group self-stretch">
+    <div className="w-[240px] flex-shrink-0 snap-start group self-stretch cursor-pointer">
       <div className={cn(
-        "relative rounded-[16px] border flex flex-col overflow-hidden transition-all duration-300 h-full",
-        proj.locked
-          ? "border-slate-200 bg-[#f8fafc]"
-          : "border-slate-200 bg-white shadow-sm hover:shadow-xl hover:border-[#1f6f54]/25 hover:-translate-y-0.5"
+        "relative rounded-[14px] border flex flex-col overflow-hidden transition-all duration-300 h-full",
+        proj.locked ? "border-slate-200 bg-[#f8fafc]"
+          : "border-slate-200 bg-white shadow-sm hover:shadow-xl hover:border-[#1f6f54]/30 hover:-translate-y-0.5"
       )}>
-
-        {/* ── Image area ── */}
-        <div className="relative h-[148px] overflow-hidden shrink-0">
+        <div className="relative h-[140px] overflow-hidden shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={proj.image}
-            alt={proj.title}
-            className={cn(
-              "w-full h-full object-cover transition-transform duration-300",
-              proj.locked ? "blur-sm scale-105" : "group-hover:scale-105"
-            )}
-          />
-
-          {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0"
-            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.05) 55%, transparent 100%)" }} />
-
-          {/* Unlocked: exclusive + match score overlay */}
+          <img src={proj.image} alt={proj.title}
+            className={cn("w-full h-full object-cover transition-transform duration-300",
+              proj.locked ? "blur-sm scale-105" : "group-hover:scale-[1.06]")} />
+          <div className="absolute inset-x-0 top-0 h-14 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.48) 0%,transparent 100%)" }} />
           {!proj.locked && (
-            <div className="absolute inset-x-0 bottom-0 px-3 pb-2.5 flex items-end justify-between">
-              {/* Exclusive pill */}
-              <span
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
-                style={{ background: "rgba(0,0,0,0.52)", backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.15)" }}
-              >
-                <Star size={9} fill="#fbbf24" className="text-amber-400 shrink-0" />
-                Open Project
-              </span>
-
-              {/* Match score */}
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-[21px] font-black text-white leading-none tabular-nums">{proj.matchPct}%</span>
-                <span className="text-[9px] font-semibold text-white/75 pb-0.5"> Match</span>
+            <div className="absolute top-2 left-2.5">
+              <div className="px-2 py-[3px] rounded-full text-[9px] font-semibold text-white"
+                style={{ background: proj.matchType === "Capability" ? "rgba(14,111,92,0.88)" : "rgba(99,55,199,0.88)", backdropFilter: "blur(4px)" }}>
+                {proj.matchType}
               </div>
             </div>
           )}
-
-          {/* Locked: dim overlay */}
           {proj.locked && (
             <div className="absolute inset-0 flex items-center justify-center"
               style={{ background: "rgba(240,244,248,0.72)", backdropFilter: "blur(2px)" }}>
@@ -1055,37 +1022,35 @@ function MatchCard({ proj }: { proj: typeof MATCHED_PROJECTS[0] }) {
             </div>
           )}
         </div>
-
-        {/* ── Card body ── */}
         <div className={cn("flex flex-col p-3.5 flex-1", proj.locked ? "gap-2 items-center text-center justify-center" : "gap-2")}>
           {proj.locked ? (
             <>
-              <p className="text-[12px] font-medium text-[#68747a] leading-snug px-1">
-                Complete your profile to unlock this project
-              </p>
+              <p className="text-[12px] font-medium text-[#68747a] leading-snug px-1">Complete your profile to unlock this project</p>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border border-[#1f6f54] text-[#1f6f54] text-[11px] font-semibold hover:bg-[#f0faf5] transition-all">
                 Go to Profile <ArrowRight size={10} />
               </button>
             </>
           ) : (
             <>
-              {/* Well Matched pill */}
-              <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full bg-[#dff3ee] text-[#1f6f54] text-[10px] font-semibold border border-[#1f6f54]/15">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#1f6f54]" />
-                Well Matched
+              <span className="inline-flex w-fit items-center px-[8px] py-[1px] rounded-full bg-[#e3f4ff] text-[#171717] text-[10.5px] font-medium">
+                {proj.industry}
               </span>
-
-              {/* Title */}
-              <h3 className="font-bold text-[14px] text-[#171717] leading-snug line-clamp-2"
-                style={{ fontFamily: "Poppins, sans-serif" }}>
-                {proj.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-[11px] text-[#68747a] leading-snug line-clamp-2 flex-1">{proj.description}</p>
-
-              {/* Hover arrow — fade + slide from bottom-right */}
-              <div className="flex justify-end pt-0.5">
+              <h3 className="font-semibold text-[13.5px] text-[#171717] leading-snug line-clamp-2">{proj.title}</h3>
+              <div className="flex flex-col gap-1 mt-auto">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[12px] leading-none">{proj.countryFlag}</span>
+                  <span className="text-[11px] text-[#353535] font-medium">{proj.country}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10.5px] text-slate-400">📦</span>
+                  <span className="text-[11px] text-[#353535]">{qtyShort}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10.5px] text-slate-400">🗓</span>
+                  <span className="text-[10.5px] text-slate-400">Posted {proj.postedDate}</span>
+                </div>
+              </div>
+              <div className="flex justify-end pt-1">
                 <button className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 w-7 h-7 rounded-full bg-[#1f6f54] flex items-center justify-center shadow-sm hover:bg-[#185c45]">
                   <ArrowUpRight size={13} className="text-white" />
                 </button>
