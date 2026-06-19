@@ -3,8 +3,8 @@
 > **Project Path:** `/Users/sathimidya/scinode`
 > **Git Repo:** `https://github.com/sathi-design/scinode-customer-platform-.git`
 > **Dev Server:** `http://localhost:3000`
-> **Last Updated:** 2026-06-19 (Session 11)
-> **Total Commits:** 63+
+> **Last Updated:** 2026-06-19 (Session 12)
+> **Total Commits:** 64+
 
 ---
 
@@ -651,18 +651,23 @@ Full-screen `z-50` overlay, fade-in + slide-up animation (`opacity 0→1, transl
 #### Demo Scene System
 
 ```ts
-type Scene = "day0" | "s1-1" | "s1-3" | "s2-2" | "s2-5";
+type Scene = "day0" | "s1-3" | "s2-2" | "s2-5" | "s3-active" | "non-premium";
 ```
 
-| Scene | Label | Products | Stars |
-|---|---|---|---|
-| `day0` | Day 0 — No Products | 0 | 0 |
-| `s1-1` | 1 Product Added | 1 | 0 |
-| `s1-3` | 3 Products, No Stars | 3 | 0 |
-| `s2-2` | 2 Stars Selected | 3 | 2 (dc-p1, dc-p2) |
-| `s2-5` | 5 Stars — Ready | 5 | 5 (all) |
+| Scene | Label | Products | Stars | Behaviour |
+|---|---|---|---|---|
+| `day0` | Day 0 — No Products | 0 | 0 | No premium banner |
+| `s1-3` | 4 Products, No Stars | 4 | 0 | — |
+| `non-premium` | Non-Premium User | 4 | 0→4 | Start Campaign → `DcPremiumModal` |
+| `s3-active` | Active Campaign | — | — | Full `ActiveCampaignPage` with live data |
+
+`s2-2` (2 Stars Selected) and `s2-5` (5 Stars — Ready) removed from SCENES array (type kept for backwards compat). `s1-1` (1 Product Added) also removed.
 
 `useEffect([scene])` drives `starredIds` + `campaignStarted` reset per scene.
+
+**Start Campaign flow (Session 12):**
+- Premium user (any scene except `non-premium`): `setCampaignStarted(true)` → renders `ActiveCampaignPage emptyMode={true}`
+- Non-premium user (`non-premium` scene): `setShowPremiumModal(true)` → renders `DcPremiumModal`
 
 ---
 
@@ -674,7 +679,9 @@ type Scene = "day0" | "s1-1" | "s1-3" | "s2-2" | "s2-5";
 - **Top-right CTA** changes per state:
   - Day 0: "Add Product →"
   - Has products, no stars: "Select Star Products →"
-  - Has stars: "Start Demand Chain →"
+  - Has stars: **"Start Campaign"** (was "Start Demand Chain" — renamed Session 12)
+    - Premium user → `setCampaignStarted(true)` → empty ActiveCampaignPage
+    - Non-premium user → `setShowPremiumModal(true)` → DcPremiumModal
   - Campaign started: "View Campaign Status →"
 
 **Plan Banner** (dark — matches Deep Research exactly):
@@ -683,6 +690,7 @@ type Scene = "day0" | "s1-1" | "s1-3" | "s2-2" | "s2-5";
 - "Free Plan Active" + "Demand Catalyst" emerald badge
 - Count: "Star products: X / 5" in `#f5c842` amber
 - "Upgrade to Premium" button: `linear-gradient(90deg,#f5c842,#c9a227)` gold
+- **Hidden on Day 0 scene** (Session 12)
 
 **Demo Switcher** — same style as Deep Research: white bordered pill container.
 
@@ -706,7 +714,7 @@ Card hover: `hover:border-[#1a5c3a] hover:shadow-[0_4px_20px_rgba(26,92,58,0.12)
 Feature chips: `bg-[#f0fdf4] text-[#1a5c3a]` with `CheckCircle2` icon
 
 **View `"products"` (has products):**
-1. `StarSlotsBar` — 5 slot dots (filled green = starred, dashed border = available, gray = no product), status text, "Start Demand Chain with X Products →" CTA (visible only when stars > 0)
+1. `StarSlotsBar` — 5 slot dots (filled green = starred, dashed border = available, gray = no product), status text, **"Start Campaign with X Products →"** CTA (visible only when stars > 0; was "Start Demand Chain" — renamed Session 12)
 2. `ProductsTable` — star toggle column (amber ⭐ when starred, slate outline otherwise), product rows with amber `bg-[#fffbeb]` highlight when starred. Columns: ☆ | Product Name | CAS | Industry | Grade | Purity | MOQ | Status. "Add Product" button in table header.
 
 **View `"campaign"` (after start):**
@@ -757,12 +765,21 @@ CTAs: "Add Product →" (`linear-gradient(135deg,#1a5c3a,#0d3d26)`) + "Close"
 
 #### Data
 
-`DEMO_PRODUCTS` — 5 items with full `Product` type fields:
-- dc-p1: Paracetamol API (103-90-2, Pharmaceuticals, IP Grade, 99.8%, 200kg, In inventory, GIDC Gujarat)
-- dc-p2: Ibuprofen API (15687-27-1, Pharmaceuticals, 99.5%, 100kg, In inventory, Ankleshwar)
-- dc-p3: Citric Acid Anhydrous (77-92-9, Food & Beverage, Made to order)
+`DEMO_PRODUCTS` — 6 items with full `Product` type fields (dc-p1/p2/p3 renamed in Session 12 to match Active Campaign chemicals):
+- dc-p1: **Triethyl Phosphate** (78-40-0, Flame Retardants, Technical, 99.5%, 200kg, In inventory, GIDC Gujarat)
+- dc-p2: **Triethyl Citrate** (77-93-0, Food Additives, Food Grade, 99.5%, 100kg, In inventory, Ankleshwar)
+- dc-p3: **Sodium Bromide** (7647-15-6, Water Treatment, Industrial, 99.0%, 500kg, Made to order)
+- dc-p6: Tetrahydrofuran (109-99-9, Specialty Chemicals, Anhydrous, 99.9%, 200kg, In inventory, GIDC Gujarat)
 - dc-p4: Ascorbic Acid USP (50-81-7, Nutraceuticals, 99.0%, 250kg, In inventory, Vadodara)
 - dc-p5: Caffeine Anhydrous EP (58-08-2, Nutraceuticals, 99.5%, 50kg, In inventory, Mumbai)
+
+`s1-3` and `non-premium` scenes use `DEMO_PRODUCTS.slice(0, 4)` → dc-p1, dc-p2, dc-p3, dc-p6 (Triethyl Phosphate · Triethyl Citrate · Sodium Bromide · Tetrahydrofuran — same 4 chemicals as ACTIVE_CAMPAIGN_PRODUCTS).
+
+`EMPTY_CAMPAIGN_PRODUCTS` — NEW (Session 12) — 4 products all at "Setup for Demand", stageIndex 1, 0 leads/mqls, empty countries, 0-array weeklyTrend:
+- thf: Tetrahydrofuran, dotColor `#2ACB83`
+- tep: Triethyl Phosphate, dotColor `#0077CC`
+- tec: Triethyl Citrate, dotColor `#6237C7`
+- snb: Sodium Bromide, dotColor `#f59e0b`
 
 ---
 
@@ -1575,6 +1592,143 @@ WO_TOTAL: { all:63, thf:24, tep:6, tec:36 }
 | Legend words "leads" → "sales reach out" | `OfflineEnginePanel` geography/size chart legend |
 | `DemandGenerationDetail` stage labels stabilised | Removed conditional from `product.stage`; hardcoded "Stage 3 of 4" + "Campaign Running" |
 | `DetailInfoCards` placed below all stage content | `ProductDetailScreen` — visible after stage form regardless of stage |
+
+---
+
+### 11f. Demand Catalyst — Session 12 CHANGES
+
+#### Session 12 Overview
+Changes entirely inside `DemandCatalyst.tsx`. Focus: product name alignment, "Start Campaign" flow with empty Active Campaign state, premium modal for non-premium users, scene switcher cleanup, and Day 0 banner removal.
+
+---
+
+#### 11f-1. DEMO_PRODUCTS Chemical Names Updated
+
+`dc-p1`, `dc-p2`, `dc-p3` renamed to match the Active Campaign products (THF/TEP/TEC/SNB), so the "4 Products, No Stars" scene shows the exact same chemicals as the Active Campaign:
+
+| ID | Old Name | New Name | New CAS | New Industry |
+|---|---|---|---|---|
+| dc-p1 | Paracetamol API | **Triethyl Phosphate** | 78-40-0 | Flame Retardants |
+| dc-p2 | Ibuprofen API | **Triethyl Citrate** | 77-93-0 | Food Additives |
+| dc-p3 | Citric Acid Anhydrous | **Sodium Bromide** | 7647-15-6 | Water Treatment |
+| dc-p6 | Tetrahydrofuran | Tetrahydrofuran (unchanged) | 109-99-9 | Specialty Chemicals |
+
+`sceneProducts` slice(0,4) now gives: Triethyl Phosphate · Triethyl Citrate · Sodium Bromide · Tetrahydrofuran.
+
+---
+
+#### 11f-2. Demo Scene Switcher — Scenes Removed + Non-Premium Added
+
+**Removed:** "2 Stars Selected" (`s2-2`) and "5 Stars — Ready" (`s2-5`) from `SCENES` array.
+
+**Added:** `"non-premium"` scene — same 4 products as `s1-3`, but "Start Campaign" triggers `DcPremiumModal` instead of transitioning to the campaign.
+
+**Final SCENES array:**
+```ts
+[
+  { id: "day0",        label: "Day 0 — No Products"  },
+  { id: "s1-3",        label: "4 Products, No Stars" },
+  { id: "non-premium", label: "Non-Premium User"     },
+  { id: "s3-active",   label: "Active Campaign"      },
+]
+```
+
+---
+
+#### 11f-3. "Start Demand Chain" → "Start Campaign"
+
+Button label renamed in two places:
+- `StarSlotsBar` inline CTA button: `"Start Campaign with {N} Products →"`
+- Top-right CTA label derivation: `["Start Campaign", ...]`
+
+---
+
+#### 11f-4. Empty Active Campaign State (NEW)
+
+When a premium user clicks "Start Campaign" in the `s1-3` scene, the module now renders `ActiveCampaignPage` with `emptyMode={true}` instead of the old `CampaignStartedPanel`.
+
+**`EMPTY_CAMPAIGN_PRODUCTS`** (new constant):
+- 4 products: THF / TEP / TEC / SNB — all at `stage: "Setup for Demand"`, `stageIndex: 1`, `leads: 0`, `mqls: 0`, `countries: []`, `weeklyTrend: [0,0,0,0,0,0]`, `actionRequired: "Complete Setup"`
+
+**`ActiveCampaignPage`** — new `emptyMode?: boolean` prop:
+- Derives `acProducts = emptyMode ? EMPTY_CAMPAIGN_PRODUCTS : ACTIVE_CAMPAIGN_PRODUCTS`
+- Header badge: "Setting up campaigns" (amber) instead of "N campaigns active" (green)
+- Passes `products={acProducts}` + `emptyMode={emptyMode}` down to all child sections
+
+**`CampaignOverviewSection`** — new `products?` + `emptyMode?` props:
+- Star Products card: uses `products.length` / `products.map(dots)` / `availableSlots` — all derived from prop
+- Running Campaigns card: shows "Setting up" amber badge when `emptyMode`; shows `0 / 0 / 0` with "Starting soon" / "Awaiting data" subtexts
+- `sub` on section header: "Campaign just started" when `emptyMode`
+
+**`ProductStatusTable`** — new `products?` prop:
+- Renders `products ?? ACTIVE_CAMPAIGN_PRODUCTS` — all 4 products at "Setup for Demand" with dashes
+
+**`CampaignTimelineStrip`** — new `products?` prop:
+- Computes local `maxStageIndex = Math.max(...products.map(p => p.stageIndex))` — replaces module-level `MAX_STAGE_INDEX` constant
+- All 4 stages at pending in empty mode (progress line width = 0%)
+- `productByStage` derived from prop products
+
+**`WeeklyOpportunitiesSection`** — new `emptyMode?` prop:
+- When `emptyMode=true`: overrides all data to `EMPTY_WEEKLY = [0,0,0,0,0,0]`, `total = 0`, `countries = []`
+- Chart renders flat line at bottom, no tooltip data, "0 total"
+- Section always rendered (was previously hidden in empty mode)
+
+**Flow:**
+```
+User stars 4 products → clicks "Start Campaign"
+  → premium:     setCampaignStarted(true) → <ActiveCampaignPage emptyMode={true} />
+  → non-premium: setShowPremiumModal(true) → <DcPremiumModal />
+```
+
+Switching demo scene (via DcSceneSwitcher) resets `campaignStarted` to false via `useEffect([scene])`.
+
+---
+
+#### 11f-5. `DcPremiumModal` Component (NEW)
+
+Triggered when non-premium user clicks "Start Campaign".
+
+**Modal wrapper:** `fixed inset-0 z-[200]`, `rgba(0,0,0,0.60)` backdrop + `backdrop-filter: blur(4px)`, click-outside closes.
+
+**Left card — Access Partner (Free / Current Plan):**
+- Rocket icon + "Access Partner" / "Free forever · No expiry"
+- "CURRENT PLAN" grey pill badge
+- Price: "**Free** always"
+- Disabled "Current Plan" button (grey, no cursor)
+- 6 green checkmark features: Profile visible / Submit 2 proposals / All Open Projects / 5 Market Pulse snapshots / 1 in-depth MI report / Standard email support
+- 3 locked crown items: Exclusive Projects / Research Vault / QA/QC & Compliance
+
+**Right card — Priority Partner (Custom Pricing / Recommended):**
+- `linear-gradient(160deg,#1a1400,#1c1200,#141000)` dark amber-tinted bg + gold border
+- Zap icon in amber box + "Priority Partner" + "⭐ RECOMMENDED" gold badge
+- Price: "**Custom Pricing**"
+- 3 stat tiles: **3×** leads / **10×** deeper Product MI / **24 hr** priority support
+- 2 CTAs: "⚡ Upgrade to Premium" (gold gradient) + "🏢 Talk to Sales" (dark border)
+- 7 gold checkmark features + 3 italic footer items (QA/QC as a Service / Compliance as a Service / Priority support — WhatsApp email & 1-on-1)
+
+**New icons imported:** `Rocket`, `Building2`, `Clock`
+
+---
+
+#### 11f-6. Day 0 — Free Plan Banner Hidden
+
+`PlanBanner` component now conditionally rendered: `{scene !== "day0" && <PlanBanner ... />}`
+
+Day 0 state goes straight from page header → demo switcher → campaign workspace, with no premium banner.
+
+---
+
+#### 11f-7. Key Design Decisions (Session 12)
+
+| Decision | Reason |
+|---|---|
+| Chemical names aligned between DEMO_PRODUCTS and ACTIVE_CAMPAIGN_PRODUCTS | Demo should tell a coherent story — same 4 products appear in "4 Products, No Stars" and then progress through the Active Campaign stages |
+| `emptyMode` prop threads through all sections rather than separate components | Avoids duplicating 5 large components; single prop toggles all data to zero without structural changes |
+| `campaignStarted=true` → full `ActiveCampaignPage emptyMode` (not `CampaignStartedPanel`) | Shows the real Active Campaign UI immediately — user understands what they'll see once campaigns go live |
+| `WeeklyOpportunitiesSection` shown in empty mode (flat zero line) | Gives users a preview of the Weekly Opportunities chart they'll see when data arrives |
+| Non-premium intercept at the CTA level (not the star level) | Users should be able to explore the product selection flow fully — gate only blocks the final "Start" action, not discovery |
+| `DcPremiumModal` is dark-themed (`#141414` bg) with gold accent | Visually distinct from all other modals (which are light); signals premium tier and creates contrast with the dark overlay backdrop |
+| Day 0 banner hidden | Empty state has no star products yet — "0/5 star products" adds no value and looks unfinished |
 
 ---
 
