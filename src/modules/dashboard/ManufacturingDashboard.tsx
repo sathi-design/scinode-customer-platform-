@@ -27,6 +27,7 @@ import {
   Eye,
   X,
   Lock,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { SUPPLIER_IMAGES } from "@/lib/supplierImages";
@@ -265,6 +266,7 @@ const STAR_ICON = "https://www.figma.com/api/mcp/asset/8749bfbf-c143-471d-b88f-2
 // ─── Main export ──────────────────────────────────────────────────────────────
 export function ManufacturingDashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [catalogDemoState, setCatalogDemoState] = useState<0 | 1 | 2 | 3>(0);
 
   return (
     <div className="space-y-5 pb-12 max-w-[1200px] mx-auto px-4 sm:px-0">
@@ -272,23 +274,23 @@ export function ManufacturingDashboard() {
       {/* 1. Hero banner — dark green */}
       <WelcomeBanner />
 
-      {/* 2. 70/30: Profile Performance + Journey panel (equal height) */}
+      {/* 2. 70/30: Profile Performance + Market Pulse (equal height) */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
         <div className="lg:col-span-7 flex">
           <ProfilePerformanceCard onOpenProfile={() => setProfileOpen(true)} />
         </div>
-        <div className="lg:col-span-3 flex">
-          <OnboardingJourneyPanel onStartOnboarding={() => setProfileOpen(true)} />
+        <div className="lg:col-span-3 rounded-2xl overflow-hidden flex flex-col"
+          style={{ background: "#f0fdf6", border: "1px solid rgba(42,203,131,0.25)" }}>
+          <MarketPulsePanel />
         </div>
       </div>
 
 
-      {/* 4. 70/30: Product showcase + Market Pulse */}
+      {/* 4. 70/30: Product showcase + Demand Catalyst side panel */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-stretch">
-        <div className="lg:col-span-7"><ProductShowcase /></div>
-        <div className="lg:col-span-3 rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: "#f0fdf6", border: "1px solid rgba(42,203,131,0.25)" }}>
-          <MarketPulsePanel />
+        <div className="lg:col-span-7"><ProductShowcase demoState={catalogDemoState} setDemoState={setCatalogDemoState as (s: 0 | 1 | 2 | 3) => void} /></div>
+        <div className="lg:col-span-3 flex">
+          <DemandCatalystSidePanel demoState={catalogDemoState} setDemoState={setCatalogDemoState as (s: 0 | 1 | 2 | 3) => void} />
         </div>
       </div>
 
@@ -1183,12 +1185,13 @@ const DEMO_PRODUCTS = [
   { name: "Ethyl Acetate",         cas: "141-78-6", views: 27, interest: "Medium", interestColor: "#9C5022", interestBg: "#FBF0C5", enquiries: 2    },
 ];
 
-function ProductShowcase() {
-  const [demoState, setDemoState] = useState<0 | 1 | 2>(0);
+function ProductShowcase({ demoState, setDemoState }: { demoState: 0 | 1 | 2 | 3; setDemoState: (s: 0 | 1 | 2 | 3) => void }) {
+  const router = useRouter();
 
   const DEMO_TABS: Array<{ label: string; bg: string; color: string; border: string }> = [
     { label: "0 Listed",        bg: "#FEF0EB", color: "#FD4923", border: "rgba(253,73,35,0.30)" },
     { label: "Catalogue Added", bg: "#E8FBF2", color: "#1F6F54", border: "rgba(42,203,131,0.35)" },
+    { label: "Pending Sign-off", bg: "#FEF9EB", color: "#B45309", border: "rgba(180,83,9,0.30)" },
     { label: "Full Intel",      bg: "#E6F3FB", color: "#0077CC", border: "rgba(0,119,204,0.30)" },
   ];
 
@@ -1200,18 +1203,19 @@ function ProductShowcase() {
         <div>
           <p className="text-[9px] font-bold tracking-[0.15em] text-slate-400 uppercase mb-0.5">CATALOGUE SIGNALS</p>
           <h2 className="text-[15px] sm:text-base font-bold text-slate-900 leading-tight">
-            {demoState === 2 ? "How Your Products Are Performing" : "Showcase Your Products to Get Noticed"}
+            {demoState === 3 ? "How Your Products Are Performing" : "Showcase Your Products to Get Noticed"}
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
             {demoState === 0 && "Add your product catalogue to unlock the right demand."}
             {demoState === 1 && "Your catalogue is indexed — performance intel coming within 24–48 hrs."}
-            {demoState === 2 && "Buyer activity across your listed products this week."}
+            {demoState === 2 && "Your catalogue is ready — complete onboarding to go live."}
+            {demoState === 3 && "Buyer activity across your listed products this week."}
           </p>
         </div>
         {/* Demo state switcher tabs */}
         <div className="flex items-center gap-1 shrink-0">
           {DEMO_TABS.map((tab, i) => (
-            <button key={i} onClick={() => setDemoState(i as 0 | 1 | 2)}
+            <button key={i} onClick={() => setDemoState(i as 0 | 1 | 2 | 3)}
               className="text-[9px] font-bold px-2.5 py-[4px] rounded-full transition-all whitespace-nowrap"
               style={{
                 background:  demoState === i ? tab.bg      : "#f9fafb",
@@ -1305,6 +1309,7 @@ function ProductShowcase() {
               </button>
             </div>
           </div>
+
         </>
       )}
 
@@ -1366,11 +1371,79 @@ function ProductShowcase() {
               📊 Views, buyer interest, and enquiry data will appear here once indexing is complete.
             </p>
           </div>
+
         </>
       )}
 
-      {/* ══ STATE 2 — Full intel ═════════════════════════════════════ */}
+      {/* ══ STATE 2 — Catalogue indexed, onboarding incomplete ═══════ */}
       {demoState === 2 && (
+        <div className="relative flex-1 flex flex-col gap-1.5 overflow-hidden">
+          {/* Same product table as State 1 — dimmed underneath */}
+          <div className="flex items-center justify-between mb-0.5">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.10em] text-slate-400">Your Products</p>
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: "#E8FBF2", color: "#1F6F54" }}>5 Listed</span>
+          </div>
+          <div className="grid grid-cols-12 px-3 py-2 rounded-lg text-[8.5px] font-bold uppercase tracking-wide text-slate-400"
+            style={{ background: "#f9fafb" }}>
+            <span className="col-span-6">Product</span>
+            <span className="col-span-2 text-center">Status</span>
+            <span className="col-span-2 text-center">Views</span>
+            <span className="col-span-2 text-center">Enquiries</span>
+          </div>
+          {DEMO_PRODUCTS.map((p, i) => (
+            <div key={i} className="grid grid-cols-12 px-3 py-2.5 rounded-xl border border-slate-100 items-center">
+              <div className="col-span-6 min-w-0">
+                <p className="text-[11px] font-semibold text-slate-800 truncate">{p.name}</p>
+                <p className="text-[9px] font-mono text-slate-400">CAS {p.cas}</p>
+              </div>
+              <div className="col-span-2 flex justify-center">
+                <span className="text-[8px] font-bold px-2 py-[3px] rounded-full"
+                  style={{ background: "#E8FBF2", color: "#1F6F54" }}>Indexed</span>
+              </div>
+              <div className="col-span-2 text-center">
+                <span className="text-[12px] font-bold text-slate-200">—</span>
+              </div>
+              <div className="col-span-2 text-center">
+                <span className="text-[12px] font-bold text-slate-200">—</span>
+              </div>
+            </div>
+          ))}
+
+          {/* Semi-transparent overlay */}
+          <div className="absolute inset-0 rounded-xl" style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(3px)" }} />
+
+          {/* Info block centred over the overlay */}
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="w-full max-w-sm rounded-2xl p-5 shadow-lg"
+              style={{ background: "#fff", border: "1px solid rgba(180,83,9,0.25)", boxShadow: "0 4px 24px rgba(180,83,9,0.10)" }}>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "rgba(180,83,9,0.10)" }}>
+                  <span className="text-[17px]">📋</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-bold mb-1" style={{ color: "#B45309" }}>Action Required: Complete Onboarding</p>
+                  <p className="text-[11px] text-slate-500 leading-snug mb-3">
+                    Your catalogue is indexed and ready. To go live and start receiving buyer enquiries, please review and sign the <span className="font-semibold text-slate-700">Platform Terms & Conditions</span>.
+                  </p>
+                  <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[11px] font-bold transition-all hover:brightness-110"
+                    style={{ background: "#B45309" }}>
+                    <span>✍️</span> Complete Sign-off
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <p className="text-[10px] text-slate-400 leading-snug">Your products will be visible to buyers as soon as onboarding is complete.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ STATE 3 — Full intel ═════════════════════════════════════ */}
+      {demoState === 3 && (
         <>
           {/* Stats grid */}
           <div className="grid grid-cols-4 gap-2">
@@ -1399,59 +1472,288 @@ function ProductShowcase() {
           <div className="flex-1 flex flex-col">
             <div className="grid grid-cols-12 px-3 py-2 rounded-lg mb-1 text-[8.5px] font-bold uppercase tracking-wide text-slate-400"
               style={{ background: "#f9fafb" }}>
-              <span className="col-span-5">Product</span>
-              <span className="col-span-2 text-center">Views</span>
-              <span className="col-span-3 text-center">Buyer Interest</span>
-              <span className="col-span-2 text-center">Enquiries</span>
+              <span className="col-span-8">Product</span>
+              <span className="col-span-4 text-center">Views</span>
             </div>
             {DEMO_PRODUCTS.map((p, i) => (
               <div key={i} className="grid grid-cols-12 px-3 py-2.5 border-b border-slate-50 items-center hover:bg-slate-50/60 transition-all cursor-pointer"
                 style={{ borderLeft: i === 0 ? "3px solid #2ACB83" : "3px solid transparent" }}>
-                <div className="col-span-5 min-w-0">
+                <div className="col-span-8 min-w-0">
                   <p className="text-[11px] font-semibold text-slate-800 truncate">{p.name}</p>
                   <p className="text-[9px] font-mono text-slate-400">CAS {p.cas}</p>
                 </div>
-                <div className="col-span-2 flex flex-col items-center gap-1">
+                <div className="col-span-4 flex flex-col items-center gap-1">
                   <span className="text-[13px] font-black text-slate-700">{p.views}</span>
                   <div className="w-full h-[3px] rounded-full overflow-hidden" style={{ background: "#e9ecef" }}>
                     <div className="h-full rounded-full" style={{ width: `${(p.views / 48) * 100}%`, background: "#2ACB83" }} />
                   </div>
                 </div>
-                <div className="col-span-3 flex justify-center">
-                  <span className="text-[9px] font-bold px-2.5 py-[3px] rounded-full"
-                    style={{ background: p.interestBg, color: p.interestColor }}>
-                    {p.interest}
-                  </span>
-                </div>
-                <div className="col-span-2 text-center">
-                  {p.enquiries != null
-                    ? <span className="text-[13px] font-black text-slate-700">{p.enquiries}</span>
-                    : <span className="text-slate-300 font-bold">—</span>}
-                </div>
               </div>
             ))}
           </div>
 
-          {/* Footer actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-            <p className="text-[10.5px] text-slate-400 leading-snug">
-              Complete listings drive <span className="font-bold text-slate-700">2.7× more</span> matched opportunities.
-            </p>
-            <div className="flex items-center gap-2 shrink-0">
-              <button className="px-3.5 py-1.5 rounded-xl border text-[10.5px] font-bold transition-all hover:bg-[#f0fdf4]"
-                style={{ borderColor: "#1F6F54", color: "#1F6F54" }}>
-                Optimize Catalogue
-              </button>
-              <button className="px-3.5 py-1.5 rounded-xl text-white text-[10.5px] font-bold transition-all hover:brightness-110"
-                style={{ background: "#1F6F54" }}>
-                Add More Products
-              </button>
-            </div>
-          </div>
         </>
       )}
 
     </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DC SIDE PANEL — 3 states tied to ProductShowcase demoState
+// ═══════════════════════════════════════════════════════════════════════════════
+const DC_CAMPAIGN_PRODUCTS = [
+  { name: "Triethyl Orthoformate", opps: 12, stage: "Opportunities Pipeline" },
+  { name: "Benzyl Chloride",       opps: 0,  stage: "Demand Generation"      },
+  { name: "Diethyl Carbonate",     opps: 0,  stage: "Execution Planning"     },
+  { name: "Ethyl Acetate",         opps: 0,  stage: "Set for Demand"         },
+];
+
+const STAGE_COLORS: Record<string, { bg: string; text: string }> = {
+  "Opportunities Pipeline": { bg: "rgba(31,111,84,0.10)",  text: "#1F6F54" },
+  "Demand Generation":      { bg: "rgba(0,119,204,0.10)",  text: "#0077CC" },
+  "Execution Planning":     { bg: "rgba(156,80,34,0.10)",  text: "#9C5022" },
+  "Set for Demand":         { bg: "rgba(100,116,139,0.10)", text: "#64748b" },
+};
+
+const DC_DEMO_TABS = [
+  { label: "0 Listed",         bg: "#FEF0EB", color: "#FD4923", border: "rgba(253,73,35,0.30)" },
+  { label: "Catalogue Added",  bg: "#E8FBF2", color: "#1F6F54", border: "rgba(42,203,131,0.35)" },
+  { label: "Pending Sign-off", bg: "#FEF9EB", color: "#B45309", border: "rgba(180,83,9,0.30)" },
+  { label: "Full Intel",       bg: "#E6F3FB", color: "#0077CC", border: "rgba(0,119,204,0.30)" },
+];
+
+function DemandCatalystSidePanel({ demoState, setDemoState }: { demoState: 0 | 1 | 2 | 3; setDemoState: (s: 0 | 1 | 2 | 3) => void }) {
+  const router = useRouter();
+  const goToDC = () => router.push("/dashboard/demand-catalyst");
+  const goToProfile = () => router.push("/dashboard/profile");
+
+  return (
+    <div className="flex flex-col w-full overflow-hidden gap-2">
+      {/* Demo tabs */}
+      <div className="flex items-center gap-1.5">
+        {DC_DEMO_TABS.map((tab, i) => (
+          <button key={i} onClick={() => setDemoState(i as 0 | 1 | 2 | 3)}
+            className="text-[9px] font-bold px-2.5 py-[4px] rounded-full transition-all whitespace-nowrap"
+            style={{
+              background:  demoState === i ? tab.bg      : "#f9fafb",
+              color:       demoState === i ? tab.color   : "#9ca3af",
+              border:      `1px solid ${demoState === i ? tab.border : "#e5e7eb"}`,
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 flex flex-col overflow-hidden" style={demoState === 0 ? { borderRadius: "16px" } : { background: "#fff", borderRadius: "16px", border: `1px solid ${demoState === 2 ? "rgba(180,83,9,0.20)" : "#e4e4e7"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+
+      {/* State 0 — Dark green promo card (no products) */}
+      {demoState === 0 && (
+        <div className="flex-1 flex flex-col h-full rounded-2xl overflow-hidden"
+          style={{ background: "linear-gradient(125deg, #003A1B 0%, #001C08 55%, #000d04 100%)" }}>
+          {/* Hero-identical overlay layers */}
+          <div className="relative overflow-hidden flex-1 flex flex-col">
+            {/* Green radial glow — top centre */}
+            <div className="pointer-events-none absolute -top-16 left-[20%] w-56 h-56 rounded-full opacity-[0.18]"
+              style={{ background: "radial-gradient(circle, #1db877 0%, transparent 68%)", filter: "blur(52px)" }} />
+            {/* Blue radial glow — bottom left */}
+            <div className="pointer-events-none absolute bottom-10 left-0 w-40 h-40 rounded-full opacity-[0.09]"
+              style={{ background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)", filter: "blur(38px)" }} />
+            {/* Dark ellipse vignette — top right */}
+            <div className="pointer-events-none absolute top-0 right-0 w-40 h-full rounded-r-2xl opacity-[0.22]"
+              style={{ background: "radial-gradient(ellipse at top right, #0a3d1e 0%, transparent 70%)" }} />
+            {/* Subtle grid */}
+            <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24h48M24 0v48' stroke='%23ffffff' stroke-width='0.4'/%3E%3Ccircle cx='24' cy='24' r='1' fill='%23ffffff'/%3E%3C/svg%3E")`, backgroundSize: "48px 48px" }} />
+
+            <div className="relative z-10 flex flex-col justify-between flex-1 px-5 pt-5 pb-5">
+              {/* Top section */}
+              <div>
+                {/* Logo row */}
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                    <Rocket size={20} color="#fff" />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-black text-white leading-tight">Demand Catalyst</p>
+                    <p className="text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.5)" }}>by Scinode</p>
+                  </div>
+                </div>
+
+                {/* Heading */}
+                <h3 className="text-[30px] font-black text-white leading-[1.15] mb-5">
+                  Generate Demand<br />For Your Products
+                </h3>
+
+                {/* Feature list */}
+                <div className="flex flex-col gap-3">
+                  {[
+                    "Targeted buyer & distributor outreach",
+                    "Star product demand campaigns",
+                    "Sales reach, meetings & follow-ups",
+                    "Exclusive opportunity pipeline",
+                  ].map((feat, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <span className="text-[16px] font-black shrink-0" style={{ color: "#4ade80" }}>+</span>
+                      <span className="text-[13.5px] font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA */}
+              <button onClick={goToProfile}
+                className="w-full py-3.5 rounded-xl text-[14px] font-black transition-all hover:brightness-110 mt-6"
+                style={{ background: "#4ade80", color: "#0d3d2a" }}>
+                Add Your Products
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* State 1 — Products uploaded, no campaign */}
+      {demoState === 1 && (
+        <div className="flex flex-col gap-3 px-4 py-4 h-full">
+          <div className="pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Rocket size={11} style={{ color: "#1F6F54" }} />
+              <p className="text-[9.5px] font-bold tracking-[0.15em] text-slate-400 uppercase">Demand Catalyst</p>
+            </div>
+            <h3 className="text-[15px] font-bold text-slate-900 leading-tight">Launch Your First Campaign</h3>
+          </div>
+          {/* Product count badge — styled like Total Projects card */}
+          <div className="relative rounded-xl overflow-hidden p-4"
+            style={{ background: "linear-gradient(125deg, #003A1B 0%, #001C08 55%, #000d04 100%)" }}>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: "rgba(255,255,255,0.55)" }}>Products</p>
+            <span className="text-[38px] font-black leading-none tabular-nums text-white block mb-3">5</span>
+            <p className="text-[11px] font-medium leading-snug" style={{ color: "rgba(255,255,255,0.65)" }}>
+              Select up to <span className="font-bold text-white">5 star products</span> to launch a campaign
+            </p>
+          </div>
+          {/* How it works */}
+          <div className="flex flex-col gap-2">
+            {[
+              { step: "1", text: "Pick your highest-potential products as ★ stars" },
+              { step: "2", text: "We build a demand brief for each star product" },
+              { step: "3", text: "Buyers, distributors & agents are reached out" },
+            ].map(s => (
+              <div key={s.step} className="flex items-start gap-2.5">
+                <span className="w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ background: "rgba(31,111,84,0.12)", color: "#1F6F54" }}>{s.step}</span>
+                <p className="text-[11px] text-slate-600 leading-snug">{s.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex-1" />
+          <button onClick={goToDC}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-all hover:brightness-110"
+            style={{ background: "#1F6F54" }}>
+            Start Selecting Products <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+
+      {/* State 2 — Pending sign-off */}
+      {demoState === 2 && (
+        <div className="flex flex-col gap-3 px-4 py-4">
+          <div className="pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Rocket size={11} style={{ color: "#B45309" }} />
+              <p className="text-[9.5px] font-bold tracking-[0.15em] text-slate-400 uppercase">Demand Catalyst</p>
+            </div>
+            <h3 className="text-[15px] font-bold text-slate-900 leading-tight">Onboarding Incomplete</h3>
+          </div>
+          {/* Action required card */}
+          <div className="rounded-xl p-3.5" style={{ background: "rgba(180,83,9,0.05)", border: "1px solid rgba(180,83,9,0.18)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[15px]">📋</span>
+              <p className="text-[11px] font-bold" style={{ color: "#B45309" }}>Action Required</p>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-snug">
+              Sign the <span className="font-semibold text-slate-700">Platform Terms & Conditions</span> to activate your catalogue and unlock Demand Catalyst campaigns.
+            </p>
+          </div>
+          {/* Steps showing what's pending */}
+          <div className="flex flex-col gap-1.5">
+            {[
+              { done: true,  text: "Catalogue uploaded & indexed" },
+              { done: false, text: "Sign platform terms & conditions" },
+              { done: false, text: "Go live — receive buyer enquiries" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0"
+                  style={{ background: s.done ? "rgba(31,111,84,0.12)" : "rgba(180,83,9,0.10)", color: s.done ? "#1F6F54" : "#B45309" }}>
+                  {s.done ? "✓" : "!"}
+                </span>
+                <p className={`text-[11px] leading-snug ${s.done ? "text-slate-400 line-through" : "text-slate-600 font-medium"}`}>{s.text}</p>
+              </div>
+            ))}
+          </div>
+          <button className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-all hover:brightness-110 mt-1"
+            style={{ background: "#B45309" }}>
+            ✍️ Complete Sign-off
+          </button>
+        </div>
+      )}
+
+      {/* State 3 — Campaign running */}
+      {demoState === 3 && (
+        <div className="flex flex-col gap-2.5 px-4 py-4">
+          <div className="pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Rocket size={11} style={{ color: "#1F6F54" }} />
+              <p className="text-[9.5px] font-bold tracking-[0.15em] text-slate-400 uppercase">Demand Catalyst</p>
+            </div>
+            <h3 className="text-[15px] font-bold text-slate-900 leading-tight">Active Campaign Overview</h3>
+          </div>
+          {/* Summary chips */}
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { label: "Opportunities", value: "25", color: "#1F6F54" },
+              { label: "Demand Setup",  value: "2",  color: "#0077CC" },
+              { label: "Execution",     value: "1",  color: "#6237C7" },
+            ].map(c => (
+              <div key={c.label} className="flex flex-col items-center py-2 rounded-xl border border-slate-100 bg-slate-50/60">
+                <span className="text-[22px] font-black leading-none tabular-nums" style={{ color: c.color }}>{c.value}</span>
+                <span className="text-[7.5px] font-bold uppercase tracking-[0.07em] text-slate-400 mt-0.5 text-center leading-tight">{c.label}</span>
+              </div>
+            ))}
+          </div>
+          {/* Per-product breakdown */}
+          <div className="flex flex-col gap-1">
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-slate-400">Star Products</p>
+            {DC_CAMPAIGN_PRODUCTS.map((p, i) => {
+              const sc = STAGE_COLORS[p.stage];
+              return (
+                <div key={i} className="flex items-center gap-3 px-2.5 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 transition-all">
+                  {p.stage === "Opportunities Pipeline" ? (
+                    <span className="text-[22px] font-black leading-none tabular-nums shrink-0 w-8 text-right" style={{ color: "#1F6F54" }}>{p.opps}</span>
+                  ) : (
+                    <span className="text-[20px] font-black leading-none tabular-nums shrink-0 w-8 text-right text-slate-200">—</span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold text-slate-800 truncate">{p.name}</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="text-[9px] text-slate-400">{p.stage === "Opportunities Pipeline" ? "Opportunities" : "No opportunities yet"}</span>
+                      <span className="text-slate-300 text-[9px]">/</span>
+                      <span className="text-[9px] font-semibold px-1.5 py-[2px] rounded-full" style={{ background: sc.bg, color: sc.text }}>{p.stage}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={goToDC}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-all hover:brightness-110"
+            style={{ background: "#1F6F54" }}>
+            Open Demand Catalyst <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
+      </div>
+    </div>
   );
 }
 
@@ -1506,21 +1808,23 @@ function MarketPulsePanel() {
         </div>
       </div>
 
-      {/* Bottom Insights */}
+      {/* This Week Usage */}
       <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(42,203,131,0.18)" }}>
         <p className="text-[8.5px] font-bold uppercase tracking-[0.18em] mb-2.5" style={{ color: "#2d6a4f" }}>
           THIS WEEK ON MARKET PULSE
         </p>
         <div className="flex flex-col gap-2">
           {[
-            { icon: "📸", text: "124 market snapshots generated this week",                            color: "rgba(42,203,131,0.10)",  border: "rgba(42,203,131,0.25)", textColor: "#0e3d24" },
-            { icon: "📊", text: "18 manufacturers analyzed pricing trends today",                       color: "rgba(0,119,204,0.07)",   border: "rgba(0,119,204,0.20)",  textColor: "#0c3460" },
-            { icon: "🌍", text: "72% of manufacturers used Market Pulse to evaluate export opportunities", color: "rgba(98,55,199,0.07)", border: "rgba(98,55,199,0.20)",  textColor: "#3d1e7a" },
+            { icon: "📸", label: "Snapshots Generated", used: 0, total: 5 },
+            { icon: "📄", label: "Detailed Reports",    used: 0, total: 1 },
           ].map((row, i) => (
-            <div key={i} className="flex items-start gap-2.5 px-3 py-2 rounded-xl"
-              style={{ background: row.color, border: `1px solid ${row.border}` }}>
-              <span className="text-[13px] shrink-0 mt-[1px]">{row.icon}</span>
-              <span className="text-[10px] font-medium leading-snug" style={{ color: row.textColor }}>{row.text}</span>
+            <div key={i} className="flex items-center gap-3 px-3.5 py-3 rounded-2xl"
+              style={{ background: i === 0 ? "rgba(42,203,131,0.08)" : "rgba(0,119,204,0.06)", border: `1px solid ${i === 0 ? "rgba(42,203,131,0.22)" : "rgba(0,119,204,0.18)"}` }}>
+              <span className="text-[18px] shrink-0">{row.icon}</span>
+              <p className="flex-1 text-[13px] font-semibold" style={{ color: i === 0 ? "#0e3d24" : "#0c3460" }}>{row.label}</p>
+              <span className="text-[13px] font-bold tabular-nums" style={{ color: i === 0 ? "#1F6F54" : "#0077CC" }}>{row.used} / {row.total}</span>
+              <span className="text-[9px] font-bold px-2 py-[3px] rounded-full"
+                style={{ background: "rgba(42,203,131,0.15)", color: "#1F6F54" }}>FREE</span>
             </div>
           ))}
         </div>

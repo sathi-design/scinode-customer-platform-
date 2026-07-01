@@ -254,10 +254,10 @@ function MatchTypeInfoTooltip({ type }: { type: "Capability-Based" | "Product Ca
       <Info size={10} className="cursor-help" style={{ color: isCapability ? "#0E6F5C" : "#6237C7", opacity: 0.7 }} />
       {show && (
         <div
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-[248px] z-50 pointer-events-none"
+          className="absolute top-full left-0 mt-2 w-[200px] z-[200] pointer-events-none"
           style={{ animation: "tooltipFadeIn 160ms ease both" }}
         >
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-b border-r"
+          <div className="absolute -top-1.5 left-3 w-2.5 h-2.5 rotate-45 border-l border-t"
             style={{ background: "#1e293b", borderColor: "rgba(255,255,255,0.08)" }} />
           <div className="relative bg-[#1e293b] rounded-xl p-3.5 shadow-2xl border border-white/10">
             <p className="text-[11.5px] font-bold text-white mb-1.5">
@@ -389,6 +389,9 @@ function FilterDrawer({
                           )}>
                             {opt}
                           </span>
+                          {section.id === "matchType" && (opt === "Capability-Based" || opt === "Product Catalogue-Based") && (
+                            <MatchTypeInfoTooltip type={opt as "Capability-Based" | "Product Catalogue-Based"} />
+                          )}
                         </label>
 
                         {/* Nested sub-options for Capability-Based */}
@@ -447,7 +450,7 @@ function FilterDrawer({
             onClick={onClose}
             className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold text-white transition-colors"
             style={{ background: "#1F6F54" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#1e3612")}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
           >
             Apply Filters
@@ -507,11 +510,7 @@ function getFooterMessage(
   if (isExclusive)
     return { text: "Exclusive projects require Premium upgrade", color: "#dc2626" };
 
-  const remaining = FREE_PROPOSAL_LIMIT - proposalsUsed;
-  if (remaining > 0)
-    return { text: `${remaining} free proposal${remaining > 1 ? "s" : ""} remaining`, color: "#059669" };
-
-  return { text: "Proposal limit reached — upgrade to continue", color: "#d97706" };
+  return null;
 }
 
 // ─── Project card ─────────────────────────────────────────────────────────────
@@ -522,6 +521,7 @@ function ProjectCard({
   matchType,
   planState,
   proposalsUsed,
+  onSendProposal,
 }: {
   project: Project;
   onClick: () => void;
@@ -529,6 +529,7 @@ function ProjectCard({
   matchType?: MatchType;
   planState: PlanState;
   proposalsUsed: number;
+  onSendProposal?: () => void;
 }) {
   const footer    = getFooterMessage(isExclusive, planState, proposalsUsed);
   const displayMT = matchType ?? project.matchType;
@@ -540,20 +541,12 @@ function ProjectCard({
 
   return (
     <div className="group relative cursor-pointer h-full" onClick={onClick}>
-      {/* Animated gradient border on hover */}
-      <div className="absolute -inset-[1.5px] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{
-          background:     "linear-gradient(135deg, #1F6F54 0%, #2ACB83 40%, #1F6F54 70%, #2dd194 100%)",
-          backgroundSize: "300% 300%",
-          animation:      "gradientShift 3s ease infinite",
-        }} />
-
       {/* Card body */}
       <div className={cn(
         "relative bg-white rounded-[12px] p-[10px] flex flex-col overflow-hidden h-full",
         "shadow-[0px_4px_6px_0px_rgba(0,0,0,0.08),0px_2px_4px_0px_rgba(0,0,0,0.04)]",
-        "group-hover:shadow-[0px_16px_32px_rgba(31,111,84,0.15)] group-hover:pb-12",
-        "transition-[box-shadow,padding] duration-300 ease-in-out",
+        "ring-1 ring-transparent group-hover:ring-[#1F6F54] group-hover:shadow-[0px_8px_24px_rgba(40,71,26,0.12)]",
+        "transition-[box-shadow,ring-color] duration-200 ease-in-out",
       )}>
 
         {/* ── Image ── */}
@@ -606,23 +599,49 @@ function ProjectCard({
           {project.title}
         </h3>
 
-        {/* ── Meta rows ── */}
-        <div className="flex flex-col gap-1.5 mt-auto">
-          {/* Country */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] leading-none">{project.countryFlag}</span>
-            <span className="text-[11.5px] text-[#353535] font-medium">{project.country}</span>
+        {/* ── Meta rows + hover arrow: two-column layout ── */}
+        <div className="flex items-end justify-between gap-2 mt-auto">
+          {/* Left: details */}
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[13px] leading-none">{project.countryFlag}</span>
+              <span className="text-[11.5px] text-[#353535] font-medium">{project.country}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-400">📦</span>
+              <span className="text-[11.5px] text-[#353535]">{qtyShort}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-400">🗓</span>
+              <span className="text-[11px] text-slate-400">Posted {project.postedDate}</span>
+            </div>
           </div>
-          {/* Quantity */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-400">📦</span>
-            <span className="text-[11.5px] text-[#353535]">{qtyShort}</span>
-          </div>
-          {/* Posted date */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-400">🗓</span>
-            <span className="text-[11px] text-slate-400">Posted {project.postedDate}</span>
-          </div>
+
+          {/* Right: circle arrow — appears on hover */}
+          {onSendProposal && planState === "free" && !isExclusive && (FREE_PROPOSAL_LIMIT - proposalsUsed) > 0 ? (
+            <button
+              onClick={e => { e.stopPropagation(); onSendProposal(); }}
+              className={cn(
+                "shrink-0 w-9 h-9 rounded-full flex items-center justify-center",
+                "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100",
+                "transition-all duration-200 ease-out",
+              )}
+              style={{ background: "#1F6F54" }}
+            >
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </button>
+          ) : (
+            <div
+              className={cn(
+                "shrink-0 w-9 h-9 rounded-full flex items-center justify-center",
+                "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100",
+                "transition-all duration-200 ease-out",
+              )}
+              style={{ background: "#1F6F54" }}
+            >
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </div>
+          )}
         </div>
 
         {/* Footer message */}
@@ -634,15 +653,6 @@ function ProjectCard({
             </p>
           </div>
         )}
-
-        {/* Hover arrow */}
-        <div className={cn(
-          "absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center",
-          "bg-[#1F6F54] opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0",
-          "transition-all duration-300 ease-in-out",
-        )}>
-          <ArrowUpRight className="w-4 h-4 text-white" />
-        </div>
       </div>
     </div>
   );
@@ -726,7 +736,7 @@ function ExclusiveEmptyState({ onExplore }: { onExplore: () => void }) {
             onClick={onExplore}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all whitespace-nowrap"
             style={{ background: "#1F6F54" }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#185C45")}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#1e3612")}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#1F6F54")}
           >
             Explore Open Projects <ArrowUpRight size={14} />
@@ -821,10 +831,89 @@ function DemoSwitcher({ current, onChange }: { current: DemoState; onChange: (s:
   );
 }
 
+// ─── Proposal‑remaining popup ─────────────────────────────────────────────────
+function ProposalRemainingPopup({
+  remaining,
+  onClose,
+  onViewBanner,
+}: {
+  remaining: number;
+  onClose: () => void;
+  onViewBanner: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.40)", backdropFilter: "blur(4px)" }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 text-center">
+          <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
+            style={{ background: "rgba(245,200,66,0.12)", border: "1px solid rgba(201,162,39,0.35)" }}>
+            <Crown size={20} style={{ color: "#c9a227" }} />
+          </div>
+          <h3 className="text-[17px] font-black text-slate-900 mb-1">
+            {remaining === 0
+              ? "Proposal limit reached"
+              : `You have ${remaining} proposal${remaining === 1 ? "" : "s"} left`}
+          </h3>
+          <p className="text-[12.5px] text-slate-500 leading-relaxed">
+            {remaining === 0
+              ? "You've used all your free proposals. Upgrade to send unlimited proposals."
+              : `Free plan includes ${FREE_PROPOSAL_LIMIT} proposals. Upgrade to unlock unlimited submissions and Exclusive Projects.`}
+          </p>
+        </div>
+        {/* Progress bar */}
+        <div className="px-6 pb-4">
+          <div className="flex items-center justify-between text-[10.5px] text-slate-400 mb-1.5">
+            <span>Free proposals used</span>
+            <span className="font-semibold text-slate-700">{FREE_PROPOSAL_LIMIT - remaining} / {FREE_PROPOSAL_LIMIT}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${((FREE_PROPOSAL_LIMIT - remaining) / FREE_PROPOSAL_LIMIT) * 100}%`,
+                background: remaining === 0 ? "#dc2626" : "linear-gradient(90deg,#f5c842,#c9a227)",
+              }} />
+          </div>
+        </div>
+        {/* Actions */}
+        <div className="flex gap-2 px-6 pb-6">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+            Close
+          </button>
+          <button onClick={() => { onClose(); onViewBanner(); }}
+            className="flex-1 py-2.5 rounded-xl text-[13px] font-bold text-[#020202] transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+            View Premium Info
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Free plan strip ──────────────────────────────────────────────────────────
-function FreeAccessStrip({ onUpgrade }: { onUpgrade: () => void }) {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
+function FreeAccessStrip({
+  open,
+  onUpgrade,
+  onDismiss,
+}: {
+  open: boolean;
+  onUpgrade: () => void;
+  onDismiss: () => void;
+}) {
+  if (!open) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] text-slate-400">Plan info hidden.</span>
+        <button onClick={onDismiss}
+          className="flex items-center gap-1 text-[11px] font-semibold text-[#c9a227] hover:underline">
+          <Crown size={10} /> Show plan info
+        </button>
+      </div>
+    );
+  }
   return (
     <div
       className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-xl border flex-wrap"
@@ -860,7 +949,7 @@ function FreeAccessStrip({ onUpgrade }: { onUpgrade: () => void }) {
           <Zap size={11} /> Upgrade Plan
         </button>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={onDismiss}
           className="w-6 h-6 flex items-center justify-center rounded-full transition-colors hover:bg-white/10"
           style={{ color: "rgba(201,162,39,0.70)" }}
           aria-label="Dismiss"
@@ -1338,7 +1427,23 @@ export function ProjectsListing() {
   // Demo switcher state — "free" or "premium"
   const [demoState, setDemoState] = useState<DemoState>("free");
   const { planState, exclusiveState } = deriveStates(demoState);
-  const proposalsUsed = PROPOSALS_USED;
+  const [exclAssigned, setExclAssigned] = useState(true); // free plan: has some exclusive assigned?
+  const [proposalsUsed, setProposalsUsed] = useState(PROPOSALS_USED);
+
+  // Plan banner visibility
+  const [bannerOpen, setBannerOpen] = useState(true);
+
+  // Proposal-remaining popup: stores remaining count, null = hidden
+  const [proposalPopup, setProposalPopup] = useState<number | null>(null);
+
+  // Handle "Send Proposal" from a card
+  const handleSendProposal = () => {
+    if (planState !== "free") return;
+    const next = proposalsUsed + 1;
+    setProposalsUsed(next);
+    const remaining = FREE_PROPOSAL_LIMIT - next;
+    setProposalPopup(remaining);
+  };
 
   // Upgrade modal
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -1378,12 +1483,21 @@ export function ProjectsListing() {
 
   // Toggle drawer filter
   const toggleDrawerFilter = (section: keyof DrawerFilters, value: string) => {
-    setDrawerFilters(prev => ({
-      ...prev,
-      [section]: prev[section].includes(value)
-        ? prev[section].filter(v => v !== value)
-        : [...prev[section], value],
-    }));
+    setDrawerFilters(prev => {
+      const next = {
+        ...prev,
+        [section]: prev[section].includes(value)
+          ? prev[section].filter(v => v !== value)
+          : [...prev[section], value],
+      };
+      // Sync matchTypeFilter from drawer
+      if (section === "matchType") {
+        const selected = next.matchType;
+        if (selected.length === 1) setMatchTypeFilter(selected[0] as MatchType);
+        else setMatchTypeFilter("all");
+      }
+      return next;
+    });
   };
 
   // Filter + search projects
@@ -1440,6 +1554,15 @@ export function ProjectsListing() {
         }
       `}</style>
 
+      {/* Proposal-remaining popup */}
+      {proposalPopup !== null && (
+        <ProposalRemainingPopup
+          remaining={proposalPopup}
+          onClose={() => setProposalPopup(null)}
+          onViewBanner={() => setBannerOpen(true)}
+        />
+      )}
+
       {/* Upgrade modal */}
       <UpgradePremiumModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
 
@@ -1464,17 +1587,180 @@ export function ProjectsListing() {
       <div className="flex flex-col gap-3 p-4 sm:p-6 pb-8 h-full overflow-y-auto">
 
         {/* ── Page header ── */}
-        <div>
-          <h1 className="text-[26px] font-semibold leading-[32px] tracking-[-0.2px] text-[#18181b]"
-            style={{ fontFamily: "Poppins, sans-serif" }}>
-            Projects
-          </h1>
-          <p className="text-[13px] text-[#62748e] mt-0.5 leading-[20px] max-w-[600px]">
-            Manufacturing opportunities matched to your capabilities, products, and industry focus.
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-[26px] font-semibold leading-[32px] tracking-[-0.2px] text-[#18181b]"
+              style={{ fontFamily: "Poppins, sans-serif" }}>
+              Opportunities
+            </h1>
+            <p className="text-[13px] text-[#62748e] mt-0.5 leading-[20px]">
+              Manufacturing opportunities matched to your capabilities, products, and industry focus.
+            </p>
+          </div>
+          {/* Plan info controls — aligned to top-right of heading */}
+          {demoState === "free" && (
+            <div className="flex items-center gap-2 shrink-0 mt-1">
+              {!bannerOpen && (
+                <span className="text-[11px] text-slate-400">Plan info hidden.</span>
+              )}
+              {!bannerOpen && (
+                <button
+                  onClick={() => setBannerOpen(true)}
+                  className="flex items-center gap-1 text-[11px] font-semibold hover:underline"
+                  style={{ color: "#c9a227" }}
+                >
+                  <Crown size={10} /> Show plan info
+                </button>
+              )}
+              {bannerOpen && (
+                <button
+                  onClick={() => setBannerOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors hover:bg-amber-50"
+                  style={{ color: "#c9a227", borderColor: "rgba(201,162,39,0.40)" }}
+                >
+                  <Crown size={11} /> Plan info
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* ── Search + Sort + Filters CTA ── */}
+        {/* ── Plan banner — above search, visible when open ── */}
+        {demoState === "free" && bannerOpen && (
+          <FreeAccessStrip
+            open={bannerOpen}
+            onUpgrade={openUpgrade}
+            onDismiss={() => setBannerOpen(false)}
+          />
+        )}
+        {demoState === "premium" && <PremiumAccessStrip />}
+
+        {/* ── Project count summary cards ── */}
+        {(() => {
+          const openCap    = openProjects.filter(p => p.matchType === "Capability-Based").length;
+          const openCat    = openProjects.filter(p => p.matchType === "Product Catalogue-Based").length;
+          const openTotal  = openProjects.length;
+          const exclCap    = EXCLUSIVE_PROJECTS.filter(p => p.matchType === "Capability-Based").length;
+          const exclCat    = EXCLUSIVE_PROJECTS.filter(p => p.matchType === "Product Catalogue-Based").length;
+          const exclTotal  = EXCLUSIVE_PROJECTS.length;
+
+          const hasAssignedExcl = exclAssigned;
+          const lockedMoreCount = 17;
+
+          return (
+            <div className="flex items-stretch gap-3">
+              {/* Open Projects card */}
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl border flex-1 min-w-0" style={{ borderColor: "rgba(31,111,84,0.20)", background: "rgba(31,111,84,0.04)" }}>
+                <div className="shrink-0">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">Open Projects</p>
+                  <span className="text-[26px] font-black leading-none tabular-nums" style={{ color: "#1F6F54" }}>{openTotal}</span>
+                </div>
+                <div className="w-px self-stretch bg-slate-200/70 shrink-0" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[16px] font-black leading-none tabular-nums text-slate-800 shrink-0">{openCap}</span>
+                    <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Capability-Based</span>
+                  </div>
+                  <div className="w-px h-4 bg-slate-200 shrink-0" />
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[16px] font-black leading-none tabular-nums text-slate-800 shrink-0">{openCat}</span>
+                    <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Catalogue-Based</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exclusive Projects card — 3 states */}
+              {isExclusiveLocked ? (
+                !hasAssignedExcl ? (
+                  /* ── State A: locked + nothing assigned yet ── */
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border flex-1 min-w-0"
+                    style={{ borderColor: "rgba(100,116,139,0.20)", background: "rgba(100,116,139,0.04)" }}>
+                    <div className="shrink-0">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Lock size={9} className="text-slate-400" />
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Exclusive Projects</p>
+                      </div>
+                      <span className="text-[26px] font-black leading-none tabular-nums text-slate-300">—</span>
+                    </div>
+                    <div className="w-px self-stretch bg-slate-200 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-500 leading-snug">
+                        Upgrade to Premium to unlock exclusive opportunities matched to your plant.
+                      </p>
+                    </div>
+                    <button onClick={openUpgrade}
+                      className="ml-auto shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-[9.5px] font-bold whitespace-nowrap transition-all hover:brightness-110"
+                      style={{ background: "#1F6F54", color: "#fff" }}>
+                      ⚡ Upgrade
+                    </button>
+                  </div>
+                ) : (
+                  /* ── State B: locked + some projects assigned (free plan partial view) ── */
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border flex-1 min-w-0"
+                    style={{ borderColor: "rgba(100,116,139,0.20)", background: "rgba(100,116,139,0.04)" }}>
+                    <div className="shrink-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <Lock size={9} className="text-slate-400" />
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Exclusive Projects</p>
+                      </div>
+                      <span className="text-[26px] font-black leading-none tabular-nums text-slate-400">{exclTotal}</span>
+                    </div>
+                    <div className="w-px self-stretch bg-slate-200 shrink-0" />
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[16px] font-black leading-none tabular-nums text-slate-500 shrink-0">{exclCap}</span>
+                        <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Capability-Based</span>
+                      </div>
+                      <div className="w-px h-4 bg-slate-200 shrink-0" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[16px] font-black leading-none tabular-nums text-slate-500 shrink-0">{exclCat}</span>
+                        <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Catalogue-Based</span>
+                      </div>
+                    </div>
+                    <button onClick={openUpgrade} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-[10px] font-bold transition-all hover:brightness-110 shrink-0 whitespace-nowrap ml-auto" style={{ background: "#1F6F54" }}>
+                      <span>⚡</span> Upgrade
+                    </button>
+                  </div>
+                )
+              ) : premiumExclusiveState === "empty" ? (
+                /* ── State C-empty: premium but no projects assigned yet ── */
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border flex-1 min-w-0" style={{ borderColor: "rgba(0,119,204,0.20)", background: "rgba(0,119,204,0.04)" }}>
+                  <div className="shrink-0">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">Exclusive Projects</p>
+                    <span className="text-[26px] font-black leading-none tabular-nums text-slate-300">—</span>
+                  </div>
+                  <div className="w-px self-stretch bg-slate-200/70 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold leading-snug" style={{ color: "#0077CC" }}>Exclusive projects are being curated for your plant.</p>
+                    <p className="text-[10px] text-slate-400 leading-snug mt-0.5">Our team is matching opportunities — check back soon.</p>
+                  </div>
+                </div>
+              ) : (
+                /* ── State C-assigned: premium — full access with numbers ── */
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl border flex-1 min-w-0" style={{ borderColor: "rgba(0,119,204,0.20)", background: "rgba(0,119,204,0.04)" }}>
+                  <div className="shrink-0">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-0.5">Exclusive Projects</p>
+                    <span className="text-[26px] font-black leading-none tabular-nums" style={{ color: "#0077CC" }}>{exclTotal}</span>
+                  </div>
+                  <div className="w-px self-stretch bg-slate-200/70 shrink-0" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[16px] font-black leading-none tabular-nums text-slate-800 shrink-0">{exclCap}</span>
+                      <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Capability-Based</span>
+                    </div>
+                    <div className="w-px h-4 bg-slate-200 shrink-0" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[16px] font-black leading-none tabular-nums text-slate-800 shrink-0">{exclCat}</span>
+                      <span className="text-[8.5px] font-semibold uppercase tracking-[0.09em] text-slate-400 whitespace-nowrap">Catalogue-Based</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Search row: search + Open/Exclusive pill + Sort ── */}
         <div className="flex items-center gap-2.5">
           {/* Search */}
           <div className="flex-1 flex items-center gap-2 px-3 py-[9px] bg-white border border-[#e4e4e7] rounded-[6px] hover:border-[#1F6F54]/40 transition-colors focus-within:border-[#1F6F54]/60">
@@ -1483,8 +1769,8 @@ export function ProjectsListing() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search CAS No., Molecular Name, Projects Name"
-              className="flex-1 text-sm text-[#09090b] placeholder:text-[#71717a] outline-none bg-transparent"
+              placeholder="Search projects…"
+              className="flex-1 min-w-0 text-sm text-[#09090b] placeholder:text-[#71717a] outline-none bg-transparent"
             />
             {search && (
               <button onClick={() => setSearch("")} className="text-[#9ca3af] hover:text-[#353535] transition-colors">
@@ -1493,10 +1779,39 @@ export function ProjectsListing() {
             )}
           </div>
 
+          {/* Open / Exclusive toggle — same corner radius as search box */}
+          <div className="flex items-center p-[3px] bg-[#f4f4f5] rounded-[8px] border border-[#e4e4e7]">
+            <button
+              onClick={() => switchTab("open")}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-[6px] rounded-[6px] text-[13px] font-semibold transition-all duration-200 whitespace-nowrap",
+                activeTab === "open"
+                  ? "bg-[#1F6F54] text-white shadow-sm"
+                  : "text-[#62748e] hover:text-[#374151]",
+              )}
+            >
+              Open Projects
+              <OpenProjectsInfoTooltip />
+            </button>
+            <button
+              onClick={() => switchTab("exclusive")}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-[6px] rounded-[6px] text-[13px] font-semibold transition-all duration-200 whitespace-nowrap",
+                activeTab === "exclusive"
+                  ? "bg-[#1F6F54] text-white shadow-sm"
+                  : "text-[#62748e] hover:text-[#374151]",
+              )}
+            >
+              {isExclusiveLocked && <Lock size={11} className="shrink-0" />}
+              Exclusive Projects
+              <ExclusiveInfoTooltip />
+            </button>
+          </div>
+
           {/* Sort */}
           <SortDropdown value={sort} onSelect={setSort} />
 
-          {/* Filters CTA */}
+          {/* Filters — same row as sort */}
           <button
             onClick={() => setDrawerOpen(true)}
             className={cn(
@@ -1514,6 +1829,28 @@ export function ProjectsListing() {
               </span>
             )}
           </button>
+        </div>
+
+        {/* ── Row below search: Demo switcher only ── */}
+        <div className="flex items-center gap-2.5 -mt-1">
+          <DemoSwitcher current={demoState} onChange={s => { setDemoState(s); setMatchTypeFilter("all"); setBannerOpen(true); setProposalsUsed(PROPOSALS_USED); }} />
+          {/* Exclusive state toggle — only visible on free plan */}
+          {isExclusiveLocked && (
+            <div className="flex items-center gap-1 ml-1 pl-2 border-l border-slate-200">
+              <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-slate-300">Excl:</span>
+              {[{ label: "No Projects", val: false }, { label: "Has Projects", val: true }].map(opt => (
+                <button key={String(opt.val)} onClick={() => setExclAssigned(opt.val)}
+                  className="text-[9px] font-bold px-2 py-[3px] rounded-full transition-all border"
+                  style={{
+                    background:  exclAssigned === opt.val ? "#1F6F54" : "#f9fafb",
+                    color:       exclAssigned === opt.val ? "#fff"    : "#9ca3af",
+                    borderColor: exclAssigned === opt.val ? "#1F6F54" : "#e5e7eb",
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Applied filter chips ── */}
@@ -1548,73 +1885,6 @@ export function ProjectsListing() {
           );
         })()}
 
-        {/* ── Global plan state banners — shown below search for all tabs ── */}
-        {/* Demo switcher — always visible so testers can toggle plans */}
-        <DemoSwitcher current={demoState} onChange={s => { setDemoState(s); setMatchTypeFilter("all"); }} />
-        {demoState === "free"    && <FreeAccessStrip onUpgrade={openUpgrade} />}
-        {demoState === "premium" && <PremiumAccessStrip />}
-
-        {/* ── Primary tabs ── */}
-        <div className="border-b border-slate-200">
-          <div className="flex items-end gap-0">
-            {/* Open Projects tab */}
-            <button
-              onClick={() => switchTab("open")}
-              className={cn(
-                "flex items-center gap-1.5 px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
-                activeTab === "open"
-                  ? "border-[#1F6F54] text-[#1F6F54]"
-                  : "border-transparent text-[#62748e] hover:text-[#374151]",
-              )}
-            >
-              Open Projects
-              <OpenProjectsInfoTooltip />
-            </button>
-
-            {/* Exclusive Projects tab — always clickable; locked state shown inside */}
-            <button
-              onClick={() => switchTab("exclusive")}
-              className={cn(
-                "flex items-center gap-1.5 px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 border-b-2 -mb-px",
-                activeTab === "exclusive"
-                  ? "border-[#1F6F54] text-[#1F6F54]"
-                  : "border-transparent text-[#62748e] hover:text-[#374151]",
-              )}
-            >
-              {isExclusiveLocked && (
-                <Lock size={11} className="shrink-0 text-[#9ca3af]" />
-              )}
-              Exclusive Projects
-              <ExclusiveInfoTooltip />
-            </button>
-          </div>
-        </div>
-
-        {/* ── Secondary match type filter ── */}
-        <div className="flex items-center gap-2 mt-2">
-          {/* Segmented control wrapper */}
-          <div className="flex items-center p-[3px] bg-[#f4f4f5] rounded-[8px] border border-[#e4e4e7]">
-            {(["all", "Capability-Based", "Product Catalogue-Based"] as const).map(opt => (
-              <button
-                key={opt}
-                onClick={() => setMatchTypeFilter(opt)}
-                className={cn(
-                  "flex items-center gap-1 px-4 py-[6px] rounded-[6px] text-[12.5px] font-semibold transition-all duration-200",
-                  matchTypeFilter === opt
-                    ? opt === "Capability-Based"
-                      ? "bg-[#0E6F5C] text-white shadow-sm"
-                      : opt === "Product Catalogue-Based"
-                      ? "bg-[#1F6F54] text-white shadow-sm"
-                      : "bg-white text-[#18181b] shadow-sm"
-                    : "text-[#62748e] hover:text-[#374151]",
-                )}
-              >
-                {opt === "all" ? "All" : opt}
-                {opt !== "all" && <MatchTypeInfoTooltip type={opt} />}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* ══════════════════════════════════════════════════════════════════════
             TAB CONTENT
@@ -1657,6 +1927,7 @@ export function ProjectsListing() {
                             onClick={() => router.push(`/dashboard/projects/${project.id}`)}
                             planState={planState}
                             proposalsUsed={proposalsUsed}
+                            onSendProposal={handleSendProposal}
                           />
                         ))}
                       </div>
@@ -1692,6 +1963,7 @@ export function ProjectsListing() {
                         onClick={() => router.push(`/dashboard/projects/${project.id}`)}
                         planState={planState}
                         proposalsUsed={proposalsUsed}
+                        onSendProposal={handleSendProposal}
                       />
                     ))}
                   </div>
