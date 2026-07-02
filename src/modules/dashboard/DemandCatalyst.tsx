@@ -5891,194 +5891,244 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
   );
 }
 
-// ─── Offline Engine Panel ──────────────────────────────────────────────────────
+// ─── Offline Engine Panel (master-detail) ─────────────────────────────────────
 
-function OfflinePieBlock({ title, sub, total, geoData, sizeData }: {
-  title: string; sub: string; total: number;
-  geoData: { flag?: string; label: string; pct: number; color: string }[];
-  sizeData: { label: string; pct: number; color: string }[];
-}) {
-  return (
-    <div className="flex flex-col gap-5">
-      {/* Geo distribution */}
-      <div>
-        <p className="text-[12px] font-bold text-slate-800 mb-0.5">Geographical Distribution</p>
-        <p className="text-[10.5px] text-slate-400 mb-3">{sub} by country</p>
-        <div className="flex items-center gap-5">
-          <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={100} />
-          <div className="flex flex-col gap-2.5 flex-1">
-            {geoData.map(r => (
-              <div key={r.label} className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                <span className="text-[11px] text-slate-600 flex-1">{r.flag ? `${r.flag} ` : ""}{r.label}</span>
-                <div className="text-right">
-                  <span className="text-[12px] font-bold text-slate-800">{Math.round(total * r.pct / 100)}</span>
-                  <span className="text-[9.5px] text-slate-400 ml-1">{r.pct}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="h-px bg-[#f3f4f6]" />
-
-      {/* Company size distribution */}
-      <div>
-        <p className="text-[12px] font-bold text-slate-800 mb-0.5">Company Size Distribution</p>
-        <p className="text-[10.5px] text-slate-400 mb-3">Breakdown by company size</p>
-        <div className="flex items-center gap-5">
-          <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={100} />
-          <div className="flex flex-col gap-2.5 flex-1">
-            {sizeData.map(r => (
-              <div key={r.label} className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
-                <div className="text-right">
-                  <span className="text-[12px] font-bold text-slate-800">{Math.round(total * r.pct / 100)}</span>
-                  <span className="text-[9.5px] text-slate-400 ml-1">{r.pct}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+type OfflineStage = "reach" | "meetings" | "opps";
 
 function OfflineEnginePanel({ data, salesOpps }: {
   data: typeof TEC_ALL;
   salesOpps: number;
 }) {
-  const [activeTab, setActiveTab] = useState<"buyers" | "reach" | "meetings" | "qualified">("buyers");
+  const [active, setActive] = useState<OfflineStage>("reach");
+
+  const stages = [
+    {
+      id: "reach" as OfflineStage,
+      n: "01",
+      label: "Sales Reach Out",
+      value: data.salesReachout,
+      unit: "Buyers Reached",
+      color: "#1a5c3a",
+      accentBg: "#f0fdf4",
+      accentBorder: "#bbf7d0",
+      tags: ["Cold Calling", "Email Outreach", "Distributor Outreach", "Trade Events", "Physical Meetings"],
+    },
+    {
+      id: "meetings" as OfflineStage,
+      n: "02",
+      label: "Meetings Conducted",
+      value: data.meetings,
+      unit: "Meetings Held",
+      color: "#0077CC",
+      accentBg: "#eff8ff",
+      accentBorder: "#bfdbfe",
+      tags: ["Video Calls", "Discovery Meetings", "Buyer Qualification"],
+    },
+    {
+      id: "opps" as OfflineStage,
+      n: "03",
+      label: "Exclusive Opportunities",
+      value: salesOpps,
+      unit: "Qualified Opps",
+      color: "#6237C7",
+      accentBg: "#f5f3ff",
+      accentBorder: "#ddd6fe",
+      tags: ["Qualified Buyer", "Proposal Ready", "High Intent"],
+    },
+  ];
 
   const geoData = [
-    { flag: "🇩🇪", label: "Germany", pct: 45, color: "#1F6F54" },
-    { flag: "🇺🇸", label: "USA",     pct: 29, color: "#2E9E72" },
-    { flag: "🇯🇵", label: "Japan",   pct: 16, color: "#52B87A" },
-    { flag: "🇮🇳", label: "India",   pct: 10, color: "#A8DFC0" },
+    { flag: "🇩🇪", label: "Germany", pct: 45, color: "#C8E89A" },
+    { flag: "🇺🇸", label: "USA",     pct: 29, color: "#52B87A" },
+    { flag: "🇯🇵", label: "Japan",   pct: 16, color: "#2E7D52" },
+    { flag: "🇮🇳", label: "India",   pct: 10, color: "#1A4A30" },
   ];
   const sizeData = [
-    { label: "Enterprise",     pct: 45, color: "#1F6F54" },
-    { label: "Mid-Market",     pct: 35, color: "#2E9E72" },
-    { label: "Small Business", pct: 20, color: "#A8DFC0" },
+    { label: "Enterprise",     pct: 45, color: "#C8E89A" },
+    { label: "Mid-Market",     pct: 35, color: "#52B87A" },
+    { label: "Small Business", pct: 20, color: "#1A5C3A" },
   ];
 
-  const tabs: { key: "buyers" | "reach" | "meetings" | "qualified"; label: string; value: number | string; color: string }[] = [
-    { key: "buyers",    label: "Offline Buyers",           value: data.salesReachout, color: "#1F6F54" },
-    { key: "reach",     label: "Reach",                    value: data.salesReachout, color: "#1F6F54" },
-    { key: "meetings",  label: "Meeting Held",             value: data.meetings,      color: "#0077CC" },
-    { key: "qualified", label: "Qualified Opportunities",  value: salesOpps,          color: "#6237C7" },
-  ];
+  const activeStage = stages.find(s => s.id === active)!;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+
       {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#e8fbf2]">
-          <Users size={13} style={{ color: "#1a5c3a" }} />
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#f3f4f6]">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#e8fbf2]">
+          <Users size={15} style={{ color: "#1a5c3a" }} />
         </div>
         <div>
-          <p className="text-[13px] font-bold text-slate-800">Offline Engine</p>
-          <p className="text-[10.5px] text-slate-400">Human-led outreach &amp; engagement</p>
+          <p className="text-[14px] font-bold text-slate-800">Offline Engine</p>
+          <p className="text-[11px] text-slate-400">Human-led outreach &amp; engagement</p>
         </div>
       </div>
 
-      {/* Master-detail card */}
-      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden flex">
+      {/* Body: left cards + right panel */}
+      <div className="grid grid-cols-[260px_1fr] items-stretch">
 
-        {/* LEFT — 4 tabs */}
-        <div className="flex flex-col border-r border-[#f3f4f6] shrink-0 w-[200px]">
-          {tabs.map(t => (
-            <button key={t.key} onClick={() => setActiveTab(t.key)}
-              className="flex flex-col gap-0.5 px-4 py-4 text-left transition-colors border-b border-[#f3f4f6] last:border-0 hover:bg-slate-50"
-              style={{ background: activeTab === t.key ? "#f9fafb" : "transparent", borderLeft: activeTab === t.key ? `3px solid ${t.color}` : "3px solid transparent" }}>
-              <span className="text-[10.5px] font-bold" style={{ color: activeTab === t.key ? t.color : "#64748b" }}>{t.label}</span>
-              <span className="text-[22px] font-black leading-none tabular-nums mt-0.5" style={{ color: activeTab === t.key ? t.color : "#94a3b8" }}>{t.value}</span>
-            </button>
-          ))}
+        {/* LEFT — 3 stage cards */}
+        <div className="flex flex-col border-r border-[#f3f4f6] self-stretch">
+          {stages.map((s, i) => {
+            const isActive = active === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setActive(s.id)}
+                className={cn(
+                  "text-left px-5 py-5 flex flex-col gap-2 border-b border-[#f3f4f6] last:border-b-0 transition-all",
+                  isActive ? "bg-[#f9fafb]" : "hover:bg-[#fafafa]"
+                )}
+                style={isActive ? { borderLeft: `3px solid ${s.color}` } : { borderLeft: "3px solid transparent" }}>
+                <div className="flex items-center justify-end">
+                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#2ACB83] animate-pulse" />}
+                </div>
+                <p className={cn("text-[12.5px] font-bold leading-tight", isActive ? "text-slate-900" : "text-slate-600")}>{s.label}</p>
+                <div className="flex items-baseline gap-1.5 mt-1">
+                  <span className="text-[28px] font-black leading-none" style={{ color: s.color }}>{s.value}</span>
+                  <span className="text-[10.5px] text-slate-400 font-medium">{s.unit}</span>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-0.5">
+                  {s.tags.slice(0, 2).map(t => (
+                    <span key={t} className="text-[9.5px] text-slate-400 bg-[#f3f4f6] rounded px-1.5 py-0.5">{t}</span>
+                  ))}
+                  {s.tags.length > 2 && <span className="text-[9.5px] text-slate-400">+{s.tags.length - 2}</span>}
+                </div>
+                {/* Funnel connector */}
+                {i < stages.length - 1 && (
+                  <div className="flex justify-center pt-1">
+                    <ChevronDown size={13} className="text-slate-300" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        {/* RIGHT — detail panel */}
-        <div className="flex-1 p-5 overflow-auto">
+        {/* RIGHT — intelligence panel */}
+        <div className="p-6 bg-[#f9fafb] flex flex-col gap-5">
 
-          {/* Tab: Offline Buyers */}
-          {activeTab === "buyers" && (
+          {/* Panel heading */}
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-sm shrink-0" style={{ background: activeStage.color }} />
+            <p className="text-[12px] font-bold text-slate-800">
+              {active === "reach"    ? `Breakdown of ${data.salesReachout} Buyers Reached`
+             : active === "meetings" ? `Breakdown of ${data.meetings} Meetings Conducted`
+             : `Breakdown of ${salesOpps} Exclusive Opportunities`}
+            </p>
+          </div>
+
+          {active === "reach" && (
             <div className="flex flex-col gap-4">
-              <div>
-                <p className="text-[12px] font-bold text-slate-800 mb-0.5">Sales Reach Out Activity</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">All outbound sales channels contributing to buyer contacts</p>
-              </div>
-              {/* Stats row */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-xl border border-[#e4e4e7] bg-[#f9fafb]">
-                  <span className="text-[24px] font-black leading-none text-slate-800">2</span>
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.10em] text-slate-400 text-center">Sales Specialists</span>
-                  <span className="text-[8.5px] text-slate-300 uppercase tracking-[0.08em]">Active</span>
+              {/* Geography */}
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of all buyers contacted</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {geoData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.round(data.salesReachout * r.pct / 100)} <span className="text-[10px] font-normal text-slate-400">sales reach out</span></span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-xl border border-[#e4e4e7] bg-[#f9fafb]">
-                  <span className="text-[24px] font-black leading-none text-slate-800">{data.meetings}</span>
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.10em] text-slate-400 text-center">Meetings Booked</span>
-                  <span className="text-[8.5px] text-slate-300 uppercase tracking-[0.08em]">This Week</span>
-                </div>
               </div>
-              {/* Activity tags */}
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">Activities</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {["Cold Calling", "Email Outreach", "Distributor Outreach", "Trade Events", "Physical Meetings", "Networking"].map(t => (
-                    <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(31,111,84,0.10)", color: "#1a5c3a" }}>{t}</span>
-                  ))}
+              {/* Company Size */}
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of reached buyers by company size</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {sizeData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.round(data.salesReachout * r.pct / 100)} <span className="text-[10px] font-normal text-slate-400">sales reach out</span></span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tab: Reach */}
-          {activeTab === "reach" && (
-            <OfflinePieBlock
-              title="Reach Distribution"
-              sub="Buyers contacted"
-              total={data.salesReachout}
-              geoData={geoData}
-              sizeData={sizeData}
-            />
-          )}
-
-          {/* Tab: Meeting Held */}
-          {activeTab === "meetings" && (
+          {active === "meetings" && (
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap gap-1.5 mb-1">
-                {["Video Calls", "Discovery Meetings", "Buyer Qualification Discussions"].map(t => (
-                  <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full bg-[#eff8ff]" style={{ color: "#0077CC" }}>{t}</span>
-                ))}
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of meetings conducted</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {geoData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(data.meetings * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">meetings</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <OfflinePieBlock
-                title="Meeting Distribution"
-                sub="Meetings conducted"
-                total={data.meetings}
-                geoData={geoData}
-                sizeData={sizeData}
-              />
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of meetings by company size</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {sizeData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(data.meetings * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">meetings</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Tab: Qualified Opportunities */}
-          {activeTab === "qualified" && (
+          {active === "opps" && (
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap gap-1.5 mb-1">
-                {["Qualified Buyer", "Proposal Ready", "High Intent Buyers"].map(t => (
-                  <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full bg-[#f5f3ff]" style={{ color: "#6237C7" }}>{t}</span>
-                ))}
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of exclusive opportunities</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {geoData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(salesOpps * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">opportunities</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <OfflinePieBlock
-                title="Qualified Opportunities"
-                sub="Opportunities qualified"
-                total={salesOpps}
-                geoData={geoData}
-                sizeData={sizeData}
-              />
+              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of opportunities by company size</p>
+                <div className="flex items-center gap-4">
+                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
+                  <div className="flex flex-col gap-2.5 flex-1">
+                    {sizeData.map(r => (
+                      <div key={r.label} className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
+                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(salesOpps * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">opportunities</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
