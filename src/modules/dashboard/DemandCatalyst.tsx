@@ -8,7 +8,7 @@ import {
   Plus, X, CheckCircle2, Crown, Zap, Check, Globe,
   Users, Target, BarChart3, ShieldCheck, Radio,
   Lock, Layers, AlertCircle, TrendingUp, Activity,
-  MapPin, Send, Calendar, ChevronDown, BarChart2,
+  MapPin, Send, Calendar, ChevronDown, ChevronUp, BarChart2,
   FileText, PhoneCall, Info, Upload, ArrowUpRight, Search,
   Rocket, Building2, Clock,
 } from "lucide-react";
@@ -90,7 +90,7 @@ function DcSceneSwitcher({ scene, onChange }: { scene: Scene; onChange: (s: Scen
 
 // ─── Plan Banner (matches Deep Research plan banner exactly) ──────────────────
 
-function PlanBanner({ starCount, productCount }: { starCount: number; productCount: number }) {
+function PlanBanner({ starCount, productCount, onDismiss }: { starCount: number; productCount: number; onDismiss?: () => void }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-[10px] bg-[#0e0e0e] border"
       style={{ borderColor: "rgba(201,162,39,0.40)" }}>
@@ -114,10 +114,17 @@ function PlanBanner({ starCount, productCount }: { starCount: number; productCou
           </span>
         </div>
       </div>
-      <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all hover:brightness-110 whitespace-nowrap shrink-0"
-        style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", color: "#020202" }}>
-        <Zap size={12} /> Upgrade to Premium
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all hover:brightness-110 whitespace-nowrap"
+          style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)", color: "#020202" }}>
+          <Zap size={12} /> Upgrade to Premium
+        </button>
+        {onDismiss && (
+          <button onClick={onDismiss} className="text-white/40 hover:text-white/80 transition-colors p-1">
+            <X size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -205,7 +212,8 @@ function WorkspaceCards({
             ) : (
               <button
                 onClick={handlers[idx]}
-                className="w-full py-2 rounded-lg text-[12.5px] font-bold border-2 border-[#1a5c3a] text-[#1a5c3a] transition-all duration-200 hover:bg-[#1a5c3a] hover:text-white mt-auto">
+                className="w-full py-2 rounded-lg text-[12.5px] font-bold text-white transition-all duration-200 hover:brightness-110 mt-auto"
+                style={{ background: "#1F6F54" }}>
                 {w.cta}
               </button>
             )}
@@ -789,8 +797,8 @@ const ACTIVE_CAMPAIGN_PRODUCTS: CampaignProduct[] = [
     shortName: "NaBr",
     cas: "7647-15-6",
     industry: "Water Treatment",
-    stage: "Demand Generation",
-    stageIndex: 3,
+    stage: "Setup for Demand",
+    stageIndex: 1,
     health: 91,
     healthLevel: "Strong",
     leads: 52,
@@ -1796,14 +1804,10 @@ const AC_STYLES = `
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
-@keyframes dc-stage-beacon {
-  0%   { box-shadow: 0 0 0 0 rgba(26,92,58,0.55), inset 0 0 0 0 rgba(42,203,131,0); }
-  50%  { box-shadow: 0 0 0 10px rgba(26,92,58,0), inset 0 0 8px rgba(42,203,131,0.25); }
-  100% { box-shadow: 0 0 0 0 rgba(26,92,58,0), inset 0 0 0 0 rgba(42,203,131,0); }
-}
-@keyframes dc-beacon-ring {
-  0%   { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(2.2); opacity: 0; }
+@keyframes dc-beep {
+  0%   { box-shadow: 0 0 0 0 rgba(31,111,84,0.55); }
+  40%  { box-shadow: 0 0 0 5px rgba(31,111,84,0); }
+  100% { box-shadow: 0 0 0 0 rgba(31,111,84,0); }
 }
 .dc-running-card     { animation: dc-active-glow 2.6s ease-in-out infinite; }
 .dc-pill-dot         { animation: dc-pill-dot 1.6s ease-in-out infinite; }
@@ -1812,8 +1816,7 @@ const AC_STYLES = `
 .dc-stage-in-3       { animation: dc-stage-in 0.38s ease-out 0.28s both; }
 .dc-stage-in-4       { animation: dc-stage-in 0.38s ease-out 0.38s both; }
 .dc-line-sweep       { transform-origin: left center; animation: dc-line-sweep 0.9s ease-out 0.10s both; }
-.dc-active-stage     { animation: dc-stage-beacon 1.8s ease-in-out infinite; }
-.dc-beacon-ring      { animation: dc-beacon-ring 1.8s ease-out infinite; }
+.dc-beep             { animation: dc-beep 2.4s ease-out infinite; }
 `;
 
 // ─── Section Header (no number badge) ────────────────────────────────────────
@@ -1852,23 +1855,26 @@ function CampaignOverviewSection({ onAddProduct, products: overrideProducts, emp
             <span className="text-[42px] font-black text-slate-900 leading-none">
               {products.length}
             </span>
-            <div className="flex items-center gap-0.5 mb-2">
-              <span className="text-[18px] font-bold text-slate-300">/ {TOTAL_STAR_SLOTS}</span>
-              <InfoTooltip items={productNames} />
-            </div>
+            <span className="text-[18px] font-bold text-slate-300 mb-2">/ {TOTAL_STAR_SLOTS}</span>
           </div>
           {/* Product indicator dots */}
           <div className="flex items-end gap-3 mb-4">
             {products.map(p => (
-              <div key={p.id} className="flex flex-col items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ background: p.dotColor }} />
-                <span className="text-[9px] font-mono text-slate-400">{p.shortName}</span>
+              <div key={p.id} className="relative group/dot flex flex-col items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ background: TIMELINE_STAGE_COLORS[p.stageIndex - 1] ?? "#1F6F54" }} />
+                <span className="text-[8px] font-mono text-slate-400 leading-tight text-center">{p.cas}</span>
+                {/* Hover tooltip */}
+                <span className="pointer-events-none absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-semibold text-white opacity-0 group-hover/dot:opacity-100 transition-opacity z-50 shadow-lg"
+                  style={{ background: "#1a1a1a" }}>
+                  {p.name}
+                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent" style={{ borderTopColor: "#1a1a1a" }} />
+                </span>
               </div>
             ))}
             {Array.from({ length: availableSlots }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full border-2 border-dashed border-slate-200" />
-                <span className="text-[9px] text-slate-300">Empty</span>
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div className="w-3 h-3 rounded-full border-2 border-dashed border-slate-300" />
+                <span className="text-[8px] text-slate-300">Empty</span>
               </div>
             ))}
           </div>
@@ -1927,22 +1933,38 @@ function CampaignOverviewSection({ onAddProduct, products: overrideProducts, emp
 
 // Muted pill colours — less saturated so table feels quieter
 const PILL_MUTED: Record<CampaignStage, { bg: string; color: string; dot: string }> = {
-  "Setup for Demand":  { bg: "#f1f5f9", color: "#64748b", dot: "#94a3b8" },
-  "Execution Planning": { bg: "#eff6ff", color: "#3b82f6", dot: "#3b82f6" },
-  "Demand Generation": { bg: "#f0fdf4", color: "#16a34a", dot: "#22c55e" },
-  "Opportunities Pipeline":     { bg: "#f5f3ff", color: "#7c3aed", dot: "#a78bfa" },
+  "Setup for Demand":       { bg: "#f1f5f9", color: "#64748b", dot: "#1F6F54" },
+  "Execution Planning":     { bg: "#f1f5f9", color: "#64748b", dot: "#0e7a72" },
+  "Demand Generation":      { bg: "#f1f5f9", color: "#64748b", dot: "#1265a0" },
+  "Opportunities Pipeline": { bg: "#f1f5f9", color: "#64748b", dot: "#1a4fa8" },
+};
+
+const STAGE_HINTS: Record<CampaignStage, string> = {
+  "Setup for Demand":      "Add your product specs and docs to unlock the next stage.\nExecution Planning begins once your profile is complete.",
+  "Execution Planning":    "Your Scimplify team is crafting your go-to-market strategy.\nExpect your campaign plan within 3–5 business days.",
+  "Demand Generation":     "Your campaigns are live and reaching qualified global buyers.\nLeads will appear in your pipeline as interest grows.",
+  "Opportunities Pipeline":"Verified buyer enquiries are being routed to you now.\nReview and respond to each opportunity to close deals.",
 };
 
 function AnimatedStagePill({ stage }: { stage: CampaignStage }) {
   const s = PILL_MUTED[stage];
   const isSetup = stage === "Setup for Demand";
+  const hint = STAGE_HINTS[stage];
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-medium"
+    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11.5px] font-medium w-full"
       style={{ background: s.bg, color: s.color }}>
       {!isSetup && (
         <span className="dc-pill-dot w-1.5 h-1.5 rounded-full shrink-0" style={{ background: s.dot }} />
       )}
-      {stage}
+      <span className="flex-1">{stage}</span>
+      <span className="relative group/hint shrink-0">
+        <Info size={11} className="opacity-50 hover:opacity-100 transition-opacity cursor-default" style={{ color: s.color }} />
+        <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-[210px] rounded-lg px-3 py-2.5 text-[11px] leading-[1.55] font-medium text-white opacity-0 group-hover/hint:opacity-100 transition-opacity duration-150 z-50 whitespace-pre-line shadow-xl"
+          style={{ background: "#1a1a1a" }}>
+          {hint}
+          <span className="absolute top-full right-3 border-4 border-transparent" style={{ borderTopColor: "#1a1a1a" }} />
+        </span>
+      </span>
     </span>
   );
 }
@@ -1962,13 +1984,28 @@ const MAX_STAGE_INDEX = Math.max(...ACTIVE_CAMPAIGN_PRODUCTS.map(p => p.stageInd
 function CampaignTimelineStrip({ onViewDetails, products: overrideProducts }: { onViewDetails?: (id: string) => void; products?: CampaignProduct[] }) {
   const products = overrideProducts ?? ACTIVE_CAMPAIGN_PRODUCTS;
   const maxStageIndex = Math.max(...products.map(p => p.stageIndex));
-  // Map each stage to the product that's currently at that stage
-  const productByStage = Object.fromEntries(
-    products.map(p => [p.stage, p])
-  ) as Partial<Record<CampaignStage, CampaignProduct>>;
+  const [openStage, setOpenStage] = useState<CampaignStage | null>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  // Group products by stage — supports multiple products per stage
+  const productsByStage = products.reduce<Partial<Record<CampaignStage, CampaignProduct[]>>>((acc, p) => {
+    const stage = p.stage as CampaignStage;
+    acc[stage] = [...(acc[stage] ?? []), p];
+    return acc;
+  }, {});
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!openStage) return;
+    const handler = (e: MouseEvent) => {
+      if (stripRef.current && !stripRef.current.contains(e.target as Node)) setOpenStage(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openStage]);
 
   return (
-    <div className="px-6 pt-5 pb-6">
+    <div className="px-6 pt-5 pb-6" ref={stripRef}>
       <div className="flex items-center justify-between mb-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-slate-400">
           Product Campaign Journey — 4 Stages
@@ -1987,16 +2024,27 @@ function CampaignTimelineStrip({ onViewDetails, products: overrideProducts }: { 
         </div>
 
         {STAGE_EXPLAINER.map((s, i) => {
-          const Icon        = s.icon;
-          const meta        = STAGE_META[s.stage];
-          const filled      = i + 1 <= maxStageIndex;
-          const active      = i + 1 === maxStageIndex;
-          const isCompleted = filled && !active;
-          const linkedProduct = productByStage[s.stage as CampaignStage];
-          const clickable   = isCompleted && !!linkedProduct && !!onViewDetails;
-          const delayClass  = `dc-stage-in-${i + 1}` as string;
+          const Icon         = s.icon;
+          const meta         = STAGE_META[s.stage];
+          const filled       = i + 1 <= maxStageIndex;
+          const active       = i + 1 === maxStageIndex;
+          const isCompleted  = filled && !active;
+          const stageProds   = productsByStage[s.stage as CampaignStage] ?? [];
+          const clickable    = isCompleted && stageProds.length > 0 && !!onViewDetails;
+          const isOpen       = openStage === s.stage;
+          const multiProduct = stageProds.length > 1;
+          const delayClass   = `dc-stage-in-${i + 1}` as string;
 
-          const content = (
+          const handleClick = () => {
+            if (!clickable) return;
+            if (multiProduct) {
+              setOpenStage(isOpen ? null : s.stage as CampaignStage);
+            } else {
+              onViewDetails!(stageProds[0].id);
+            }
+          };
+
+          const nodeContent = (
             <>
               {/* Icon circle */}
               <div className="relative">
@@ -2009,13 +2057,19 @@ function CampaignTimelineStrip({ onViewDetails, products: overrideProducts }: { 
                 )}
                 <div className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-150",
-                  filled  ? "border-transparent" : "border-slate-200 bg-white",
-                  active  ? "shadow-[0_0_0_4px_rgba(42,203,131,0.15)]" : "",
+                  filled    ? "border-transparent" : "border-slate-200 bg-white",
+                  active    ? "shadow-[0_0_0_4px_rgba(42,203,131,0.15)]" : "",
                   clickable ? "group-hover:scale-110" : "",
                 )}
                   style={filled ? { background: meta.bg, borderColor: "transparent" } : {}}>
                   <Icon size={14} style={{ color: filled ? meta.color : "#cbd5e1" }} />
                 </div>
+                {/* Badge showing product count when >1 in this stage */}
+                {multiProduct && isCompleted && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#0077CC] flex items-center justify-center border border-white">
+                    <span className="text-[8px] font-black text-white">{stageProds.length}</span>
+                  </div>
+                )}
               </div>
 
               {/* Stage label */}
@@ -2029,26 +2083,52 @@ function CampaignTimelineStrip({ onViewDetails, products: overrideProducts }: { 
                   "text-[10px] mt-0.5 leading-snug",
                   active ? "text-[#166534] font-semibold" : "text-slate-400",
                 )}>{s.desc}</p>
-                {clickable && linkedProduct && (
+                {clickable && (
                   <p className="text-[9px] font-semibold text-[#2ACB83] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {linkedProduct.shortName} →
+                    {multiProduct ? `${stageProds.length} products ↓` : `${stageProds[0].shortName} →`}
                   </p>
                 )}
               </div>
+
+              {/* Multi-product popover */}
+              {isOpen && multiProduct && (
+                <div
+                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 w-52 bg-white rounded-xl border border-[#e4e4e7] shadow-xl overflow-hidden"
+                  onClick={e => e.stopPropagation()}>
+                  <div className="px-3 py-2 border-b border-[#f3f4f6] flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">{stageProds.length} Products in this stage</span>
+                    <button onClick={() => setOpenStage(null)} className="text-slate-300 hover:text-slate-500 transition-colors">
+                      <X size={12} />
+                    </button>
+                  </div>
+                  {stageProds.map(p => (
+                    <button key={p.id}
+                      onClick={() => { setOpenStage(null); onViewDetails!(p.id); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#f0fdf4] transition-colors text-left border-b border-[#f9fafb] last:border-0 group/item">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.dotColor }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-bold text-slate-800 truncate group-hover/item:text-[#1a5c3a]">{p.shortName ?? p.name}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{p.cas}</p>
+                      </div>
+                      <ChevronRight size={12} className="text-slate-300 group-hover/item:text-[#2ACB83] shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           );
 
-          return clickable && linkedProduct ? (
+          return clickable ? (
             <button
               key={s.stage}
-              title={`View ${s.stage} — ${linkedProduct.name}`}
-              onClick={() => onViewDetails!(linkedProduct.id)}
+              title={multiProduct ? `${stageProds.length} products in ${s.stage} — click to pick` : `View ${s.stage} — ${stageProds[0].name}`}
+              onClick={handleClick}
               className={cn("group flex flex-col items-center gap-2 flex-1 min-w-0 relative z-10 cursor-pointer", delayClass)}>
-              {content}
+              {nodeContent}
             </button>
           ) : (
             <div key={s.stage} className={cn("flex flex-col items-center gap-2 flex-1 min-w-0 relative z-10", delayClass)}>
-              {content}
+              {nodeContent}
             </div>
           );
         })}
@@ -2059,27 +2139,68 @@ function CampaignTimelineStrip({ onViewDetails, products: overrideProducts }: { 
 
 // ─── Product Status Table ─────────────────────────────────────────────────────
 
+// ─── Per-product compact mini timeline ───────────────────────────────────────
+const STAGE_LABELS = ["Setup", "Planning", "Generation", "Pipeline"] as const;
+
+const TIMELINE_STAGE_COLORS = ["#1F6F54", "#0e7a72", "#1265a0", "#1a4fa8"];
+const TIMELINE_MUTED = "#e4e4e7";
+
+function MiniTimeline({ stageIndex }: { stageIndex: number }) {
+  return (
+    <div className="flex items-center mt-2.5 w-[220px]">
+      {[1, 2, 3, 4].map((s, i) => {
+        const done   = s < stageIndex;
+        const active = s === stageIndex;
+        const color  = TIMELINE_STAGE_COLORS[i];
+        return (
+          <div key={s} className="flex items-center flex-1 last:flex-none">
+            <div className="relative flex flex-col items-center">
+              <div
+                className={cn(
+                  "w-[9px] h-[9px] rounded-full border transition-all duration-200 shrink-0",
+                  active ? "dc-beep" : "",
+                  !done && !active ? "border-[#d1d5db] bg-white" : "",
+                )}
+                style={done || active ? { background: color, borderColor: "transparent" } : {}}
+              />
+              <span className="absolute top-[13px] text-[8px] font-medium whitespace-nowrap"
+                style={{ color: active ? color : done ? "#94a3b8" : "#cbd5e1" }}>
+                {STAGE_LABELS[i]}
+              </span>
+            </div>
+            {i < 3 && (
+              <div className="h-[2px] flex-1 mx-[1px] rounded-full"
+                style={{ background: done ? TIMELINE_STAGE_COLORS[i] : TIMELINE_MUTED }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ProductStatusTable({ onViewDetails, products: overrideProducts }: { onViewDetails: (id: string) => void; products?: CampaignProduct[] }) {
   const products = overrideProducts ?? ACTIVE_CAMPAIGN_PRODUCTS;
+  const [showTimelines, setShowTimelines] = useState(true);
+
   return (
     <div className="flex flex-col gap-3">
-      <SectionHeader title="Product Campaign Status" />
+      <div className="flex items-center justify-between">
+        <SectionHeader title="Product Campaign Status" />
+        <button
+          onClick={() => setShowTimelines(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all border border-[#e4e4e7]">
+          {showTimelines ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+          {showTimelines ? "Hide timelines" : "Show timelines"}
+        </button>
+      </div>
 
-      {/* Single container: timeline + divider + table */}
       <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
-
-        {/* Compact animated timeline — completed stages are clickable */}
-        <CampaignTimelineStrip onViewDetails={onViewDetails} products={products} />
-
-        {/* Single separator */}
-        <div className="border-t border-[#f3f4f6]" />
-
-        {/* Product table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr style={{ background: "#f9fafb" }} className="border-b border-[#f3f4f6]">
-                {["Product", "Campaign Stage", "Total Enquiries", "Total Opportunities", "Active Markets", "Last Activity", ""].map(h => (
+                {["Product", "Campaign Journey", "Total Enquiries", "Total Opportunities", "Active Markets", "Last Activity", ""].map(h => (
                   <th key={h} className="text-left text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 px-5 py-3.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -2096,22 +2217,19 @@ function ProductStatusTable({ onViewDetails, products: overrideProducts }: { onV
                     {/* Product */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2.5">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: p.dotColor }} />
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: TIMELINE_STAGE_COLORS[p.stageIndex - 1] ?? "#1F6F54" }} />
                         <div>
                           <p className="text-[13px] font-bold text-slate-900">{p.name}</p>
                           <p className="text-[10px] font-mono text-slate-400">CAS {p.cas} · {p.industry}</p>
                         </div>
                       </div>
                     </td>
-                    {/* Stage — animated pill */}
+                    {/* Stage + per-product mini timeline */}
                     <td className="px-5 py-4">
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-1">
                         <AnimatedStagePill stage={p.stage} />
-                        {p.actionRequired && (
-                          <span className="text-[10px] font-bold text-[#b45309] flex items-center gap-1">
-                            <AlertCircle size={9} /> Action needed
-                          </span>
-                        )}
+                        {showTimelines && <MiniTimeline stageIndex={p.stageIndex} />}
+                        {showTimelines && <div className="h-3" />}
                       </div>
                     </td>
                     {/* MQLs */}
@@ -2123,7 +2241,7 @@ function ProductStatusTable({ onViewDetails, products: overrideProducts }: { onV
                     {/* Leads */}
                     <td className="px-5 py-4">
                       <span className="text-[20px] font-black leading-none"
-                        style={{ color: isSetup ? "#cbd5e1" : p.dotColor }}>
+                        style={{ color: isSetup ? "#cbd5e1" : "#1F6F54" }}>
                         {isSetup ? "—" : p.leads}
                       </span>
                     </td>
@@ -3837,8 +3955,8 @@ const THF_FORM_PREFILLED = {
   availability: "In Inventory" as "In Inventory" | "Made to Order",
   capacity:   "40",
   capacityUnit: "MT",
-  price:      "",
-  packaging:  "",
+  price:      "1,200",
+  packaging:  "25 L drums",
   leadTime:   "3-4 weeks",
   incoterms:  "FOB",
   capabilities: ["GMP route", "Low metal residue", "Custom packaging"],
@@ -3846,7 +3964,7 @@ const THF_FORM_PREFILLED = {
   coa:   true,
   msds:  true,
   tds:   true,
-  certs: [] as { name: string; authority: string; scope: "Product" | "Plant" }[],
+  certs: [{ name: "ISO 9001", authority: "Bureau Veritas", scope: "Plant" as const }],
 };
 
 // ─── Full world country list with flags ──────────────────────────────────────
@@ -4022,9 +4140,10 @@ function CountryMultiSelect({
   );
 }
 
-function SetupForDemandDetail({ product, onStageClick }: { product: CampaignProduct; onStageClick?: (s: CampaignStage) => void }) {
+function SetupForDemandDetail({ product, onStageClick, onSubmitComplete }: { product: CampaignProduct; onStageClick?: (s: CampaignStage) => void; onSubmitComplete?: () => void }) {
   const { products: profileProducts } = useProfileStore();
   const [submitted, setSubmitted]     = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [form, setForm]               = useState({ ...THF_FORM_PREFILLED });
   const [newCert, setNewCert]         = useState({ name: "", authority: "" });
   const [docFiles, setDocFiles]       = useState<Record<string, { name: string; size: number; type: string; url: string }>>({});
@@ -4093,15 +4212,40 @@ function SetupForDemandDetail({ product, onStageClick }: { product: CampaignProd
     { id: "documents"  as const, label: "Documents & Certs",    icon: "📄", done: docScore >= 3    },
   ];
 
-  if (submitted) {
+  // Success overlay — auto-dismisses after 2.8s then navigates to Execution Planning
+  if (showSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg,#1a5c3a,#2ACB83)" }}>
-          <CheckCircle2 size={28} style={{ color: "white" }} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center"
+        style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)" }}>
+        <style>{`
+          @keyframes sfd-pop { 0%{opacity:0;transform:scale(0.85)} 60%{transform:scale(1.04)} 100%{opacity:1;transform:scale(1)} }
+          @keyframes sfd-ring { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(2.2);opacity:0} }
+          @keyframes sfd-bar { 0%{width:100%} 100%{width:0%} }
+          .sfd-card { animation: sfd-pop 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+          .sfd-ring { animation: sfd-ring 1.4s ease-out infinite; }
+          .sfd-bar  { animation: sfd-bar 2.8s linear forwards; }
+        `}</style>
+        <div className="sfd-card bg-white rounded-3xl shadow-2xl flex flex-col items-center gap-5 px-10 py-10 max-w-sm w-full text-center">
+          {/* Icon with pulse ring */}
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <div className="sfd-ring absolute inset-0 rounded-full border-2 border-[#2ACB83]" />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,#1a5c3a,#2ACB83)" }}>
+              <CheckCircle2 size={34} style={{ color: "white" }} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-[22px] font-black text-slate-900 mb-1">Setup Submitted!</h3>
+            <p className="text-[13px] text-slate-500 leading-relaxed">
+              SCINODE is now reviewing your product details.<br />
+              Taking you to Execution Planning…
+            </p>
+          </div>
+          {/* Auto-dismiss countdown bar */}
+          <div className="w-full h-1 rounded-full bg-[#f0fdf4] overflow-hidden">
+            <div className="sfd-bar h-full rounded-full" style={{ background: "#2ACB83" }} />
+          </div>
         </div>
-        <h3 className="text-[20px] font-black text-slate-900">Setup Submitted!</h3>
-        <p className="text-[13px] text-slate-500 max-w-sm">SCINODE is reviewing your product details. Your market plan will be ready within 2–3 business days.</p>
       </div>
     );
   }
@@ -4575,7 +4719,13 @@ function SetupForDemandDetail({ product, onStageClick }: { product: CampaignProd
         {/* Footer CTA — always visible */}
         <div className="flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-[#e4e4e7]">
           <p className="text-[11.5px] text-slate-400">Changes autosave · You can keep editing until you Accept the plan in Stage 2</p>
-          <button onClick={() => { setSubmitAttempted(true); if (totalMissing === 0) setSubmitted(true); }}
+          <button onClick={() => {
+            setSubmitAttempted(true);
+            if (totalMissing === 0) {
+              setShowSuccess(true);
+              setTimeout(() => { setShowSuccess(false); setSubmitted(true); onSubmitComplete?.(); }, 2800);
+            }
+          }}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all hover:brightness-110"
             style={{ background: "#1F6F54" }}>
             Continue to Map the Market <ChevronRight size={15} />
@@ -4639,7 +4789,8 @@ function ChannelPieChart({
 
 // ─── Screen B: Execution Planning — Strategy Report (TEP) ────────────────────
 
-function ExecutionPlanningDetail({ product, onStageClick }: { product: CampaignProduct; onStageClick?: (s: CampaignStage) => void }) {
+function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: { product: CampaignProduct; onStageClick?: (s: CampaignStage) => void; planReadyOverride?: boolean }) {
+  const [planReady, setPlanReady] = useState(planReadyOverride ?? false);
   const [timeframe, setTimeframe] = useState<"Weekly" | "Monthly">("Weekly");
   const [showTip, setShowTip] = useState(false);
 
@@ -4690,6 +4841,161 @@ function ExecutionPlanningDetail({ product, onStageClick }: { product: CampaignP
     { cert: "REACH Compliance",                  status: "missing"   as const },
     { cert: "FDA Registration",                  status: "missing"   as const },
   ];
+
+  if (!planReady) {
+    return (
+      <div className="flex flex-col gap-5">
+        <style>{`
+          @keyframes ep-spin { to { transform: rotate(360deg); } }
+          @keyframes ep-pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.35} }
+          .ep-spinner { animation: ep-spin 1.6s linear infinite; }
+          .ep-dot1 { animation: ep-pulse-dot 1.4s ease-in-out 0s infinite; }
+          .ep-dot2 { animation: ep-pulse-dot 1.4s ease-in-out 0.25s infinite; }
+          .ep-dot3 { animation: ep-pulse-dot 1.4s ease-in-out 0.5s infinite; }
+        `}</style>
+
+        {/* Hero card — plan in progress */}
+        <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px]">
+            {/* Left */}
+            <div className="px-6 py-5 border-b lg:border-b-0 lg:border-r border-[#f3f4f6]">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#0077CC]">Execution Planning</span>
+                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-slate-400">Stage 2 of 4</span>
+              </div>
+              <h2 className="text-[20px] font-black text-slate-900 leading-snug mb-1">Your Market Plan is Being Prepared</h2>
+              <p className="text-[12.5px] text-slate-500 mb-4">
+                SCINODE's team is analysing global demand signals and building a personalised execution plan for your product.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Product",   value: product.name     },
+                  { label: "CAS",       value: product.cas      },
+                  { label: "Industry",  value: product.industry },
+                  { label: "ETA",       value: "2–3 Business Days" },
+                ].map(item => (
+                  <div key={item.label}>
+                    <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400 mb-0.5">{item.label}</p>
+                    <p className="text-[12.5px] font-bold text-slate-900 truncate">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Right — status */}
+            <div className="px-5 py-5 flex flex-col gap-3 justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-[11.5px] font-bold text-amber-700">Plan in Progress</span>
+                </div>
+                {[
+                  { label: "Status",          value: "Under Review"   },
+                  { label: "Assigned Team",   value: "3 Specialists"  },
+                  { label: "Plan Confidence", value: "Being Assessed" },
+                ].map(item => (
+                  <div key={item.label} className="flex justify-between py-1.5 border-b border-[#f9fafb] last:border-0">
+                    <span className="text-[12px] text-slate-500">{item.label}</span>
+                    <span className="text-[12px] font-bold text-slate-900">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#f0fdf4] border border-[#bbf7d0] text-[#1a5c3a] text-[13px] font-bold hover:brightness-95 transition-all">
+                <PhoneCall size={14} /> Schedule a Call
+              </button>
+            </div>
+          </div>
+          <div className="border-t border-[#f3f4f6]" />
+          <DetailStageStepper activeStage={product.stage as CampaignStage} noCard onStageClick={onStageClick} />
+        </div>
+
+        {/* Progress steps */}
+        <div className="bg-white rounded-2xl border border-[#e4e4e7] p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-[14px] font-black text-slate-900">What's happening right now</h3>
+              <p className="text-[12px] text-slate-400 mt-0.5">Our team works on each step in sequence</p>
+            </div>
+            {/* Spinner */}
+            <div className="w-8 h-8 rounded-full border-2 border-[#e4e4e7] border-t-[#2ACB83] ep-spinner" />
+          </div>
+
+          <div className="flex flex-col gap-0">
+            {[
+              { icon: "🔍", title: "Market Signal Analysis",     desc: "Scanning global demand data and trade signals for your product category.",  done: true  },
+              { icon: "🌍", title: "Target Market Identification", desc: "Identifying high-potential countries based on RFQ patterns and buyer activity.", done: true  },
+              { icon: "📊", title: "Channel Strategy Design",     desc: "Deciding the right mix of offline sales and digital outreach for your market.", done: false },
+              { icon: "👥", title: "Team Assignment",             desc: "Assigning campaign specialists and sales captains to your product.",           done: false },
+              { icon: "📋", title: "Plan Finalisation",           desc: "Compiling all insights into your market execution plan for review.",           done: false },
+            ].map((step, i) => (
+              <div key={i} className="flex gap-4 pb-5 last:pb-0 relative">
+                {/* Connector line */}
+                {i < 4 && (
+                  <div className="absolute left-[19px] top-[38px] bottom-0 w-px"
+                    style={{ background: step.done ? "#2ACB83" : "#e4e4e7" }} />
+                )}
+                {/* Icon circle */}
+                <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-base
+                  ${step.done ? "bg-[#e8fbf2] border-2 border-[#2ACB83]" : "bg-[#f9fafb] border-2 border-[#e4e4e7]"}`}>
+                  {step.done ? <CheckCircle2 size={16} style={{ color: "#2ACB83" }} /> : <span>{step.icon}</span>}
+                </div>
+                <div className="pt-1.5">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className={`text-[13px] font-bold ${step.done ? "text-slate-900" : "text-slate-400"}`}>{step.title}</p>
+                    {step.done
+                      ? <span className="text-[10px] font-bold text-[#1a5c3a] bg-[#e8fbf2] px-2 py-0.5 rounded-full">Done</span>
+                      : i === 2
+                        ? <span className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                            <span className="ep-dot1 w-1 h-1 rounded-full bg-amber-500 inline-block" />
+                            <span className="ep-dot2 w-1 h-1 rounded-full bg-amber-500 inline-block" />
+                            <span className="ep-dot3 w-1 h-1 rounded-full bg-amber-500 inline-block" />
+                            &nbsp;In Progress
+                          </span>
+                        : <span className="text-[10px] font-bold text-slate-400 bg-[#f3f4f6] px-2 py-0.5 rounded-full">Pending</span>
+                    }
+                  </div>
+                  <p className={`text-[12px] leading-relaxed ${step.done ? "text-slate-500" : "text-slate-300"}`}>{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Info strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: "📅", title: "When will it be ready?",    body: "Your plan will appear here within 2–3 business days. You'll be notified once it's live." },
+            { icon: "🙋", title: "Can you still make changes?", body: "Yes — you can update Stage 1 details anytime before you accept the plan in Stage 2." },
+            { icon: "📞", title: "Want to talk it through?",   body: "Schedule a call with our campaign team if you have questions while you wait." },
+          ].map(card => (
+            <div key={card.title} className="bg-white rounded-xl border border-[#e4e4e7] p-4">
+              <div className="text-xl mb-2">{card.icon}</div>
+              <p className="text-[12.5px] font-bold text-slate-900 mb-1">{card.title}</p>
+              <p className="text-[12px] text-slate-500 leading-relaxed">{card.body}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Demo CTA */}
+        <div className="flex items-center justify-between bg-[#0e0e0e] rounded-xl px-5 py-4 border border-[rgba(201,162,39,0.35)]">
+          <div className="flex items-center gap-3">
+            <span className="text-[18px]">🎬</span>
+            <div>
+              <p className="text-[12.5px] font-bold text-white">Demo Mode</p>
+              <p className="text-[11.5px] text-slate-400">See what the plan looks like once SCINODE publishes it</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setPlanReady(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12.5px] font-bold text-[#020202] transition-all hover:brightness-110"
+            style={{ background: "linear-gradient(90deg,#f5c842,#c9a227)" }}>
+            Preview Plan →
+          </button>
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -5585,257 +5891,194 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
   );
 }
 
-// ─── Offline Engine Panel (master-detail) ─────────────────────────────────────
+// ─── Offline Engine Panel ──────────────────────────────────────────────────────
 
-type OfflineStage = "reach" | "meetings" | "opps";
+function OfflinePieBlock({ title, sub, total, geoData, sizeData }: {
+  title: string; sub: string; total: number;
+  geoData: { flag?: string; label: string; pct: number; color: string }[];
+  sizeData: { label: string; pct: number; color: string }[];
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Geo distribution */}
+      <div>
+        <p className="text-[12px] font-bold text-slate-800 mb-0.5">Geographical Distribution</p>
+        <p className="text-[10.5px] text-slate-400 mb-3">{sub} by country</p>
+        <div className="flex items-center gap-5">
+          <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={100} />
+          <div className="flex flex-col gap-2.5 flex-1">
+            {geoData.map(r => (
+              <div key={r.label} className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                <span className="text-[11px] text-slate-600 flex-1">{r.flag ? `${r.flag} ` : ""}{r.label}</span>
+                <div className="text-right">
+                  <span className="text-[12px] font-bold text-slate-800">{Math.round(total * r.pct / 100)}</span>
+                  <span className="text-[9.5px] text-slate-400 ml-1">{r.pct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-[#f3f4f6]" />
+
+      {/* Company size distribution */}
+      <div>
+        <p className="text-[12px] font-bold text-slate-800 mb-0.5">Company Size Distribution</p>
+        <p className="text-[10.5px] text-slate-400 mb-3">Breakdown by company size</p>
+        <div className="flex items-center gap-5">
+          <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={100} />
+          <div className="flex flex-col gap-2.5 flex-1">
+            {sizeData.map(r => (
+              <div key={r.label} className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
+                <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
+                <div className="text-right">
+                  <span className="text-[12px] font-bold text-slate-800">{Math.round(total * r.pct / 100)}</span>
+                  <span className="text-[9.5px] text-slate-400 ml-1">{r.pct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function OfflineEnginePanel({ data, salesOpps }: {
   data: typeof TEC_ALL;
   salesOpps: number;
 }) {
-  const [active, setActive] = useState<OfflineStage>("reach");
-
-  const stages = [
-    {
-      id: "reach" as OfflineStage,
-      n: "01",
-      label: "Sales Reach Out",
-      value: data.salesReachout,
-      unit: "Buyers Reached",
-      color: "#1a5c3a",
-      accentBg: "#f0fdf4",
-      accentBorder: "#bbf7d0",
-      tags: ["Cold Calling", "Email Outreach", "Distributor Outreach", "Trade Events", "Physical Meetings"],
-    },
-    {
-      id: "meetings" as OfflineStage,
-      n: "02",
-      label: "Meetings Conducted",
-      value: data.meetings,
-      unit: "Meetings Held",
-      color: "#0077CC",
-      accentBg: "#eff8ff",
-      accentBorder: "#bfdbfe",
-      tags: ["Video Calls", "Discovery Meetings", "Buyer Qualification"],
-    },
-    {
-      id: "opps" as OfflineStage,
-      n: "03",
-      label: "Exclusive Opportunities",
-      value: salesOpps,
-      unit: "Qualified Opps",
-      color: "#6237C7",
-      accentBg: "#f5f3ff",
-      accentBorder: "#ddd6fe",
-      tags: ["Qualified Buyer", "Proposal Ready", "High Intent"],
-    },
-  ];
+  const [activeTab, setActiveTab] = useState<"buyers" | "reach" | "meetings" | "qualified">("buyers");
 
   const geoData = [
-    { flag: "🇩🇪", label: "Germany", pct: 45, color: "#C8E89A" },
-    { flag: "🇺🇸", label: "USA",     pct: 29, color: "#52B87A" },
-    { flag: "🇯🇵", label: "Japan",   pct: 16, color: "#2E7D52" },
-    { flag: "🇮🇳", label: "India",   pct: 10, color: "#1A4A30" },
+    { flag: "🇩🇪", label: "Germany", pct: 45, color: "#1F6F54" },
+    { flag: "🇺🇸", label: "USA",     pct: 29, color: "#2E9E72" },
+    { flag: "🇯🇵", label: "Japan",   pct: 16, color: "#52B87A" },
+    { flag: "🇮🇳", label: "India",   pct: 10, color: "#A8DFC0" },
   ];
   const sizeData = [
-    { label: "Enterprise",     pct: 45, color: "#C8E89A" },
-    { label: "Mid-Market",     pct: 35, color: "#52B87A" },
-    { label: "Small Business", pct: 20, color: "#1A5C3A" },
+    { label: "Enterprise",     pct: 45, color: "#1F6F54" },
+    { label: "Mid-Market",     pct: 35, color: "#2E9E72" },
+    { label: "Small Business", pct: 20, color: "#A8DFC0" },
   ];
 
-  const meetingTypes = [
-    { label: "Video Calls",              pct: 50, color: "#0077CC" },
-    { label: "Discovery Meetings",       pct: 31, color: "#6237C7" },
-    { label: "In-Person Meetings",       pct: 19, color: "#f59e0b" },
+  const tabs: { key: "buyers" | "reach" | "meetings" | "qualified"; label: string; value: number | string; color: string }[] = [
+    { key: "buyers",    label: "Offline Buyers",           value: data.salesReachout, color: "#1F6F54" },
+    { key: "reach",     label: "Reach",                    value: data.salesReachout, color: "#1F6F54" },
+    { key: "meetings",  label: "Meeting Held",             value: data.meetings,      color: "#0077CC" },
+    { key: "qualified", label: "Qualified Opportunities",  value: salesOpps,          color: "#6237C7" },
   ];
-  const oppTypes = [
-    { label: "Proposal Sent",     pct: 50, color: "#1a5c3a" },
-    { label: "Negotiation Stage", pct: 33, color: "#0077CC" },
-    { label: "Sample Requested",  pct: 17, color: "#6237C7" },
-  ];
-
-  const activeStage = stages.find(s => s.id === active)!;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden">
-
+    <div className="flex flex-col gap-3">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#f3f4f6]">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#e8fbf2]">
-          <Users size={15} style={{ color: "#1a5c3a" }} />
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#e8fbf2]">
+          <Users size={13} style={{ color: "#1a5c3a" }} />
         </div>
         <div>
-          <p className="text-[14px] font-bold text-slate-800">Offline Engine</p>
-          <p className="text-[11px] text-slate-400">Human-led outreach &amp; engagement</p>
+          <p className="text-[13px] font-bold text-slate-800">Offline Engine</p>
+          <p className="text-[10.5px] text-slate-400">Human-led outreach &amp; engagement</p>
         </div>
       </div>
 
-      {/* Body: left cards + right panel */}
-      <div className="grid grid-cols-[260px_1fr] items-stretch">
+      {/* Master-detail card */}
+      <div className="bg-white rounded-2xl border border-[#e4e4e7] overflow-hidden flex">
 
-        {/* LEFT — 3 stage cards */}
-        <div className="flex flex-col border-r border-[#f3f4f6] self-stretch">
-          {stages.map((s, i) => {
-            const isActive = active === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setActive(s.id)}
-                className={cn(
-                  "text-left px-5 py-5 flex flex-col gap-2 border-b border-[#f3f4f6] last:border-b-0 transition-all",
-                  isActive ? "bg-[#f9fafb]" : "hover:bg-[#fafafa]"
-                )}
-                style={isActive ? { borderLeft: `3px solid ${s.color}` } : { borderLeft: "3px solid transparent" }}>
-                <div className="flex items-center justify-end">
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#2ACB83] animate-pulse" />}
-                </div>
-                <p className={cn("text-[12.5px] font-bold leading-tight", isActive ? "text-slate-900" : "text-slate-600")}>{s.label}</p>
-                <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-[28px] font-black leading-none" style={{ color: s.color }}>{s.value}</span>
-                  <span className="text-[10.5px] text-slate-400 font-medium">{s.unit}</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-0.5">
-                  {s.tags.slice(0, 2).map(t => (
-                    <span key={t} className="text-[9.5px] text-slate-400 bg-[#f3f4f6] rounded px-1.5 py-0.5">{t}</span>
-                  ))}
-                  {s.tags.length > 2 && <span className="text-[9.5px] text-slate-400">+{s.tags.length - 2}</span>}
-                </div>
-                {/* Funnel connector */}
-                {i < stages.length - 1 && (
-                  <div className="flex justify-center pt-1">
-                    <ChevronDown size={13} className="text-slate-300" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
+        {/* LEFT — 4 tabs */}
+        <div className="flex flex-col border-r border-[#f3f4f6] shrink-0 w-[200px]">
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setActiveTab(t.key)}
+              className="flex flex-col gap-0.5 px-4 py-4 text-left transition-colors border-b border-[#f3f4f6] last:border-0 hover:bg-slate-50"
+              style={{ background: activeTab === t.key ? "#f9fafb" : "transparent", borderLeft: activeTab === t.key ? `3px solid ${t.color}` : "3px solid transparent" }}>
+              <span className="text-[10.5px] font-bold" style={{ color: activeTab === t.key ? t.color : "#64748b" }}>{t.label}</span>
+              <span className="text-[22px] font-black leading-none tabular-nums mt-0.5" style={{ color: activeTab === t.key ? t.color : "#94a3b8" }}>{t.value}</span>
+            </button>
+          ))}
         </div>
 
-        {/* RIGHT — intelligence panel */}
-        <div className="p-6 bg-[#f9fafb] flex flex-col gap-5">
+        {/* RIGHT — detail panel */}
+        <div className="flex-1 p-5 overflow-auto">
 
-          {/* Panel heading */}
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-sm shrink-0" style={{ background: activeStage.color }} />
-            <p className="text-[12px] font-bold text-slate-800">
-              {active === "reach"    ? `Breakdown of ${data.salesReachout} Buyers Reached`
-             : active === "meetings" ? `Breakdown of ${data.meetings} Meetings Conducted`
-             : `Breakdown of ${salesOpps} Exclusive Opportunities`}
-            </p>
-          </div>
-
-          {active === "reach" && (
+          {/* Tab: Offline Buyers */}
+          {activeTab === "buyers" && (
             <div className="flex flex-col gap-4">
-              {/* Geography */}
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of all buyers contacted</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {geoData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.round(data.salesReachout * r.pct / 100)} <span className="text-[10px] font-normal text-slate-400">sales reach out</span></span>
-
-                      </div>
-                    ))}
-                  </div>
+              <div>
+                <p className="text-[12px] font-bold text-slate-800 mb-0.5">Sales Reach Out Activity</p>
+                <p className="text-[10.5px] text-slate-400 mb-4">All outbound sales channels contributing to buyer contacts</p>
+              </div>
+              {/* Stats row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-xl border border-[#e4e4e7] bg-[#f9fafb]">
+                  <span className="text-[24px] font-black leading-none text-slate-800">2</span>
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.10em] text-slate-400 text-center">Sales Specialists</span>
+                  <span className="text-[8.5px] text-slate-300 uppercase tracking-[0.08em]">Active</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5 px-4 py-3 rounded-xl border border-[#e4e4e7] bg-[#f9fafb]">
+                  <span className="text-[24px] font-black leading-none text-slate-800">{data.meetings}</span>
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.10em] text-slate-400 text-center">Meetings Booked</span>
+                  <span className="text-[8.5px] text-slate-300 uppercase tracking-[0.08em]">This Week</span>
                 </div>
               </div>
-              {/* Company Size */}
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of reached buyers by company size</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {sizeData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.round(data.salesReachout * r.pct / 100)} <span className="text-[10px] font-normal text-slate-400">sales reach out</span></span>
-
-                      </div>
-                    ))}
-                  </div>
+              {/* Activity tags */}
+              <div>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2">Activities</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Cold Calling", "Email Outreach", "Distributor Outreach", "Trade Events", "Physical Meetings", "Networking"].map(t => (
+                    <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(31,111,84,0.10)", color: "#1a5c3a" }}>{t}</span>
+                  ))}
                 </div>
               </div>
             </div>
           )}
 
-          {active === "meetings" && (
+          {/* Tab: Reach */}
+          {activeTab === "reach" && (
+            <OfflinePieBlock
+              title="Reach Distribution"
+              sub="Buyers contacted"
+              total={data.salesReachout}
+              geoData={geoData}
+              sizeData={sizeData}
+            />
+          )}
+
+          {/* Tab: Meeting Held */}
+          {activeTab === "meetings" && (
             <div className="flex flex-col gap-4">
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of meetings conducted</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {geoData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(data.meetings * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">meetings</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                {["Video Calls", "Discovery Meetings", "Buyer Qualification Discussions"].map(t => (
+                  <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full bg-[#eff8ff]" style={{ color: "#0077CC" }}>{t}</span>
+                ))}
               </div>
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of meetings by company size</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {sizeData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(data.meetings * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">meetings</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <OfflinePieBlock
+                title="Meeting Distribution"
+                sub="Meetings conducted"
+                total={data.meetings}
+                geoData={geoData}
+                sizeData={sizeData}
+              />
             </div>
           )}
 
-          {active === "opps" && (
+          {/* Tab: Qualified Opportunities */}
+          {activeTab === "qualified" && (
             <div className="flex flex-col gap-4">
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Buyer Geography Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Geographic distribution of exclusive opportunities</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={geoData.map(g => ({ pct: g.pct, color: g.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {geoData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.flag} {r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(salesOpps * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">opportunities</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                {["Qualified Buyer", "Proposal Ready", "High Intent Buyers"].map(t => (
+                  <span key={t} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-full bg-[#f5f3ff]" style={{ color: "#6237C7" }}>{t}</span>
+                ))}
               </div>
-              <div className="bg-white rounded-xl border border-[#e4e4e7] p-4">
-                <p className="text-[11.5px] font-bold text-slate-700 mb-0.5">Company Size Distribution</p>
-                <p className="text-[10.5px] text-slate-400 mb-4">Breakdown of opportunities by company size</p>
-                <div className="flex items-center gap-4">
-                  <MiniPieChart slices={sizeData.map(s => ({ pct: s.pct, color: s.color }))} size={96} />
-                  <div className="flex flex-col gap-2.5 flex-1">
-                    {sizeData.map(r => (
-                      <div key={r.label} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: r.color }} />
-                        <span className="text-[11px] text-slate-600 flex-1">{r.label}</span>
-                        <span className="text-[12px] font-bold text-slate-800">{Math.max(0, Math.round(salesOpps * r.pct / 100))} <span className="text-[10px] font-normal text-slate-400">opportunities</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <OfflinePieBlock
+                title="Qualified Opportunities"
+                sub="Opportunities qualified"
+                total={salesOpps}
+                geoData={geoData}
+                sizeData={sizeData}
+              />
             </div>
           )}
 
@@ -6069,7 +6312,7 @@ function ProductDetailScreen({
 
         {/* Stage content — always passes the real product (stage 4 for TEC),
             so DetailStageStepper always shows all prior stages as completed & clickable */}
-        {viewingStage === "Setup for Demand"       && <SetupForDemandDetail    product={product} onStageClick={handleStageClick} />}
+        {viewingStage === "Setup for Demand"       && <SetupForDemandDetail    product={product} onStageClick={handleStageClick} onSubmitComplete={() => handleStageClick("Execution Planning")} />}
         {viewingStage === "Execution Planning"      && <ExecutionPlanningDetail product={product} onStageClick={handleStageClick} />}
         {viewingStage === "Demand Generation"       && <DemandGenerationDetail  product={product} onStageClick={handleStageClick} />}
         {viewingStage === "Opportunities Pipeline"  && <OpportunitiesPipelineView product={product} onStageClick={handleStageClick} />}
@@ -6355,6 +6598,7 @@ export function DemandCatalyst() {
   const { addProduct } = useProfileStore();
 
   const [scene, setScene]                     = useState<Scene>("day0");
+  const [bannerOpen, setBannerOpen]           = useState(true);
   const [showModal, setShowModal]             = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [addProductOpen, setAddProductOpen]   = useState(false);
@@ -6421,20 +6665,31 @@ export function DemandCatalyst() {
                 Select up to 5 star products for SCINODE to promote — generating buyer demand and delivering qualified opportunities directly to you.
               </p>
             </div>
-            <button
-              onClick={ctaAction}
-              className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-[13.5px] font-bold hover:brightness-110 transition-all mt-1"
-              style={{ background: "linear-gradient(135deg,#1a5c3a,#0d3d26)" }}>
-              {ctaLabel}
-            </button>
+            <div className="flex items-center gap-3 shrink-0 mt-1">
+              {/* Plan info controls */}
+              <div className="flex items-center gap-2">
+                {!bannerOpen && (
+                  <span className="text-[11px] text-slate-400">Plan info hidden.</span>
+                )}
+                <button
+                  onClick={() => setBannerOpen(v => !v)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors hover:bg-amber-50"
+                  style={{ color: "#c9a227", borderColor: "rgba(201,162,39,0.40)" }}
+                >
+                  <Crown size={11} /> {bannerOpen ? "Plan info" : "Show plan info"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Plan banner — hidden on Day 0 */}
-        {scene !== "day0" && <PlanBanner starCount={starredIds.size} productCount={displayProducts.length} />}
+        {/* Plan banner — collapsible, hidden on Day 0 */}
+        {scene !== "day0" && bannerOpen && (
+          <PlanBanner starCount={starredIds.size} productCount={displayProducts.length} onDismiss={() => setBannerOpen(false)} />
+        )}
 
         {/* Demo switcher */}
-        <DcSceneSwitcher scene={scene} onChange={setScene} />
+        <DcSceneSwitcher scene={scene} onChange={s => { setScene(s); setBannerOpen(true); }} />
 
         {/* ── 70 / 30 grid (matches Deep Research lg:grid-cols-10) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-5 items-start">
