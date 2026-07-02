@@ -3,8 +3,8 @@
 > **Project Path:** `/Users/sathimidya/scinode`
 > **Git Repo:** `https://github.com/sathi-design/scinode-customer-platform-.git`
 > **Dev Server:** `http://localhost:3000`
-> **Last Updated:** 2026-06-19 (Session 12)
-> **Total Commits:** 64+
+> **Last Updated:** 2026-07-02 (Session 13)
+> **Total Commits:** 69+
 
 ---
 
@@ -197,6 +197,15 @@ The dashboard uses `useDashboardDayStore` to switch between states:
 **2.4 Product Showcase (70%) + Market Pulse Panel (30%)**
 - Product Showcase: horizontally scrollable product catalogue cards
 - Market Pulse Panel: `#f0fdf6` bg, teaser for market intelligence features
+- **Session 13:** grid uses `items-stretch` so both panels (Profile Activation left + Market Pulse right) always match height; Market Pulse uses compact font sizes (`text-[14px]` header, `text-[11px]` rows) and reduced padding to eliminate empty space at bottom
+- **Session 13:** FREE PLAN banner removed from Market Pulse Panel entirely
+
+**2.4a DemandCatalystSidePanel (inside ManufacturingDashboard)**
+- `catalogDemoState: 0 | 1 | 2` — lifted to `ManufacturingDashboard`, shared with `ProductShowcase`
+- **State 0 (Listed):** default onboarding prompt
+- **State 1 (Catalogue Added / Session 13):** compact layout; T&Cs banner below "How it works" section — amber strip with "One more step: Sign the Platform T&Cs to go live." + "Go to T&Cs →" link (`bg: #FBF0C5`, border `rgba(156,80,34,0.22)`, text `#92400e`)
+- **State 2 (Full Intel / Active Campaign):** 5 star products with dot-and-line stage timeline. Each product shows coloured dot + product name + stage label. `DC_TIMELINE_STAGES = ["Set for Demand", "Demand Generation", "Execution Planning", "Opportunities Pipeline"]`. 5 campaign products in `DC_CAMPAIGN_PRODUCTS`.
+- **Removed:** "Pending Sign-off" state (was state 2 of 4); states reduced from 4 to 3 (`0|1|2|3` → `0|1|2`). T&Cs nudge embedded into State 1 instead.
 
 **2.5 Global Opportunity Map**
 - SVG world map with 8 interactive location pins (India, Germany, USA, Japan, Brazil, UK, China, Australia)
@@ -207,9 +216,10 @@ The dashboard uses `useDashboardDayStore` to switch between states:
 - `InfoTip` — portal-based tooltip, position computed from `getBoundingClientRect()`, renders into `document.body` to avoid overflow clipping
 
 **2.6 Projects Matched**
-- 6 project cards in horizontal carousel
-- Badge types: Exclusive (black), CMO (green), RFQ (blue), Tech Transfer (purple), Open (amber)
-- Project cards: image + badge overlay + industry tag + title + description
+- 6 project cards in horizontal carousel (Session 13: redesigned to match Opportunities module cards exactly)
+- Each card: 148px image (hover `scale-[1.07]`), top gradient scrim, `Capability` OR `Catalogue` badge pill over image, industry pill, project name (`line-clamp-2`), 🌍 country + flag, 📦 quantity (truncated 30 chars), 🗓 posted date
+- Hover: animated gradient border + "→" arrow slides up from bottom
+- Data: `MATCHED_PROJECTS` extended with `matchType`, `country`, `countryFlag`, `quantity`, `postedDate` fields; `COUNTRY_DATA` lookup for flags
 
 **2.7 Platform Stats**
 - 5 stats: 500+ manufacturers, 120+ projects, 2,400+ requirements, 130+ countries, 4.8/5 satisfaction
@@ -1729,6 +1739,114 @@ Day 0 state goes straight from page header → demo switcher → campaign worksp
 | Non-premium intercept at the CTA level (not the star level) | Users should be able to explore the product selection flow fully — gate only blocks the final "Start" action, not discovery |
 | `DcPremiumModal` is dark-themed (`#141414` bg) with gold accent | Visually distinct from all other modals (which are light); signals premium tier and creates contrast with the dark overlay backdrop |
 | Day 0 banner hidden | Empty state has no star products yet — "0/5 star products" adds no value and looks unfinished |
+
+---
+
+### 11g. Demand Catalyst — Session 13 CHANGES
+
+#### Session 13 Overview
+All changes inside `DemandCatalyst.tsx`. Focus: restore classic `OfflineEnginePanel` (3-row master-detail), add empty/no-data demo state for both engine panels, remove channel breakdown group total suffix from DigitalEnginePanel.
+
+---
+
+#### 11g-1. `OfflineEnginePanel` Restored from Commit `8365e36`
+
+The 4-tab implementation added in Sessions 11-12 was removed and replaced with the original 3-row master-detail layout from commit `8365e36`.
+
+**Restored structure:**
+- `type OfflineStage = "reach" | "meetings" | "opps"`
+- LEFT column (260px): 3 stage cards with coloured left border when active
+  - `reach` → green `#1a5c3a`, `meetings` → blue `#0077CC`, `opps` → purple `#6237C7`
+- RIGHT column (flex-1): Two pie charts rendered side-by-side for the active stage
+  - Geography breakdown: Germany 45% `#C8E89A`, USA 29% `#52B87A`, Japan 16% `#2E7D52`, India 10% `#1A4A30`
+  - Company size breakdown: Enterprise 45% `#C8E89A`, Mid-Market 35% `#52B87A`, Small Business 20% `#1A5C3A`
+- `hasData?: boolean` prop added (default `true`) — see 11g-3
+
+---
+
+#### 11g-2. `EngineEmptyState` Component (NEW)
+
+New shared component placed before `OfflineEnginePanel` in the file. Renders when `hasData={false}` for either engine panel.
+
+```tsx
+function EngineEmptyState({ icon, label }: { icon: React.ReactNode; label: string }) {
+  // centred column: icon in grey rounded-2xl box, "No Breakdown Data Yet" bold,
+  // subtext "Once the {label} begins generating activity...", "Awaiting Data" pill
+}
+```
+
+- Icon box: `w-14 h-14 rounded-2xl bg-[#f3f4f6]`
+- Title: `text-[13px] font-bold text-slate-700`
+- Subtext: `text-[11.5px] text-slate-400 max-w-[260px] leading-relaxed`
+- Pill: `border border-[#e4e4e7] bg-[#f9fafb]`, grey dot, `text-[10.5px] font-semibold text-slate-400 uppercase tracking-[0.08em]`
+
+---
+
+#### 11g-3. `hasData` Prop on Both Engine Panels
+
+Both `OfflineEnginePanel` and `DigitalEnginePanel` now accept `hasData?: boolean` (default `true`).
+
+**Render pattern (uses `&&` not ternary — avoids SWC "Unterminated regexp" error with long else branches):**
+```tsx
+{!hasData && <EngineEmptyState icon={...} label="Offline Engine" />}
+{hasData && <div className="grid grid-cols-[260px_1fr] items-stretch">
+  {/* full master-detail layout */}
+</div>}
+```
+
+- `OfflineEnginePanel`: icon = `<Users size={22} className="text-slate-400" />`
+- `DigitalEnginePanel`: icon = `<Activity size={22} className="text-slate-400" />`
+
+Header row is always rendered in both panels regardless of `hasData`.
+
+---
+
+#### 11g-4. Admin Demo Toggle in `DemandGenerationDetail`
+
+New `enginesHaveData` state (default `false`) controls both engine panels. A visual admin toggle is rendered in the detail view:
+
+```tsx
+const [enginesHaveData, setEnginesHaveData] = useState(false);
+```
+
+**Toggle UI:** dashed border card, `bg-[#fafafa]`, label "Engine Breakdown Data", subtitle "Toggle between empty state and live breakdown view". Button:
+- OFF: white bg, slate text/border — "No Data Yet"
+- ON: `#1a5c3a` bg, white text — "Data Entered", with animated `#2ACB83` green dot
+
+Both panels called with `hasData={enginesHaveData}`:
+```tsx
+<OfflineEnginePanel ... hasData={enginesHaveData} />
+<DigitalEnginePanel ... hasData={enginesHaveData} />
+```
+
+---
+
+#### 11g-5. Channel Breakdown Group Total Removed
+
+In `DigitalEnginePanel`, each channel breakdown row previously showed `/ 3,450 clicks` or `/ 4,070 clicks` (the group's total clicks) as a suffix after the bar. This suffix was removed.
+
+```tsx
+// BEFORE:
+<span className="text-[10px] text-slate-400 w-[80px] shrink-0">
+  / {groupTotal.toLocaleString()} {unitLabel}
+</span>
+
+// AFTER:
+<span className="text-[10px] text-slate-400 w-[80px] shrink-0">
+</span>
+```
+
+---
+
+#### 11g-6. Key Design Decisions (Session 13)
+
+| Decision | Reason |
+|---|---|
+| Restored original 3-row OfflineEnginePanel instead of 4-tab | Client preferred the compact master-detail layout with pie charts; 4-tab added too much vertical scroll |
+| Empty state shared as `EngineEmptyState` not separate per-panel components | Both panels need identical layout — one component with icon+label props is simpler |
+| `&&` pattern for hasData switching (not ternary) | SWC misparses `? (<JSX>) : (<very long JSX>)` — closing `</div>)}` is read as a regexp. `&&` avoids this entirely |
+| Admin toggle default = `false` (no data) | Demo starts showing the empty state so the presenter can demonstrate the "before data" experience first |
+| Group total suffix removed | Numbers were confusing — the bar already encodes the proportion; the suffix added noise without context |
 
 ---
 

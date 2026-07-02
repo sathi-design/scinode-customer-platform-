@@ -712,7 +712,7 @@ function CampaignStartedPanel({ starredIds, products }: { starredIds: Set<string
 
 // ─── Campaign data ────────────────────────────────────────────────────────────
 
-type CampaignStage = "Setup for Demand" | "Execution Planning" | "Demand Generation" | "Opportunities Pipeline";
+type CampaignStage = "Setup for Demand" | "Campaign Planning" | "Campaign Execution" | "Opportunities Pipeline";
 type HealthLevel   = "Strong" | "Fair" | "Weak";
 
 interface CampaignProduct {
@@ -761,7 +761,7 @@ const ACTIVE_CAMPAIGN_PRODUCTS: CampaignProduct[] = [
     shortName: "TEP",
     cas: "78-40-0",
     industry: "Flame Retardants",
-    stage: "Execution Planning",
+    stage: "Campaign Planning",
     stageIndex: 2,
     health: 64,
     healthLevel: "Fair",
@@ -811,14 +811,14 @@ const ACTIVE_CAMPAIGN_PRODUCTS: CampaignProduct[] = [
   },
 ];
 
-const STAGES: CampaignStage[] = ["Setup for Demand", "Execution Planning", "Demand Generation", "Opportunities Pipeline"];
+const STAGES: CampaignStage[] = ["Setup for Demand", "Campaign Planning", "Campaign Execution", "Opportunities Pipeline"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STAGE_META: Record<CampaignStage, { bg: string; color: string; icon: string }> = {
   "Setup for Demand":  { bg: "#f3f4f6", color: "#4b5563", icon: "⚙️" },
-  "Execution Planning": { bg: "#dbeafe", color: "#1d4ed8", icon: "🔍" },
-  "Demand Generation": { bg: "#dcfce7", color: "#166534", icon: "📡" },
+  "Campaign Planning": { bg: "#dbeafe", color: "#1d4ed8", icon: "🔍" },
+  "Campaign Execution": { bg: "#dcfce7", color: "#166534", icon: "📡" },
   "Opportunities Pipeline":     { bg: "#ede9fe", color: "#6d28d9", icon: "🎯" },
 };
 
@@ -1199,7 +1199,7 @@ function SetupForDemandView({ product }: { product: CampaignProduct }) {
   );
 }
 
-// ─── Demand Generation View (Stage 3) ─────────────────────────────────────────
+// ─── Campaign Execution View (Stage 3) ─────────────────────────────────────────
 
 function DemandGenerationView({ product }: { product: CampaignProduct }) {
   const [weekTab, setWeekTab] = useState<"all" | "w1" | "w2" | "w3">("w1");
@@ -1934,15 +1934,15 @@ function CampaignOverviewSection({ onAddProduct, products: overrideProducts, emp
 // Muted pill colours — less saturated so table feels quieter
 const PILL_MUTED: Record<CampaignStage, { bg: string; color: string; dot: string }> = {
   "Setup for Demand":       { bg: "#f1f5f9", color: "#64748b", dot: "#1F6F54" },
-  "Execution Planning":     { bg: "#f1f5f9", color: "#64748b", dot: "#0e7a72" },
-  "Demand Generation":      { bg: "#f1f5f9", color: "#64748b", dot: "#1265a0" },
+  "Campaign Planning":     { bg: "#f1f5f9", color: "#64748b", dot: "#0e7a72" },
+  "Campaign Execution":      { bg: "#f1f5f9", color: "#64748b", dot: "#1265a0" },
   "Opportunities Pipeline": { bg: "#f1f5f9", color: "#64748b", dot: "#1a4fa8" },
 };
 
 const STAGE_HINTS: Record<CampaignStage, string> = {
-  "Setup for Demand":      "Add your product specs and docs to unlock the next stage.\nExecution Planning begins once your profile is complete.",
-  "Execution Planning":    "Your Scimplify team is crafting your go-to-market strategy.\nExpect your campaign plan within 3–5 business days.",
-  "Demand Generation":     "Your campaigns are live and reaching qualified global buyers.\nLeads will appear in your pipeline as interest grows.",
+  "Setup for Demand":      "Add your product specs and docs to unlock the next stage.\nCampaign Planning begins once your profile is complete.",
+  "Campaign Planning":    "Your Scimplify team is crafting your go-to-market strategy.\nExpect your campaign plan within 3–5 business days.",
+  "Campaign Execution":     "Your campaigns are live and reaching qualified global buyers.\nLeads will appear in your pipeline as interest grows.",
   "Opportunities Pipeline":"Verified buyer enquiries are being routed to you now.\nReview and respond to each opportunity to close deals.",
 };
 
@@ -1973,8 +1973,8 @@ function AnimatedStagePill({ stage }: { stage: CampaignStage }) {
 
 const STAGE_EXPLAINER = [
   { stage: "Setup for Demand"  as CampaignStage, icon: Package,   desc: "Docs & product info"        },
-  { stage: "Execution Planning" as CampaignStage, icon: MapPin,    desc: "Strategy prepared"          },
-  { stage: "Demand Generation" as CampaignStage, icon: Megaphone, desc: "Campaigns go live"           },
+  { stage: "Campaign Planning" as CampaignStage, icon: MapPin,    desc: "Strategy prepared"          },
+  { stage: "Campaign Execution" as CampaignStage, icon: Megaphone, desc: "Campaigns go live"           },
   { stage: "Opportunities Pipeline"     as CampaignStage, icon: Target,    desc: "Buyers delivered to you"     },
 ];
 
@@ -3737,8 +3737,8 @@ function PerformanceDetailPanel({
 
 const DETAIL_STAGES_DEF: { key: CampaignStage; label: string }[] = [
   { key: "Setup for Demand",  label: "Setup for Demand"  },
-  { key: "Execution Planning", label: "Execution Planning" },
-  { key: "Demand Generation", label: "Demand Generation" },
+  { key: "Campaign Planning", label: "Campaign Planning" },
+  { key: "Campaign Execution", label: "Campaign Execution" },
   { key: "Opportunities Pipeline", label: "Opportunities Pipeline" },
 ];
 
@@ -4212,7 +4212,7 @@ function SetupForDemandDetail({ product, onStageClick, onSubmitComplete }: { pro
     { id: "documents"  as const, label: "Documents & Certs",    icon: "📄", done: docScore >= 3    },
   ];
 
-  // Success overlay — auto-dismisses after 2.8s then navigates to Execution Planning
+  // Success overlay — auto-dismisses after 2.8s then navigates to Campaign Planning
   if (showSuccess) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center"
@@ -4238,7 +4238,7 @@ function SetupForDemandDetail({ product, onStageClick, onSubmitComplete }: { pro
             <h3 className="text-[22px] font-black text-slate-900 mb-1">Setup Submitted!</h3>
             <p className="text-[13px] text-slate-500 leading-relaxed">
               SCINODE is now reviewing your product details.<br />
-              Taking you to Execution Planning…
+              Taking you to Campaign Planning…
             </p>
           </div>
           {/* Auto-dismiss countdown bar */}
@@ -4787,7 +4787,7 @@ function ChannelPieChart({
   );
 }
 
-// ─── Screen B: Execution Planning — Strategy Report (TEP) ────────────────────
+// ─── Screen B: Campaign Planning — Strategy Report (TEP) ────────────────────
 
 function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: { product: CampaignProduct; onStageClick?: (s: CampaignStage) => void; planReadyOverride?: boolean }) {
   const [planReady, setPlanReady] = useState(planReadyOverride ?? false);
@@ -4813,7 +4813,7 @@ function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: {
   ];
   const OFFLINE_TEAM = [
     { initials: "CS", bg: "#e8fbf2", color: "#1a5c3a", role: "Campaign Strategist"          },
-    { initials: "DG", bg: "#e6f3fb", color: "#0077CC", role: "Demand Generation Specialist" },
+    { initials: "DG", bg: "#e6f3fb", color: "#0077CC", role: "Campaign Execution Specialist" },
     { initials: "MR", bg: "#ede8fb", color: "#6237C7", role: "Market Research Specialist"   },
     { initials: "BA", bg: "#fef9c3", color: "#854d0e", role: "Business Analyst"             },
   ];
@@ -4829,7 +4829,7 @@ function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: {
 
   const SPECIALISTS = [
     { initials: "CS", role: "Campaign Strategist",          bg: "#e8fbf2", color: "#1a5c3a" },
-    { initials: "DG", role: "Demand Generation Specialist", bg: "#e6f3fb", color: "#0077CC" },
+    { initials: "DG", role: "Campaign Execution Specialist", bg: "#e6f3fb", color: "#0077CC" },
     { initials: "MR", role: "Market Research Specialist",   bg: "#ede8fb", color: "#6237C7" },
   ];
 
@@ -4860,7 +4860,7 @@ function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: {
             {/* Left */}
             <div className="px-6 py-5 border-b lg:border-b-0 lg:border-r border-[#f3f4f6]">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#0077CC]">Execution Planning</span>
+                <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#0077CC]">Campaign Planning</span>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-slate-400">Stage 2 of 4</span>
               </div>
@@ -5009,12 +5009,12 @@ function ExecutionPlanningDetail({ product, onStageClick, planReadyOverride }: {
           {/* Left: heading + product info */}
           <div className="px-6 py-5 border-b lg:border-b-0 lg:border-r border-[#f3f4f6]">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#0077CC]">Execution Planning</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#0077CC]">Campaign Planning</span>
               <span className="w-1 h-1 rounded-full bg-slate-300" />
               <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-slate-400">Stage 2 of 4</span>
             </div>
             <h2 className="text-[20px] font-black text-slate-900 leading-snug mb-1">
-              Your Demand Generation Strategy is Ready
+              Your Campaign Execution Strategy is Ready
             </h2>
             <p className="text-[12.5px] text-slate-500 mb-4">
               SCINODE analyzed global market signals and built a personalized execution plan for your product.
@@ -5487,7 +5487,7 @@ function CampaignHealthGauge({ score, level }: { score: number; level: HealthLev
   );
 }
 
-// ─── Screen C: Demand Generation — Campaign Execution (TEC) ──────────────────
+// ─── Screen C: Campaign Execution — Campaign Execution (TEC) ──────────────────
 
 const TEC_WEEK_DATA: Record<string, {
   salesReachout: number; salesCaptains: number; meetings: number;
@@ -6188,10 +6188,10 @@ function DemandGenerationDetail({ product, onStageClick }: { product: CampaignPr
   return (
     <div className="flex flex-col gap-5">
 
-      {/* ── Hero Card (same layout as Execution Planning) ── */}
+      {/* ── Hero Card (same layout as Campaign Planning) ── */}
       <StageHeroCard
         product={product}
-        stageLabel="Demand Generation"
+        stageLabel="Campaign Execution"
         stageNum="Stage 3 of 4"
         headline="Your Campaign is Live"
         subtext="SCINODE is actively running campaigns and generating qualified buyer opportunities for your product."
@@ -6406,9 +6406,9 @@ function ProductDetailScreen({
 
         {/* Stage content — always passes the real product (stage 4 for TEC),
             so DetailStageStepper always shows all prior stages as completed & clickable */}
-        {viewingStage === "Setup for Demand"       && <SetupForDemandDetail    product={product} onStageClick={handleStageClick} onSubmitComplete={() => handleStageClick("Execution Planning")} />}
-        {viewingStage === "Execution Planning"      && <ExecutionPlanningDetail product={product} onStageClick={handleStageClick} />}
-        {viewingStage === "Demand Generation"       && <DemandGenerationDetail  product={product} onStageClick={handleStageClick} />}
+        {viewingStage === "Setup for Demand"       && <SetupForDemandDetail    product={product} onStageClick={handleStageClick} onSubmitComplete={() => handleStageClick("Campaign Planning")} />}
+        {viewingStage === "Campaign Planning"      && <ExecutionPlanningDetail product={product} onStageClick={handleStageClick} />}
+        {viewingStage === "Campaign Execution"       && <DemandGenerationDetail  product={product} onStageClick={handleStageClick} />}
         {viewingStage === "Opportunities Pipeline"  && <OpportunitiesPipelineView product={product} onStageClick={handleStageClick} />}
 
         <DetailInfoCards />

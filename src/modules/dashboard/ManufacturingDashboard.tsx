@@ -1434,21 +1434,21 @@ function ProductShowcase({ demoState, setDemoState }: { demoState: 0 | 1 | 2; se
 // DC SIDE PANEL — 3 states tied to ProductShowcase demoState
 // ═══════════════════════════════════════════════════════════════════════════════
 // Timeline stages in order: index = progress position (0=earliest, 3=latest)
-const DC_TIMELINE_STAGES = ["Set for Demand", "Demand Generation", "Execution Planning", "Opportunities Pipeline"] as const;
+const DC_TIMELINE_STAGES = ["Set for Demand", "Campaign Execution", "Campaign Planning", "Opportunities Pipeline"] as const;
 type DcStage = typeof DC_TIMELINE_STAGES[number];
 
 const DC_CAMPAIGN_PRODUCTS: Array<{ name: string; opps: number; stage: DcStage }> = [
   { name: "Triethyl Orthoformate", opps: 12, stage: "Opportunities Pipeline" },
-  { name: "Benzyl Chloride",       opps: 5,  stage: "Execution Planning"     },
-  { name: "Diethyl Carbonate",     opps: 0,  stage: "Demand Generation"      },
+  { name: "Benzyl Chloride",       opps: 5,  stage: "Campaign Planning"      },
+  { name: "Diethyl Carbonate",     opps: 0,  stage: "Campaign Execution"     },
   { name: "Ethyl Acetate",         opps: 0,  stage: "Set for Demand"         },
   { name: "Acetic Anhydride",      opps: 8,  stage: "Opportunities Pipeline" },
 ];
 
 const STAGE_COLORS: Record<DcStage, { bg: string; text: string; dot: string }> = {
   "Set for Demand":         { bg: "rgba(100,116,139,0.10)", text: "#64748b", dot: "#cbd5e1" },
-  "Demand Generation":      { bg: "rgba(0,119,204,0.10)",  text: "#0077CC", dot: "#93c5fd" },
-  "Execution Planning":     { bg: "rgba(98,55,199,0.10)",  text: "#6237C7", dot: "#a78bfa" },
+  "Campaign Execution":     { bg: "rgba(0,119,204,0.10)",  text: "#0077CC", dot: "#93c5fd" },
+  "Campaign Planning":      { bg: "rgba(98,55,199,0.10)",  text: "#6237C7", dot: "#a78bfa" },
   "Opportunities Pipeline": { bg: "rgba(31,111,84,0.10)",  text: "#1F6F54", dot: "#4ade80" },
 };
 
@@ -1644,56 +1644,42 @@ function DemandCatalystSidePanel({ demoState, setDemoState }: { demoState: 0 | 1
           {/* Summary chips */}
           <div className="grid grid-cols-3 gap-1.5">
             {[
-              { label: "Opportunities", value: "25", color: "#1F6F54" },
-              { label: "Demand Setup",  value: "2",  color: "#0077CC" },
-              { label: "Execution",     value: "1",  color: "#6237C7" },
+              { label: "Opportunities", value: "12", color: "#1F6F54", highlight: true },
+              { label: "Campaign Setup", value: "2",  color: "#0077CC", highlight: false },
+              { label: "Planning",       value: "1",  color: "#6237C7", highlight: false },
             ].map(c => (
-              <div key={c.label} className="flex flex-col items-center py-2 rounded-xl border border-slate-100 bg-slate-50/60">
+              <div key={c.label} className="flex flex-col items-center py-2 rounded-xl border transition-all"
+                style={c.highlight
+                  ? { background: "rgba(31,111,84,0.08)", borderColor: "rgba(31,111,84,0.22)" }
+                  : { background: "rgba(248,250,252,0.6)", borderColor: "#f1f5f9" }}>
                 <span className="text-[22px] font-black leading-none tabular-nums" style={{ color: c.color }}>{c.value}</span>
-                <span className="text-[7.5px] font-bold uppercase tracking-[0.07em] text-slate-400 mt-0.5 text-center leading-tight">{c.label}</span>
+                <span className="text-[7.5px] font-bold uppercase tracking-[0.07em] mt-0.5 text-center leading-tight"
+                  style={{ color: c.highlight ? "#1F6F54" : "#94a3b8" }}>{c.label}</span>
               </div>
             ))}
           </div>
           {/* Per-product timeline */}
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-slate-400">★ Star Products</p>
-              <div className="flex items-center gap-2">
-                {DC_TIMELINE_STAGES.map(s => (
-                  <span key={s} className="text-[7.5px] font-medium text-slate-300 truncate max-w-[40px] text-center leading-tight">{s.split(" ")[0]}</span>
-                ))}
-              </div>
-            </div>
+            <p className="text-[8.5px] font-bold uppercase tracking-[0.12em] text-slate-400">★ Star Products</p>
             {DC_CAMPAIGN_PRODUCTS.map((p, i) => {
               const sc = STAGE_COLORS[p.stage];
               const activeIdx = DC_TIMELINE_STAGES.indexOf(p.stage);
               return (
-                <div key={i} className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-slate-100 hover:bg-slate-50 transition-all">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10.5px] font-semibold text-slate-800 truncate">{p.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[8.5px] font-semibold px-1.5 py-[2px] rounded-full" style={{ background: sc.bg, color: sc.text }}>{p.stage}</span>
-                      {p.opps > 0 && (
-                        <span className="text-[8.5px] font-bold tabular-nums" style={{ color: "#1F6F54" }}>{p.opps} opp{p.opps !== 1 ? "s" : ""}</span>
-                      )}
+                <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 transition-all">
+                  {/* Left — name + stage */}
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <p className="text-[11px] font-semibold text-slate-800">{p.name}</p>
+                    <span className="text-[8.5px] font-semibold px-1.5 py-[2px] rounded-full w-fit" style={{ background: sc.bg, color: sc.text }}>{p.stage}</span>
+                  </div>
+                  {/* Right — opportunity count */}
+                  {p.opps > 0 ? (
+                    <div className="flex flex-col items-end shrink-0">
+                      <span className="text-[18px] font-black leading-none tabular-nums" style={{ color: "#1F6F54" }}>{p.opps}</span>
+                      <span className="text-[7.5px] font-semibold" style={{ color: "#1F6F54" }}>Opportunities</span>
                     </div>
-                  </div>
-                  {/* Timeline dots */}
-                  <div className="flex items-center gap-[5px] shrink-0">
-                    {DC_TIMELINE_STAGES.map((s, si) => {
-                      const done = si <= activeIdx;
-                      const active = si === activeIdx;
-                      return (
-                        <div key={s} className="flex items-center gap-[5px]">
-                          <div className="w-2 h-2 rounded-full transition-all"
-                            style={{ background: done ? sc.dot : "#e2e8f0", boxShadow: active ? `0 0 0 2px white, 0 0 0 3px ${sc.dot}` : "none" }} />
-                          {si < DC_TIMELINE_STAGES.length - 1 && (
-                            <div className="w-3 h-[1.5px]" style={{ background: done && si < activeIdx ? sc.dot : "#e2e8f0" }} />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  ) : (
+                    <span className="text-[9px] text-slate-300 font-medium shrink-0">—</span>
+                  )}
                 </div>
               );
             })}
