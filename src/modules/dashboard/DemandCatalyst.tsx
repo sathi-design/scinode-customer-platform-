@@ -5873,7 +5873,6 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
                                 {r.val.toLocaleString()}
                               </span>
                               <span className="text-[10px] text-slate-400 w-[80px] shrink-0">
-                                / {groupTotal.toLocaleString()} {unitLabel}
                               </span>
                             </div>
                           );
