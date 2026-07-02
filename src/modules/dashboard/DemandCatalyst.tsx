@@ -5662,12 +5662,13 @@ function ProperFunnel({ stages }: {
 
 type DigitalMetric = "clicks" | "enquiries" | "opps";
 
-function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks, allOrganicLeads, allPaidLeads, allOrganicOpps, allPaidOpps }: {
+function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks, allOrganicLeads, allPaidLeads, allOrganicOpps, allPaidOpps, hasData = true }: {
   data: typeof TEC_ALL;
   digitalOpps: number;
   allOrganicClicks: number; allPaidClicks: number;
   allOrganicLeads: number;  allPaidLeads: number;
   allOrganicOpps: number;   allPaidOpps: number;
+  hasData?: boolean;
 }) {
   const [active, setActive] = useState<DigitalMetric>("clicks");
 
@@ -5767,7 +5768,8 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
       </div>
 
       {/* Body: left cards + right panel */}
-      <div className="grid grid-cols-[260px_1fr] items-stretch">
+      {!hasData && <EngineEmptyState icon={<Activity size={22} className="text-slate-400" />} label="Digital Engine" />}
+      {hasData && <div className="grid grid-cols-[260px_1fr] items-stretch">
 
         {/* LEFT — 3 metric cards */}
         <div className="flex flex-col border-r border-[#f3f4f6] self-stretch">
@@ -5886,6 +5888,28 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
           </div>
 
         </div>
+      </div>}
+    </div>
+  );
+}
+
+// ─── Engine Empty State ─────────────────────────────────────────────────────
+
+function EngineEmptyState({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 py-14 px-6 text-center">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#f3f4f6]">
+        {icon}
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[13px] font-bold text-slate-700">No Breakdown Data Yet</p>
+        <p className="text-[11.5px] text-slate-400 max-w-[260px] leading-relaxed">
+          Once the {label} begins generating activity, the breakdown will appear here.
+        </p>
+      </div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#e4e4e7] bg-[#f9fafb]">
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+        <span className="text-[10.5px] font-semibold text-slate-400 uppercase tracking-[0.08em]">Awaiting Data</span>
       </div>
     </div>
   );
@@ -5895,9 +5919,10 @@ function DigitalEnginePanel({ data, digitalOpps, allOrganicClicks, allPaidClicks
 
 type OfflineStage = "reach" | "meetings" | "opps";
 
-function OfflineEnginePanel({ data, salesOpps }: {
+function OfflineEnginePanel({ data, salesOpps, hasData = true }: {
   data: typeof TEC_ALL;
   salesOpps: number;
+  hasData?: boolean;
 }) {
   const [active, setActive] = useState<OfflineStage>("reach");
 
@@ -5966,7 +5991,8 @@ function OfflineEnginePanel({ data, salesOpps }: {
       </div>
 
       {/* Body: left cards + right panel */}
-      <div className="grid grid-cols-[260px_1fr] items-stretch">
+      {!hasData && <EngineEmptyState icon={<Users size={22} className="text-slate-400" />} label="Offline Engine" />}
+      {hasData && <div className="grid grid-cols-[260px_1fr] items-stretch">
 
         {/* LEFT — 3 stage cards */}
         <div className="flex flex-col border-r border-[#f3f4f6] self-stretch">
@@ -6133,7 +6159,7 @@ function OfflineEnginePanel({ data, salesOpps }: {
           )}
 
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -6142,6 +6168,7 @@ function DemandGenerationDetail({ product, onStageClick }: { product: CampaignPr
   const [allTime, setAllTime]   = useState(true);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate]     = useState("");
+  const [enginesHaveData, setEnginesHaveData] = useState(false);
 
   const hasCustomRange = !allTime && fromDate && toDate;
   const data = hasCustomRange ? TEC_WEEK_DATA["Week 2"] : TEC_ALL;
@@ -6259,8 +6286,25 @@ function DemandGenerationDetail({ product, onStageClick }: { product: CampaignPr
         </div>
       </div>
 
+      {/* ── Admin Demo Toggle ── */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-[#e4e4e7] bg-[#fafafa]">
+        <div className="flex-1">
+          <p className="text-[11px] font-bold text-slate-600">Engine Breakdown Data</p>
+          <p className="text-[10px] text-slate-400">Toggle between empty state and live breakdown view</p>
+        </div>
+        <button
+          onClick={() => setEnginesHaveData(v => !v)}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-[11px] font-semibold border transition-all"
+          style={enginesHaveData
+            ? { background: "#1a5c3a", color: "white", borderColor: "#1a5c3a" }
+            : { background: "white", color: "#6B7280", borderColor: "#e4e4e7" }}>
+          <span className={`w-1.5 h-1.5 rounded-full ${enginesHaveData ? "bg-[#2ACB83]" : "bg-slate-300"}`} />
+          {enginesHaveData ? "Data Entered" : "No Data Yet"}
+        </button>
+      </div>
+
       {/* ── SECTION 3: Offline Engine — Master-Detail Layout ── */}
-      <OfflineEnginePanel data={data} salesOpps={salesOpps} />
+      <OfflineEnginePanel data={data} salesOpps={salesOpps} hasData={enginesHaveData} />
 
       {/* ── Digital Engine ── */}
       <DigitalEnginePanel
@@ -6272,6 +6316,7 @@ function DemandGenerationDetail({ product, onStageClick }: { product: CampaignPr
         allPaidLeads={allPaidLeads}
         allOrganicOpps={allOrganicOpps}
         allPaidOpps={allPaidOpps}
+        hasData={enginesHaveData}
       />
 
     </div>
